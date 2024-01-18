@@ -110,7 +110,12 @@ collate_solutions <- function(rmat_min, Lambda_0, eig_X) {
     ) %>% glimpse()
   
   #return(list(R = R, fval = fval, sol_frequency = sol_frequency, Lambda_rotated = Lambda_rotated))
-  return(list(R = R, fval = candidate_tibble_prune$l1_norm, sol_frequency = candidate_tibble_prune$n, Lambda_rotated = Lambda_rotated))
+  return(
+    list(
+      diagnostics = list(R = R, fval = candidate_tibble_prune$l1_norm, sol_frequency = candidate_tibble_prune$n),
+      Lambda_rotated = Lambda_rotated
+    )
+  )
   
 }
 

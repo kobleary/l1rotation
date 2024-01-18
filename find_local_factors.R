@@ -16,8 +16,10 @@ find_local_factors <- function(X, r, Lambda0) {
   # compute the rotated solution with minimal l1-norm
   rmat_min_results <- find_min_rotation(Lambda0) #Finds solution for each point in grid
   rmat_min <- rmat_min_results$R
-  Lambda_rotated_results <- collate_solutions(rmat_min, Lambda0, eig_X) #Combine into candidates
-  return(list(Lambda0 = Lambda0, Lambda_rotated = Lambda_rotated_results))
+  rotation_results <- collate_solutions(rmat_min, Lambda0, eig_X) #Combine into candidates
+  Lambda_rotated <- rotation_results$Lambda_rotated
+  diagnostics <- rotation_results$diagnostics
+  return(list(Lambda0 = Lambda0, Lambda_rotated = Lambda_rotated, diagnostics = diagnostics))
 }
 
 
