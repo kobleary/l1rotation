@@ -23,6 +23,10 @@ Imports:
     matrixStats,
     pracma,
     scales,
+    stats,
     stringr,
     tibble,
-    tidyr
+    tictoc,
+    tidyr,
+    tidyselect
+    

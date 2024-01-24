@@ -16,11 +16,11 @@ vecnorm <- function(X, p = 2){
 find_min_rotation <- function(Lambda) {
   r <- ncol(Lambda)
   no_draws <- gridsize(r)
-  fval <- rep(0, no_draws)
+  l1_norm <- rep(0, no_draws)
   exitflag <- rep(0, no_draws)
 
   # Create starting points for algorithm
-  initial_draws <- matrix(rnorm(r * no_draws), nrow = r)
+  initial_draws <- matrix(stats::rnorm(r * no_draws), nrow = r)
   initial_draws <- normalize(initial_draws, p = 2)
 
   # Convert to polar coordinates (OA.7)?
@@ -46,14 +46,14 @@ find_min_rotation <- function(Lambda) {
   l <- nrow(angles)
   for (rep in 1:no_draws) {
     starting_point <- theta[, rep]
-    result <- optim(
+    result <- stats::optim(
       starting_point,
       objectivefcn_spherical, Lambda = Lambda,
       control = list(maxit = 200 * l),
       method = 'Nelder-Mead'
       )
     angles[, rep] <- result$par
-    fval[rep] <- result$value
+    l1_norm[rep] <- result$value
     exitflag[rep] <- result$convergence
   }
 
@@ -67,7 +67,7 @@ find_min_rotation <- function(Lambda) {
   #}
   #R[r, ] <- col_prod(sin(angles))
 
-  return(list(R = R, fval = fval, exitflag = exitflag))
+  return(list(R = R, l1_norm = l1_norm, exitflag = exitflag))
 }
 
 col_prod <- function(data){

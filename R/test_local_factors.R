@@ -55,10 +55,10 @@ test_local_factors <- function(X, r, Lambda = NULL, eig_X = NULL, alpha_gamma = 
     alpha_gamma <- 0.05
   }
 
-  c_gamma <- -1 * qnorm(1 - alpha_gamma / 2, lower = FALSE)
+  c_gamma <- -1 * stats::qnorm(1 - alpha_gamma / 2, lower = FALSE)
   gamma0 <- 0.03
   h_n <- 1 / log(n)
-  expected_small <- 1 / 2 * erfc(-h_n / sqrt(2)) - 1 / 2 * erfc(h_n / sqrt(2))
+  expected_small <- 1 / 2 * pracma::erfc(-h_n / sqrt(2)) - 1 / 2 * pracma::erfc(h_n / sqrt(2))
   gamma <- gamma0 + expected_small + c_gamma * sqrt((expected_small * (1 - expected_small)) / n)
   gamma_n <- floor(gamma * n)
   n_small <- colSums(abs(Lambda) < h_n)

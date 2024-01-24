@@ -10,7 +10,7 @@ collate_solutions <- function(rmat_min, Lambda_0, eig_X) {
   rmat_min_sort <- rmat_min[, sort_index]
   rmat_min_sort <- rmat_min_sort * pracma::repmat(sign(rmat_min_sort[1, ]), factorno, 1) # same as in matlab up until here
 
-  tic() # This step takes 44 seconds with 8 factors and 3000 draws (probably can be improved)
+  tictoc::tic() # This step takes 44 seconds with 8 factors and 3000 draws (probably can be improved)
   norms <- matrix(0, nrow = no_randomgrid, ncol = no_randomgrid)
   for (i in 1:no_randomgrid) {
     for (j in i:no_randomgrid) {
@@ -23,7 +23,7 @@ collate_solutions <- function(rmat_min, Lambda_0, eig_X) {
       }
     }
   }
-  toc()
+  tictoc::toc()
 
   candidate_tibble <- rmat_min_sort %>%
     t() %>% as.data.frame() %>%

@@ -47,7 +47,7 @@ local_factors <- function(X, r) {
 
 plot_loading_matrix <- function(data, xlab = "", ylab = "", title = ""){
 
-  if(is.matrix(data)) data <- convert_mat_to_df(data) %>% glimpse()
+  if(is.matrix(data)) data <- convert_mat_to_df(data) %>% dplyr::glimpse()
 
   scale_fill_pal <- select_palette(data$value, type = "level")
 
@@ -76,7 +76,7 @@ plot_small_loadings <- function(result, xlab = "k", ylab = "", title = ""){
   n_cols <- ncol(result$Lambda)
 
   tibble::as_tibble(n_small) %>%
-    dplyr::rownames_to_column(var = "factor") %>%
+    tibble::rownames_to_column(var = "factor") %>%
     dplyr::mutate(factor = as.numeric(factor)) %>%
     ggplot2::ggplot() +
     ggplot2::geom_point(ggplot2::aes(x = factor, y = value), size = 3) +
@@ -91,9 +91,9 @@ plot_small_loadings <- function(result, xlab = "k", ylab = "", title = ""){
 
 convert_mat_to_df <- function(mat){
 
-  df <- mat %>% tibble::as_tibble() %>% dplyr::rownames_to_column(var = "row") %>%
+  df <- mat %>% tibble::as_tibble() %>% tibble::rownames_to_column(var = "row") %>%
     dplyr::mutate(row = factor(row, levels = 1:nrow(mat))) %>%
-    tidyr::pivot_longer(starts_with("V"), names_to = "column") %>%
+    tidyr::pivot_longer(tidyselect::starts_with("V"), names_to = "column") %>%
     dplyr::mutate(column = factor(stringr::str_remove(column, "V"), levels = 1:ncol(mat)))
 
   return(df)
@@ -107,7 +107,7 @@ select_palette <- function(range, type, breaks = NULL){
   mp <- switch(type,
                difference = 0,
                ratio = 1,
-               level = median(range)
+               level = stats::median(range)
   )
 
   min <- min(range, na.rm = TRUE)
