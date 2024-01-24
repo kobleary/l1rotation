@@ -1,6 +1,20 @@
+#' Find the most sparse rotation of the leading Principal Components of a t by n matrix X.
+#'
+#' @inheritParams local_factors
+#' @param Lambda0 A matrix that represents an orthonormal basis of the loading space. If not supplied, PCA is used.
+#'
+#' @returns Returns a list with the following components:
+#'  * `Lambda0` (if not supplied) the principal component estimate of the loading matrix (orthonormal)
+#'  * `Lambda_rotated` a matrix that is the rotation of the loading matrix that produces the smallest l1-norm.
+#'  * `rotation_diagnostics` a list containing 3 components"
+#'      * `R` the rotation matrix that when used to rotate `Lambda0` produces the smallest l1-norm.
+#'      * `l1_norm` a vector of length `r` containing the value of the l1 norm each solution generates
+#'      * `sol_frequency` a vector of length `r` containing the frequency in the initial grid of each solution
+#'
+#' @export
 find_local_factors <- function(X, r, Lambda0) {
   # Function to find the sparsest rotation of the leading Principal Components
-  # of a T by n matrix X. 
+  # of a T by n matrix X.
   # Under sparsity in the loading matrix this will identify the true loading matrix.
   #
   # returns two arguments:
