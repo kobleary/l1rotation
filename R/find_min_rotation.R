@@ -1,18 +1,3 @@
-
-normalize <- function(X, p = 2){
-  stopifnot(is.matrix(X))
-  norms <- apply(X, p = p, 2, pracma::Norm)
-  X_norm <- sweep(X, 2, norms, FUN = "/")
-  return(X_norm)
-}
-
-# Returns the norm of each column of a matrix
-vecnorm <- function(X, p = 2){
-  stopifnot(is.matrix(X))
-  apply(X, p = p, 2, pracma::Norm)
-}
-
-
 find_min_rotation <- function(Lambda) {
   r <- ncol(Lambda)
   no_draws <- gridsize(r)
@@ -25,21 +10,9 @@ find_min_rotation <- function(Lambda) {
 
   # Convert to polar coordinates (OA.7)?
   theta <- matrix(0, nrow = r - 1, ncol = no_draws)
-  #for (kk in 1:(r - 2)) {
-  #  theta[kk, ] <- acot(initial_draws[kk, ] / vecnorm(initial_draws[(kk + 1):r, ]))
-  #}
-  #theta[r - 1, ] <- 2 * acot((initial_draws[(r - 1), ] + vecnorm(initial_draws[(r - 1):r, ])) / initial_draws[r, ])
 
   # RK: Using Wikipedia definition
-
   theta <- cartesian_to_spherical(initial_draws)
-
-  #theta <- matrix(0, nrow = r - 1, ncol = no_draws)
-  #for (kk in 1:(r - 2)) {
-  #  theta[kk, ] <- atan2( vecnorm(initial_draws[(kk + 1):r, ]), initial_draws[kk, ])
-  #}
-  #theta[r - 1, ] <- atan2( initial_draws[r, ], initial_draws[(r - 1), ] )
-
 
   # Optimization in polar coordinates happens w.r.t. theta
   angles <- theta
@@ -60,15 +33,23 @@ find_min_rotation <- function(Lambda) {
   # Convert back to cartesian coordinates, need to edit to generalize across minimum number of factors (requires at least 2)
   R <- spherical_to_cartesian(angles)
 
-  #R <- matrix(0, nrow = r, ncol = no_draws)
-  #R[1, ] <- cos(angles[1, ])
-  #for (kk in 2:(r - 1)) {
-  #  R[kk, ] <- col_prod(sin(angles[1:(kk - 1), ]))*cos(angles[kk, ])
-  #}
-  #R[r, ] <- col_prod(sin(angles))
-
   return(list(R = R, l1_norm = l1_norm, exitflag = exitflag))
 }
+
+
+normalize <- function(X, p = 2){
+  stopifnot(is.matrix(X))
+  norms <- apply(X, p = p, 2, pracma::Norm)
+  X_norm <- sweep(X, 2, norms, FUN = "/")
+  return(X_norm)
+}
+
+# Returns the norm of each column of a matrix
+vecnorm <- function(X, p = 2){
+  stopifnot(is.matrix(X))
+  apply(X, p = p, 2, pracma::Norm)
+}
+
 
 col_prod <- function(data){
   if(is.matrix(data)) matrixStats::colProds(data)
