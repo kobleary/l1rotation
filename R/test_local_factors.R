@@ -11,22 +11,8 @@
 #'  * `gamma_n` an integer denoting the critical value to compare `n_small` to.
 #'  * `h_n` a number denoting the cutoffused to determine which loadings are small
 #'  * `Lambda` rotation of PCs with smallest l1-norm
-#'  * `rotation_diagnostics` a list containing 3 components"
-#'      * `R` the rotation matrix that when used to rotate `Lambda0` produces the smallest l1-norm.
-#'      * `l1_norm` a vector of length `r` containing the value of the l1 norm each solution generates
-#'      * `sol_frequency` a vector of length `r` containing the frequency in the initial grid of each solution
-#'
 #' @export
 test_local_factors <- function(X, r, Lambda = NULL, eig_X = NULL, alpha_gamma = 0.05) {
-  # Function to test whether X has local factors
-  #
-  # returns up to four arguments:
-  #    has_local_factors: Logical equal to one if local factors are present
-  #    n_small: Number of small loadings in sparse rotation
-  #    gamma_n: Critical value to compare n_small to.
-  #    h_n: Threshold used for "small" loadings
-  #    Lambda: Rotation of loading matrix with smallest l1-norm
-  # See README.txt for more detail
 
   ## Preliminaries
   T <- nrow(X)
@@ -65,7 +51,8 @@ test_local_factors <- function(X, r, Lambda = NULL, eig_X = NULL, alpha_gamma = 
   most_small <- sort(n_small, decreasing = TRUE)
   has_local_factors <- most_small[1] > gamma_n
 
-  return(list(has_local_factors = has_local_factors, n_small = n_small, gamma_n = gamma_n, h_n = h_n, Lambda = Lambda, rotation_diagnostics = rotation_diagnostics))
+
+  return(list(has_local_factors = has_local_factors, n_small = n_small, gamma_n = gamma_n, h_n = h_n, Lambda = Lambda))
 }
 
 

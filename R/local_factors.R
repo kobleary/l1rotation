@@ -25,21 +25,22 @@ local_factors <- function(X, r) {
   eig_X <- pca$d^2
   Lambda0 <- sqrt(n) * pca$v[, 1:r]
 
-  # Test for local factors and estimate rotated loading matrix
-  result <- test_local_factors(X, r)
-  has_local_factors <- result$has_local_factors
-  Lambda_rotated <- result$Lambda
+  # Find minimum rotation, test for local factors
+  rotn_result <- find_local_factors(X, r)
+  test_result <- test_local_factors(X, r, Lambda = rotn_result$Lambda_rotated)
+  has_local_factors <- test_result$has_local_factors
+  Lambda_rotated <- test_result$Lambda
 
   # Illustrate loading matrices
   pc_plot <- plot_loading_matrix(Lambda0, xlab = "k", title = "Principal Component estimate")
   pc_rotated_plot <- plot_loading_matrix(Lambda_rotated, xlab = "k", title = "Rotated estimate (l1-criterion)")
-  small_loadings_plot <- plot_small_loadings(result)
+  small_loadings_plot <- plot_small_loadings(test_result, r)
 
   return(list(
     has_local_factors = has_local_factors,
     Lambda0 = Lambda0,
     Lambda_rotated = Lambda_rotated,
-    rotation_diagnostics = result$rotation_diagnostics,
+    rotation_diagnostics = rotn_result$diagnostics,
     pc_plot = pc_plot,
     pc_rotated_plot = pc_rotated_plot,
     small_loadings_plot = small_loadings_plot))
@@ -68,12 +69,11 @@ plot_loading_matrix <- function(data, xlab = "", ylab = "", title = ""){
     )
 }
 
-plot_small_loadings <- function(result, xlab = "k", ylab = "", title = ""){
+plot_small_loadings <- function(result, r, xlab = "k", ylab = "", title = ""){
 
   n_small <- result$n_small
   gamma <- result$gamma
   h_n <- result$h_n
-  n_cols <- ncol(result$Lambda)
 
   tibble::as_tibble(n_small) %>%
     tibble::rownames_to_column(var = "factor") %>%
@@ -83,7 +83,7 @@ plot_small_loadings <- function(result, xlab = "k", ylab = "", title = ""){
     ggplot2::geom_hline(yintercept = gamma, linetype = "dashed", size = 1) +
     ggplot2::ylim(c(min(gamma - 10, min(n_small - 5)), max(gamma + 5, max(n_small) + 5))) +
     ggplot2::labs(x = xlab, y = ylab, title = title) +
-    ggplot2::xlim(c(1, n_cols)) +
+    ggplot2::xlim(c(1, r)) +
     ggplot2::theme_minimal() +
     ggplot2::theme(legend.position = "none")
 }
@@ -91,7 +91,8 @@ plot_small_loadings <- function(result, xlab = "k", ylab = "", title = ""){
 
 convert_mat_to_df <- function(mat){
 
-  df <- mat %>% tibble::as_tibble() %>% tibble::rownames_to_column(var = "row") %>%
+  df <- mat %>% as.data.frame() %>%
+    tibble::rownames_to_column(var = "row") %>%
     dplyr::mutate(row = factor(row, levels = 1:nrow(mat))) %>%
     tidyr::pivot_longer(tidyselect::starts_with("V"), names_to = "column") %>%
     dplyr::mutate(column = factor(stringr::str_remove(column, "V"), levels = 1:ncol(mat)))
