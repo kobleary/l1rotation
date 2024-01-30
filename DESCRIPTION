@@ -1,5 +1,5 @@
 Package: l1rotation
-Title: What the Package Does (One Line, Title Case)
+Title: Identify Individual Loading Vectors under Sparsity in Factor Models
 Version: 0.0.0.9000
 Authors@R: c(
     person(
@@ -9,10 +9,11 @@ Authors@R: c(
     ),
     person(
       "Ryan", "Kobler",
-      email = "ryan.kobler@phil.frb.org",
+      email = "kobleary@gmail.com",
       role = c("aut", "cre"))
     )
-Description: What the package does (one paragraph).
+Description: Estimate loading vectors using the l1 criterion as proposed in Freyaldenhoven (2023). 
+  Given a data matrix, find the rotation of the loading matrix with the smallest l1-norm and/or test for the presence of local factors. 
 License: MIT + file LICENSE
 Encoding: UTF-8
 Roxygen: list(markdown = TRUE)
@@ -29,3 +30,6 @@ Imports:
     tictoc,
     tidyr,
     tidyselect
+Depends: 
+    R (>= 2.10)
+LazyData: true

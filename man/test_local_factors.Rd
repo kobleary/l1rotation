@@ -24,12 +24,6 @@ test_local_factors(X, r, Lambda = NULL, eig_X = NULL, alpha_gamma = 0.05)
 \item \code{gamma_n} an integer denoting the critical value to compare \code{n_small} to.
 \item \code{h_n} a number denoting the cutoffused to determine which loadings are small
 \item \code{Lambda} rotation of PCs with smallest l1-norm
-\item \code{rotation_diagnostics} a list containing 3 components"
-\itemize{
-\item \code{R} the rotation matrix that when used to rotate \code{Lambda0} produces the smallest l1-norm.
-\item \code{l1_norm} a vector of length \code{r} containing the value of the l1 norm each solution generates
-\item \code{sol_frequency} a vector of length \code{r} containing the frequency in the initial grid of each solution
-}
 }}
 }
 \description{
