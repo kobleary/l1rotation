@@ -46,7 +46,10 @@ normalize <- function(X, p = 2){
 
 # Returns the norm of each column of a matrix
 vecnorm <- function(X, p = 2){
-  stopifnot(is.matrix(X))
+  #stopifnot(is.matrix(X))
+  if(!is.matrix(X)){
+    pracma::Norm(X[(kk):r, ], p = 2)
+  }
   apply(X, p = p, 2, pracma::Norm)
 }
 
@@ -58,13 +61,17 @@ col_prod <- function(data){
   }
 }
 
+# Assumes radius is equal to 1 (that is, X is normalized)
 cartesian_to_spherical <- function(X){
+  stopifnot(nrow(X) > 1)
   r <- nrow(X)
   no_draws <- ncol(X)
 
   theta <- matrix(0, nrow = r - 1, ncol = no_draws)
-  for (kk in 1:(r - 2)) {
-    theta[kk, ] <- atan2( vecnorm(X[(kk + 1):r, ]), X[kk, ])
+  if(r-2 > 0){
+    for (kk in 1:(r - 2)) {
+      theta[kk, ] <- atan2( vecnorm(X[(kk + 1):r, ]), X[kk, ])
+    }
   }
   theta[r - 1, ] <- atan2( X[r, ], X[(r - 1), ] )
 
@@ -72,6 +79,9 @@ cartesian_to_spherical <- function(X){
 }
 
 spherical_to_cartesian <- function(theta){
+  stopifnot(all(theta >= 0))
+  stopifnot(nrow(theta) > 0)
+
   r <- nrow(theta) + 1
   no_draws <- ncol(theta)
 
@@ -79,9 +89,6 @@ spherical_to_cartesian <- function(theta){
 
   R[1, ] <- cos(theta[1, ])
 
-  if(r == 2){
-    R[2, ] <- sin(theta[1, ]) * cos(theta[2, ])
-  }
   if(r > 2){
     for (kk in 2:(r - 1)) {
       R[kk, ] <- col_prod(sin(theta[1:(kk - 1), ]))*cos(theta[kk, ])
