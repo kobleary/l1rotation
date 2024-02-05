@@ -16,12 +16,14 @@
 #'
 local_factors <- function(X, r) {
 
+  stopifnot(r <= ncol(X))
+
   #set.seed(1909)
-  T <- nrow(X)
+  M <- nrow(X)
   n <- ncol(X)
 
   # Compute PCA estimates
-  pca <- svd(X / sqrt(T))
+  pca <- svd(X / sqrt(M))
   eig_X <- pca$d^2
   Lambda0 <- sqrt(n) * pca$v[, 1:r]
 

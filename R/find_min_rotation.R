@@ -1,4 +1,7 @@
 find_min_rotation <- function(Lambda) {
+  stopifnot(is.matrix(Lambda))
+  stopifnot(ncol(Lambda) > 1)
+
   r <- ncol(Lambda)
   no_draws <- gridsize(r)
   l1_norm <- rep(0, no_draws)
@@ -8,10 +11,6 @@ find_min_rotation <- function(Lambda) {
   initial_draws <- matrix(stats::rnorm(r * no_draws), nrow = r)
   initial_draws <- normalize(initial_draws, p = 2)
 
-  # Convert to polar coordinates (OA.7)?
-  theta <- matrix(0, nrow = r - 1, ncol = no_draws)
-
-  # RK: Using Wikipedia definition
   theta <- cartesian_to_spherical(initial_draws)
 
   # Optimization in polar coordinates happens w.r.t. theta
@@ -27,6 +26,7 @@ find_min_rotation <- function(Lambda) {
       )
     angles[, rep] <- result$par
     l1_norm[rep] <- result$value
+    print(result$value)
     exitflag[rep] <- result$convergence
   }
 
@@ -79,7 +79,20 @@ cartesian_to_spherical <- function(X){
 }
 
 spherical_to_cartesian <- function(theta){
-  stopifnot(all(theta >= 0))
+  #stopifnot(all(theta >= 0))
+  print(theta)
+  if(!is.matrix(theta)) {
+    r <- length(theta) + 1
+    R <- rep(0, r)
+    R[1] <- cos(theta[1])
+    if(r > 2){
+      for (kk in 2:(r-1)) {
+        R[kk] <- prod(sin(theta[1:(kk-1)])) * cos(theta[kk])
+      }
+    }
+    R[r] <- prod(sin(theta))
+    return(R)
+  }
   stopifnot(nrow(theta) > 0)
 
   r <- nrow(theta) + 1
@@ -92,6 +105,7 @@ spherical_to_cartesian <- function(theta){
   if(r > 2){
     for (kk in 2:(r - 1)) {
       R[kk, ] <- col_prod(sin(theta[1:(kk - 1), ]))*cos(theta[kk, ])
+
     }
   }
 
@@ -103,16 +117,8 @@ spherical_to_cartesian <- function(theta){
 }
 
 objectivefcn_spherical <- function(theta, Lambda) {
-  n <- nrow(Lambda)
-  r <- ncol(Lambda)
-  R <- rep(0, r)
-  R[1] <- cos(theta[1])
-  for (kk in 2:(r-1)) {
-    R[kk] <- prod(sin(theta[1:(kk-1)])) * cos(theta[kk])
-  }
-  R[r] <- prod(sin(theta))
-  f <- sum(abs(Lambda %*% R))
-  return(f)
+  R <- spherical_to_cartesian(theta)
+  sum(abs(Lambda %*% R))
 }
 
 gridsize <- function(factorno) {

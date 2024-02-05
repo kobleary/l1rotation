@@ -2,7 +2,7 @@
 #'
 #' @inheritParams local_factors
 #' @param Lambda (optional) a matrix that represents a sparse basis of the loading space
-#' @param eig_X (optional) a vector of eigenvalues of X'X/t in decreasing order (only used if X is empty)
+#' @param eig_X (optional) a vector of eigenvalues of X'X/M in decreasing order (only used if X is empty)
 #' @param alpha_gamma (optional) a numeric value (default = 0.05)
 #'
 #' #' @returns Returns a list with the following components:
@@ -15,7 +15,7 @@
 test_local_factors <- function(X, r, Lambda = NULL, eig_X = NULL, alpha_gamma = 0.05) {
 
   ## Preliminaries
-  T <- nrow(X)
+  M <- nrow(X)
   n <- ncol(X)
 
   if (is.null(Lambda)) {
@@ -34,7 +34,7 @@ test_local_factors <- function(X, r, Lambda = NULL, eig_X = NULL, alpha_gamma = 
       stop("If no data X is supplied, at least eigenvalues needed to determine critical values")
     }
   } else {
-    eig_X <- sort(eigen(t(X) %*% X / T)$values, decreasing = TRUE)
+    eig_X <- sort(eigen(t(X) %*% X / M)$values, decreasing = TRUE)
   }
 
   if (is.null(alpha_gamma)) {

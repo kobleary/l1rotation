@@ -69,6 +69,81 @@ test_that("normalization works", {
 })
 
 
+test_that("matlab and R produce same rotated Lambda in example 1", {
+
+  mat <- readr::read_csv(testthat::test_path("fixtures","ex1_rot_mat_matlab.csv"), col_names = FALSE) %>%
+    as.matrix()
+  dimnames(mat) <- NULL
+  X <- readr::read_csv(testthat::test_path("fixtures", "example_data1.csv"), col_names = FALSE) %>%
+    as.matrix()
+
+  ex1 <- local_factors(X, 4)
+
+  expect_equal(ex1$Lambda_rotated, mat, tolerance = 0.0001)
+
+})
+
+test_that("objective function works with spherical_to_cartesian(), r = 3", {
+
+  r <- 3
+  Lambda <- matrix(stats::rnorm(r * 100), nrow = 100)
+  theta <- matrix(stats::rnorm(r * 4), nrow = r) %>% cartesian_to_spherical()
+  theta <- theta[,1]
+
+  computed <- objectivefcn_spherical(theta, Lambda)
+
+  R <- rep(0, r)
+  R[1] <- cos(theta[1])
+  if(r > 2){
+    for (kk in 2:(r-1)) {
+      R[kk] <- prod(sin(theta[1:(kk-1)])) * cos(theta[kk])
+    }
+  }
+  R[r] <- prod(sin(theta))
+
+  expected <- sum(abs(Lambda %*% R))
+
+  expect_equal(computed, expected, tolerance = 0.001)
+
+
+})
+
+test_that("objective function works with spherical_to_cartesian(), r = 2", {
+
+  r <- 2
+  Lambda <- matrix(stats::rnorm(r * 100), nrow = 100)
+  theta <- matrix(stats::rnorm(r * 4), nrow = r) %>% cartesian_to_spherical()
+  theta <- theta[,1]
+
+  computed <- objectivefcn_spherical(theta, Lambda)
+
+  R <- rep(0, r)
+  R[1] <- cos(theta[1])
+  if(r > 2){
+    for (kk in 2:(r-1)) {
+      R[kk] <- prod(sin(theta[1:(kk-1)])) * cos(theta[kk])
+    }
+  }
+  R[r] <- prod(sin(theta))
+
+  expected <- sum(abs(Lambda %*% R))
+
+  expect_equal(computed, expected, tolerance = 0.001)
+
+})
+
+test_that("objective function with length(theta) =/= ncol(Lambda) returns non-conformable error", {
+
+  r <- 2
+  Lambda <- matrix(stats::rnorm((r + 1) * 100), nrow = 100)
+  theta <- matrix(stats::rnorm((r-1) * 4), nrow = r) %>% cartesian_to_spherical()
+  theta <- theta[,1]
+
+  expect_error(objectivefcn_spherical(theta, Lambda), "non-conformable")
+
+})
+
+
 test_that("negative input to spherical_to_cartesian returns error", {
 
 })
