@@ -1,4 +1,7 @@
 find_min_rotation <- function(Lambda) {
+
+  tictoc::tic("find_min_rotation")
+
   stopifnot(is.matrix(Lambda))
   stopifnot(ncol(Lambda) > 1)
 
@@ -21,17 +24,19 @@ find_min_rotation <- function(Lambda) {
     result <- stats::optim(
       starting_point,
       objectivefcn_spherical, Lambda = Lambda,
-      control = list(maxit = 200 * l),
+      control = list(maxit = 200 * l, ndeps = 1e-4, reltol = 1e-8, warn.1d.NelderMead = FALSE),
       method = 'Nelder-Mead'
       )
+
     angles[, rep] <- result$par
     l1_norm[rep] <- result$value
-    print(result$value)
     exitflag[rep] <- result$convergence
   }
 
-  # Convert back to cartesian coordinates, need to edit to generalize across minimum number of factors (requires at least 2)
+  # Convert back to cartesian coordinates
   R <- spherical_to_cartesian(angles)
+
+  tictoc::toc()
 
   return(list(R = R, l1_norm = l1_norm, exitflag = exitflag))
 }
@@ -80,7 +85,7 @@ cartesian_to_spherical <- function(X){
 
 spherical_to_cartesian <- function(theta){
   #stopifnot(all(theta >= 0))
-  print(theta)
+  #print(theta)
   if(!is.matrix(theta)) {
     r <- length(theta) + 1
     R <- rep(0, r)

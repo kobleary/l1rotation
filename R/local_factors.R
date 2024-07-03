@@ -15,7 +15,7 @@
 #' @export
 #'
 local_factors <- function(X, r) {
-
+  tictoc::tic("local_factors")
   stopifnot(r <= ncol(X))
 
   #set.seed(1909)
@@ -37,7 +37,7 @@ local_factors <- function(X, r) {
   pc_plot <- plot_loading_matrix(Lambda0, xlab = "k", title = "Principal Component estimate")
   pc_rotated_plot <- plot_loading_matrix(Lambda_rotated, xlab = "k", title = "Rotated estimate (l1-criterion)")
   small_loadings_plot <- plot_small_loadings(test_result, r)
-
+  tictoc::toc()
   return(list(
     has_local_factors = has_local_factors,
     Lambda0 = Lambda0,
@@ -50,7 +50,7 @@ local_factors <- function(X, r) {
 
 plot_loading_matrix <- function(data, xlab = "", ylab = "", title = ""){
 
-  if(is.matrix(data)) data <- convert_mat_to_df(data) %>% dplyr::glimpse()
+  if(is.matrix(data)) data <- convert_mat_to_df(data)
 
   scale_fill_pal <- select_palette(data$value, type = "level")
 
