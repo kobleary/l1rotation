@@ -61,9 +61,10 @@ collate_solutions <- function(rmat_min, Lambda_0, eig_X) {
   l1_norm_update <- c()
 
   while (candidateno < factorno) {
-    consolidated_mins <- fill_with_pc(consolidated_mins, factorno, I, Lambda_0, eig_X, l1_norm_update)
+    consolidated_mins <- fill_with_pc(consolidated_mins, factorno, I, Lambda_0, eig_X, R, l1_norm_update)
     candidateno <- ncol(consolidated_mins$Lambda_rotated)
     l1_norm_update <- consolidated_mins$l1_norm_update
+    R <- consolidated_mins$R
   }
 
   loadings <- matrix_to_dataframe(R) %>%
@@ -78,7 +79,7 @@ collate_solutions <- function(rmat_min, Lambda_0, eig_X) {
   return(
     list(
       diagnostics = list(R = R, fval = loadings$l1_norm, sol_frequency = loadings$n),
-      Lambda_rotated = Lambda_rotated
+      Lambda_rotated = consolidated_mins$Lambda_rotated
     )
   )
 
@@ -133,7 +134,7 @@ consolidate_local_mins <- function(Lambda_0, candidates, sorting_column = "l0_no
 
 }
 
-fill_with_pc <- function(consolidated_mins, factorno, I, Lambda_0, eig_X, l1_norm_update){
+fill_with_pc <- function(consolidated_mins, factorno, I, Lambda_0, eig_X, R, l1_norm_update){
   Lambda_rotated <- consolidated_mins$Lambda_rotated
 
   min_eig <- rep(0, factorno)
