@@ -15,7 +15,7 @@ collate_solutions <- function(rmat_min, Lambda_0, eig_X) {
 
   tictoc::tic() # This step takes 44 seconds with 8 factors and 3000 draws (probably can be improved)
   norms <- matrix(0, nrow = no_randomgrid, ncol = no_randomgrid)
-  for (i in 1:no_randomgrid) {
+  for (i in cli::cli_progress_along(1:no_randomgrid, "Calculating norms across rotations")) {
     for (j in i:no_randomgrid) {
 
       norms[i,j] <- (pracma::Norm(rmat_min_sort[, i] - rmat_min_sort[, j], p = 2) / sqrt(factorno))
@@ -34,7 +34,6 @@ collate_solutions <- function(rmat_min, Lambda_0, eig_X) {
     dplyr::arrange(l1_norm) %>%
     dplyr::ungroup() %>%
     mutate(non_outlier = n/gridsize(factorno) >= 0.005)
-
 
   # Construct R from the candidates
   rmat_min_unique <- candidates %>%
@@ -61,10 +60,21 @@ collate_solutions <- function(rmat_min, Lambda_0, eig_X) {
   l1_norm_update <- c()
 
   while (candidateno < factorno) {
-    consolidated_mins <- fill_with_pc(consolidated_mins, factorno, I, Lambda_0, eig_X, R, l1_norm_update)
-    candidateno <- ncol(consolidated_mins$Lambda_rotated)
-    l1_norm_update <- consolidated_mins$l1_norm_update
-    R <- consolidated_mins$R
+   # consolidated_mins <- fill_with_pc(consolidated_mins, factorno, I, Lambda_0, eig_X, R, l1_norm_update)
+
+    min_eig <- rep(0, factorno)
+    for (ell in 1:factorno) {
+      temp <- cbind(Lambda_rotated, Lambda_0[, ell])
+      min_eig[ell] <- min(eigen(t(temp) %*% temp)$values)
+    }
+    index <- which.max(min_eig * sqrt(eig_X[1:factorno]))
+    print(index)
+    print(min_eig)
+    Lambda_rotated <- cbind(Lambda_rotated, Lambda_0[, index])
+    R <- cbind(R, I[, index])
+    l1_norm_update <- c(l1_norm_update, sum(abs(Lambda_0[, index])))
+
+    candidateno <- ncol(Lambda_rotated)
   }
 
   loadings <- matrix_to_dataframe(R) %>%
@@ -116,17 +126,20 @@ consolidate_local_mins <- function(Lambda_0, candidates, sorting_column = "l0_no
 
   factorno <- nrow(rmat_min_unique)
   upperK <- ncol(rmat_min_unique)
-  n <- length(Lambda_0)
+  n <- nrow(Lambda_0)
 
    for (kk in 2:upperK) {
 
      temp <- cbind(Lambda_rotated, Lambda_0 %*% rmat_min_unique[, kk])
-     not_singular <- min(eigen(t(temp) %*% temp)$values) / n > sqrt(1 / factorno) / 3 &&
-       min(eigen(t(temp) %*% temp)$values) / n > min(eigen(t(Lambda_rotated) %*% Lambda_rotated)$values) / n / 4
+     not_singular <- min(eigen(t(temp) %*% temp)$values / n) > sqrt(1 / factorno) / 3 &&
+       min(eigen(t(temp) %*% temp)$values / n) > min(eigen(t(Lambda_rotated) %*% Lambda_rotated)$values / n) / 4
 
      if(not_singular){
        Lambda_rotated <- temp
        R <- cbind(R, rmat_min_unique[, kk])
+     } else{
+       print("Found a vector that makes R singular:")
+       print(rmat_min_unique[, kk])
      }
    }
 
@@ -142,7 +155,7 @@ fill_with_pc <- function(consolidated_mins, factorno, I, Lambda_0, eig_X, R, l1_
     temp <- cbind(Lambda_rotated, Lambda_0[, ell])
     min_eig[ell] <- min(eigen(t(temp) %*% temp)$values)
   }
-  index <- which.min(min_eig * sqrt(eig_X[1:factorno]))
+  index <- which.max(min_eig * sqrt(eig_X[1:factorno]))
   print(index)
   print(min_eig)
   Lambda_rotated <- cbind(Lambda_rotated, Lambda_0[, index])
