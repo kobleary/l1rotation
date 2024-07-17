@@ -14,16 +14,16 @@
 #' @export
 find_local_factors <- function(X, r, Lambda0) {
   # Function to find the sparsest rotation of the leading Principal Components
-  # of a T by n matrix X.
+  # of a M by n matrix X.
   # Under sparsity in the loading matrix this will identify the true loading matrix.
   #
   # returns three arguments:
   #   Lambda0: Principal Component estimate
   #   Lambda_rotated: Rotation of loading matrix with smallest l1-norm
   #   diagnostics: A list of diagnostics
-  T <- nrow(X)
+  M <- nrow(X)
   n <- ncol(X)
-  svd_X <- svd(X / sqrt(T))
+  svd_X <- svd(X / sqrt(M), nu = M, nv = n)
   eig_X <- svd_X$d^2
   if (missing(Lambda0)) {
     Lambda0 <- sqrt(n) * svd_X$v[, 1:r]

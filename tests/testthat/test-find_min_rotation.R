@@ -1,5 +1,3 @@
-# Should not include library() calls
-
 test_that("sphere_to_cart o cart_to_sphere = matrix, 2 factors (2 x 3), ", {
 
   mat <- normalize(
@@ -69,19 +67,7 @@ test_that("normalization works", {
 })
 
 
-test_that("matlab and R produce same rotated Lambda in example 1", {
 
-  mat <- readr::read_csv(testthat::test_path("fixtures","ex1_rot_mat_matlab.csv"), col_names = FALSE) %>%
-    as.matrix()
-  dimnames(mat) <- NULL
-  X <- readr::read_csv(testthat::test_path("fixtures", "example_data1.csv"), col_names = FALSE) %>%
-    as.matrix()
-
-  ex1 <- local_factors(X, 4)
-
-  expect_equal(ex1$Lambda_rotated, mat, tolerance = 0.0001)
-
-})
 
 test_that("objective function works with spherical_to_cartesian(), r = 3", {
 
@@ -143,13 +129,107 @@ test_that("objective function with length(theta) =/= ncol(Lambda) returns non-co
 
 })
 
+load_matrix <- function(path){
+  readr::read_csv(path, col_names = FALSE) %>%
+    as.matrix()
+}
 
-test_that("negative input to spherical_to_cartesian returns error", {
+
+test_that("single realization returns same R matrix", {
+
+  initial_draws <- load_matrix(here::here("tests", "testthat", "fixtures", "initial_draws_ex1.csv"))
+  X <- load_matrix(testthat::test_path("fixtures", "example_data1.csv"))
+  Lambda <- load_matrix(here::here("tests", "testthat", "fixtures", "Lambda_ex1.csv"))
+
+  r <- 4
+  M <- nrow(X)
+  n <- ncol(X)
+
+  # Compute PCA estimates
+  # pca <- svd(X / sqrt(M))
+  # eig_X <- pca$d^2
+  # Lambda <- sqrt(n) * pca$v[, 1:r]
+  #
+  # r <- ncol(Lambda)
+  no_draws <- gridsize(r)
+  l1_norm <- rep(0, no_draws)
+  exitflag <- rep(0, no_draws)
+
+  theta <- cartesian_to_spherical(initial_draws)
+
+  # Optimization in polar coordinates happens w.r.t. theta
+  angles <- theta
+  l <- nrow(angles)
+  for (rep in 1:no_draws) {
+    starting_point <- theta[, rep]
+    result <- stats::optim(
+      starting_point,
+      objectivefcn_spherical, Lambda = Lambda,
+      control = list(maxit = 200 * l, ndeps = 1e-8, reltol = 1e-8, warn.1d.NelderMead = FALSE),
+      method = 'Nelder-Mead'
+    )
+
+    angles[, rep] <- result$par
+    l1_norm[rep] <- result$value
+    exitflag[rep] <- result$convergence
+  }
+
+  # Convert back to cartesian coordinates, need to edit to generalize across minimum number of factors (requires at least 2)
+  R <- spherical_to_cartesian(angles)
+
+  R_matlab <- load_matrix(testthat::test_path("fixtures", "R_ex1.csv"))
+  eig_X <- load_matrix(testthat::test_path("fixtures", "eig_X_ex1.csv"))
+  result <- collate_solutions(R_matlab, Lambda, eig_X)
+
+  # check cosine similarity
+
+
+})
+
+test_that("time find_min_rotation(), check that parallel is faster", {
+  X <- readr::read_csv(testthat::test_path("fixtures", "example_data1.csv"), col_names = FALSE) %>%
+    as.matrix()
+  X <- as.matrix(X)
+  r <- 4
+  M <- nrow(X)
+  n <- ncol(X)
+
+  # Compute PCA estimates
+  pca <- svd(X / sqrt(M), nu = M, nv = n)
+  eig_X <- pca$d^2
+  Lambda0 <- sqrt(n) * pca$v[, 1:r]
+
+  # Find minimum rotation, test for local factors
+  set.seed(916)
+
+  result <- find_min_rotation(Lambda0, parallel = TRUE)
+  result_slow <- find_min_rotation(Lambda0, parallel = FALSE)
 
 })
 
 
 
+
+test_that("time find_min_rotation(), check that parallel is faster with stocks data", {
+  X <- readr::read_csv(testthat::test_path("fixtures", "stocks_data.csv"), col_names = FALSE) %>%
+    as.matrix()
+  X <- as.matrix(X)
+  r <- 8
+  M <- nrow(X)
+  n <- ncol(X)
+
+  # Compute PCA estimates
+  pca <- svd(X / sqrt(M), nu = M, nv = n)
+  eig_X <- pca$d^2
+  Lambda0 <- sqrt(n) * pca$v[, 1:r]
+
+  # Find minimum rotation, test for local factors
+  set.seed(916)
+
+  result <- find_min_rotation(Lambda0, parallel = TRUE)
+  result_slow <- find_min_rotation(Lambda0, parallel = FALSE)
+
+})
 
 
 

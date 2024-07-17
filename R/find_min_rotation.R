@@ -1,6 +1,8 @@
-find_min_rotation <- function(Lambda) {
+find_min_rotation <- function(Lambda, parallel = TRUE) {
 
   tictoc::tic("find_min_rotation")
+
+  if(parallel) cluster <- setup_cluster()
 
   stopifnot(is.matrix(Lambda))
   stopifnot(ncol(Lambda) > 1)
@@ -19,28 +21,84 @@ find_min_rotation <- function(Lambda) {
   # Optimization in polar coordinates happens w.r.t. theta
   angles <- theta
   l <- nrow(angles)
-  for (rep in 1:no_draws) {
+  results <- list()
+
+  functions_to_keep <- c("col_prod", "spherical_to_cartesian", "objectivefcn_spherical")
+
+  if(parallel) {
+  results <- foreach::foreach(rep = 1:no_draws, .combine = "bind_rows", .export = functions_to_keep) %dopar% {
+
     starting_point <- theta[, rep]
     result <- stats::optim(
       starting_point,
       objectivefcn_spherical, Lambda = Lambda,
-      control = list(maxit = 200 * l, ndeps = 1e-4, reltol = 1e-8, warn.1d.NelderMead = FALSE),
+      control = list(maxit = 200 * l, ndeps = 1e-4, reltol = 1e-7, warn.1d.NelderMead = FALSE),
       method = 'Nelder-Mead'
       )
+
+    result_tbl <- tibble::tibble(rep = rep, par = result$par, l1_norm = result$value, exitflag = result$convergence)
+    results[rep] <- list(result_tbl)
+
+    #angles[, rep] <- result$par
+    #l1_norm[rep] <- result$value
+    #exitflag[rep] <- result$convergence
+  }
+   stopCluster(cl = cluster)
+
+   angles <- matrix(data = results$par, nrow = l, byrow = FALSE)
+
+  l1_norm <- results %>%
+    group_by(rep) %>%
+    slice(1) %>%
+    pull(l1_norm)
+
+  exitflag <- results %>%
+    group_by(rep) %>%
+    slice(1) %>%
+    pull(exitflag)
+
+  } else{
+
+  for (rep in cli::cli_progress_along(1:no_draws, "Finding rotations")) {
+
+    starting_point <- theta[, rep]
+    result <- stats::optim(
+      starting_point,
+      objectivefcn_spherical, Lambda = Lambda,
+      control = list(maxit = 200 * l, ndeps = 1e-4, reltol = 1e-7, warn.1d.NelderMead = FALSE),
+      method = 'Nelder-Mead'
+    )
+
+    #result_tbl <- tibble::tibble(rep = rep, par = result$par, l1_norm = result$value, exitflag = result$convergence)
+    #results[rep] <- list(result_tbl)
 
     angles[, rep] <- result$par
     l1_norm[rep] <- result$value
     exitflag[rep] <- result$convergence
   }
+  }
+
+
 
   # Convert back to cartesian coordinates
   R <- spherical_to_cartesian(angles)
 
-  tictoc::toc()
 
-  return(list(R = R, l1_norm = l1_norm, exitflag = exitflag))
+
+  timer <- tictoc::toc()
+
+  return(list(R = R, l1_norm = l1_norm, exitflag = exitflag, time_elapsed = timer$callback_msg))
 }
 
+setup_cluster <- function(){
+  n_cores <- parallel::detectCores()
+  cluster <- parallel::makeCluster(n_cores - 1)
+
+  clusterExport(cluster, c('spherical_to_cartesian', 'col_prod'))
+
+  registerDoParallel(cluster)
+  return(cluster)
+}
 
 normalize <- function(X, p = 2){
   stopifnot(is.matrix(X))
@@ -129,17 +187,17 @@ objectivefcn_spherical <- function(theta, Lambda) {
 gridsize <- function(factorno) {
   # defines number of random draws to start search for local minma from
   if (factorno == 2) {
-    no_randomgrid <- 300
-  } else if (factorno == 3) {
     no_randomgrid <- 500
-  } else if (factorno == 4) {
+  } else if (factorno == 3) {
     no_randomgrid <- 1000
-  } else if (factorno == 5) {
+  } else if (factorno == 4) {
     no_randomgrid <- 2000
+  } else if (factorno == 5) {
+    no_randomgrid <- 4000
   } else if (factorno > 5 && factorno < 9) {
-    no_randomgrid <- 3000
+    no_randomgrid <- 6000
   } else {
-    no_randomgrid <- 5000
+    no_randomgrid <- 10000
   }
 
   return(no_randomgrid)

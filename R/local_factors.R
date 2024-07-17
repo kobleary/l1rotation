@@ -23,7 +23,7 @@ local_factors <- function(X, r) {
   n <- ncol(X)
 
   # Compute PCA estimates
-  pca <- svd(X / sqrt(M))
+  pca <- svd(X / sqrt(M), nu = M, nv = n)
   eig_X <- pca$d^2
   Lambda0 <- sqrt(n) * pca$v[, 1:r]
 
@@ -91,13 +91,13 @@ plot_small_loadings <- function(result, r, xlab = "k", ylab = "", title = ""){
 }
 
 
-convert_mat_to_df <- function(mat){
+convert_mat_to_df <- function(mat, letter = "V"){
 
   df <- mat %>% as.data.frame() %>%
     tibble::rownames_to_column(var = "row") %>%
     dplyr::mutate(row = factor(row, levels = 1:nrow(mat))) %>%
-    tidyr::pivot_longer(tidyselect::starts_with("V"), names_to = "column") %>%
-    dplyr::mutate(column = factor(stringr::str_remove(column, "V"), levels = 1:ncol(mat)))
+    tidyr::pivot_longer(tidyselect::starts_with(letter), names_to = "column") %>%
+    dplyr::mutate(column = factor(stringr::str_remove(column, letter), levels = 1:ncol(mat)))
 
   return(df)
 }
