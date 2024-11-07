@@ -37,7 +37,7 @@ test_that("local factors produces same rotation matrix (R) across same seed set 
   set.seed(916)
   result2 <- local_factors(mat, 4)
 
-  expect_equal(result1$rotation_diagnostics$R, result2$rotation_diagnostics$R, tolerance = 0.0001)
+  expect_identical(result1$rotation_diagnostics$R, result2$rotation_diagnostics$R)
 
 })
 
@@ -54,6 +54,16 @@ test_that("matlab and R produce same rotated Lambda in example 1 (using l0 norm 
   ex1 <- local_factors(X, 4)
 
   expect_equal(ex1$Lambda_rotated, mat, tolerance = 0.01)
+
+})
+
+test_that("local_factors returns error when missing values are in the data matrix", {
+
+  X <- readr::read_csv(testthat::test_path("fixtures", "example_data1.csv"), col_names = FALSE) %>%
+    as.matrix()
+  indices <- sample(1:length(X), 100)
+  X[indices] <- NA
+  expect_error(local_factors(X, 4))
 
 })
 

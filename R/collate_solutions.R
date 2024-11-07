@@ -33,11 +33,11 @@ collate_solutions <- function(rmat_min, Lambda0, eig_X) {
     dplyr::count() %>%
     dplyr::arrange(l1_norm) %>%
     dplyr::ungroup() %>%
-    mutate(non_outlier = n/gridsize(factorno) >= 0.005)
+    dplyr::mutate(non_outlier = n/gridsize(factorno) >= 0.005)
 
   # Construct R from the candidates
   rmat_min_unique <- candidates %>%
-    filter(non_outlier) %>%
+    dplyr::filter(non_outlier) %>%
     dplyr::select(-c(l1_norm, n, non_outlier)) %>%
     dataframe_to_matrix()
 
@@ -45,8 +45,8 @@ collate_solutions <- function(rmat_min, Lambda0, eig_X) {
   amount_sparsity <- colSums(abs(Lambda0 %*% rmat_min_unique) < h_n)
 
   candidates <- candidates %>%
-    filter(non_outlier) %>%
-    mutate(l0_norm = amount_sparsity)
+    dplyr::filter(non_outlier) %>%
+    dplyr::mutate(l0_norm = amount_sparsity)
 
   # up until here, candidates are arranged by l1 norm
   consolidated_mins <- consolidate_local_mins(Lambda0, candidates, sorting_column = "l0_norm")
@@ -91,7 +91,7 @@ consolidate_local_mins <- function(Lambda0, candidates, sorting_column = "l0_nor
   if (sorting_column != "l1_norm") {
 
     candidates <- candidates %>%
-      dplyr::arrange(dplyr::across(tidyselect::all_of(sorting_column), desc))
+      dplyr::arrange(dplyr::desc(dplyr::across(tidyselect::all_of(sorting_column))))
 
     rmat_min_unique <- candidates %>%
       dplyr::select(tidyr::starts_with("V")) %>%

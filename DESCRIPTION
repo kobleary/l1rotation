@@ -29,7 +29,8 @@ Imports:
     tibble,
     tictoc,
     tidyr,
-    tidyselect
+    tidyselect,
+    readr
 Depends: 
     R (>= 2.10)
 LazyData: true

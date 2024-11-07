@@ -6,6 +6,10 @@ find_min_rotation <- function(Lambda, parallel = TRUE) {
 
   stopifnot(is.matrix(Lambda))
   stopifnot(ncol(Lambda) > 1)
+  stopifnot(is.logical(parallel))
+  if(any(is.na(Lambda)) | any(is.infinite(Lambda))) stop("Lambda contains missing or infinite values.")
+  if(!all(is.numeric(Lambda))) stop("Lambda contains non-numeric values.")
+
 
   r <- ncol(Lambda)
   no_draws <- gridsize(r)
@@ -22,68 +26,60 @@ find_min_rotation <- function(Lambda, parallel = TRUE) {
   angles <- theta
   l <- nrow(angles)
   results <- list()
+  `%dopar%` <- foreach::`%dopar%`
+  bind_rows <- dplyr::bind_rows
 
   functions_to_keep <- c("col_prod", "spherical_to_cartesian", "objectivefcn_spherical")
 
   if(parallel) {
-  results <- foreach::foreach(rep = 1:no_draws, .combine = "bind_rows", .export = functions_to_keep) %dopar% {
+    results <- foreach::foreach(rep = 1:no_draws, .combine = "bind_rows", .export = functions_to_keep) %dopar% {
 
-    starting_point <- theta[, rep]
-    result <- stats::optim(
-      starting_point,
-      objectivefcn_spherical, Lambda = Lambda,
-      control = list(maxit = 200 * l, ndeps = 1e-4, reltol = 1e-7, warn.1d.NelderMead = FALSE),
-      method = 'Nelder-Mead'
+      starting_point <- theta[, rep]
+      result <- stats::optim(
+        starting_point,
+        objectivefcn_spherical, Lambda = Lambda,
+        control = list(maxit = 200 * l, ndeps = 1e-4, reltol = 1e-7, warn.1d.NelderMead = FALSE),
+        method = 'Nelder-Mead'
       )
 
-    result_tbl <- tibble::tibble(rep = rep, par = result$par, l1_norm = result$value, exitflag = result$convergence)
-    results[rep] <- list(result_tbl)
+      result_tbl <- tibble::tibble(rep = rep, par = result$par, l1_norm = result$value, exitflag = result$convergence)
+      results[rep] <- list(result_tbl)
 
-    #angles[, rep] <- result$par
-    #l1_norm[rep] <- result$value
-    #exitflag[rep] <- result$convergence
-  }
-   stopCluster(cl = cluster)
+    }
+    parallel::stopCluster(cl = cluster)
 
-   angles <- matrix(data = results$par, nrow = l, byrow = FALSE)
+    angles <- matrix(data = results$par, nrow = l, byrow = FALSE)
 
-  l1_norm <- results %>%
-    group_by(rep) %>%
-    slice(1) %>%
-    pull(l1_norm)
+    l1_norm <- results %>%
+      dplyr::group_by(rep) %>%
+      dplyr::slice(1) %>%
+      dplyr::pull(l1_norm)
 
-  exitflag <- results %>%
-    group_by(rep) %>%
-    slice(1) %>%
-    pull(exitflag)
+    exitflag <- results %>%
+      dplyr::group_by(rep) %>%
+      dplyr::slice(1) %>%
+      dplyr::pull(exitflag)
 
   } else{
 
-  for (rep in cli::cli_progress_along(1:no_draws, "Finding rotations")) {
+    for (rep in cli::cli_progress_along(1:no_draws, "Finding rotations")) {
 
-    starting_point <- theta[, rep]
-    result <- stats::optim(
-      starting_point,
-      objectivefcn_spherical, Lambda = Lambda,
-      control = list(maxit = 200 * l, ndeps = 1e-4, reltol = 1e-7, warn.1d.NelderMead = FALSE),
-      method = 'Nelder-Mead'
-    )
+      starting_point <- theta[, rep]
+      result <- stats::optim(
+        starting_point,
+        objectivefcn_spherical, Lambda = Lambda,
+        control = list(maxit = 200 * l, ndeps = 1e-4, reltol = 1e-7, warn.1d.NelderMead = FALSE),
+        method = 'Nelder-Mead'
+      )
 
-    #result_tbl <- tibble::tibble(rep = rep, par = result$par, l1_norm = result$value, exitflag = result$convergence)
-    #results[rep] <- list(result_tbl)
-
-    angles[, rep] <- result$par
-    l1_norm[rep] <- result$value
-    exitflag[rep] <- result$convergence
+      angles[, rep] <- result$par
+      l1_norm[rep] <- result$value
+      exitflag[rep] <- result$convergence
+    }
   }
-  }
-
-
 
   # Convert back to cartesian coordinates
   R <- spherical_to_cartesian(angles)
-
-
 
   timer <- tictoc::toc()
 
@@ -91,12 +87,18 @@ find_min_rotation <- function(Lambda, parallel = TRUE) {
 }
 
 setup_cluster <- function(){
-  n_cores <- parallel::detectCores()
-  cluster <- parallel::makeCluster(n_cores - 1)
+  chk <- Sys.getenv("_R_CHECK_LIMIT_CORES_", "")
 
-  clusterExport(cluster, c('spherical_to_cartesian', 'col_prod'))
-
-  registerDoParallel(cluster)
+  if (nzchar(chk)) {
+    # use 2 cores in CRAN
+    n_cores <- 2L
+  } else {
+    # use all cores in devtools::test()
+    n_cores <- parallel::detectCores() - 1
+  }
+  cluster <- parallel::makeCluster(n_cores)
+  parallel::clusterExport(cluster, c('spherical_to_cartesian', 'col_prod'))
+  doParallel::registerDoParallel(cluster)
   return(cluster)
 }
 
