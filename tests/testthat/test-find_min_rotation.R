@@ -69,7 +69,7 @@ test_that("normalization works", {
 
 test_that("data.frame to find_min_rotation returns an error", {
   r <- 4
-  Lambda <- matrix(stats::rnorm(r * 100), nrow = 100) %>%
+  Lambda <- matrix(stats::rnorm(r * 100), nrow = 100) |>
     as.data.frame()
   expect_error(find_min_rotation(Lambda))
 
@@ -77,8 +77,8 @@ test_that("data.frame to find_min_rotation returns an error", {
 
 test_that("tibble to find_min_rotation returns an error", {
   r <- 4
-  Lambda <- matrix(stats::rnorm(r * 100), nrow = 100) %>%
-    as.data.frame() %>%
+  Lambda <- matrix(stats::rnorm(r * 100), nrow = 100) |>
+    as.data.frame() |>
     tibble::as_tibble()
   expect_error(find_min_rotation(Lambda))
 })
@@ -174,9 +174,9 @@ load_matrix <- function(path){
 
 test_that("single realization returns same R matrix", {
 
-  initial_draws <- load_matrix(here::here("tests", "testthat", "fixtures", "initial_draws_ex1.csv"))
+  initial_draws <- load_matrix(testthat::test_path("fixtures", "initial_draws_ex1.csv"))
   X <- load_matrix(testthat::test_path("fixtures", "example_data1.csv"))
-  Lambda <- load_matrix(here::here("tests", "testthat", "fixtures", "Lambda_ex1.csv"))
+  Lambda <- load_matrix(testthat::test_path("fixtures", "Lambda_ex1.csv"))
 
   r <- 4
   M <- nrow(X)
