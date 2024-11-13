@@ -1,6 +1,10 @@
 collate_solutions <- function(rmat_min, Lambda0, eig_X) {
 
-  tictoc::tic("collate_solutions")
+  stopifnot(nrow(rmat_min) == ncol(Lambda0))
+  stopifnot(nrow(Lambda0) == length(eig_X))
+  stopifnot(is.matrix(rmat_min))
+  stopifnot(is.matrix(Lambda0))
+  stopifnot(is.numeric(eig_X))
 
   n <- nrow(Lambda0)
   factorno <- nrow(rmat_min)
@@ -13,39 +17,28 @@ collate_solutions <- function(rmat_min, Lambda0, eig_X) {
   rmat_min_sort <- rmat_min[, sort_index]
   rmat_min_sort <- rmat_min_sort * pracma::repmat(sign(rmat_min_sort[1, ]), factorno, 1)
 
-  tictoc::tic() # This step takes 44 seconds with 8 factors and 3000 draws (probably can be improved)
-  norms <- matrix(0, nrow = no_randomgrid, ncol = no_randomgrid)
-  for (i in cli::cli_progress_along(1:no_randomgrid, "Calculating norms across rotations")) {
-    for (j in i:no_randomgrid) {
+  distances <- calculate_pairwise_distances(rmat_min_sort, l1_min_sort, epsilon_rot, factorno)
 
-      norms[i,j] <- (pracma::Norm(rmat_min_sort[, i] - rmat_min_sort[, j], p = 2) / sqrt(factorno))
-      if (norms[i,j] < epsilon_rot) {
-        rmat_min_sort[, j] <- rmat_min_sort[, i]
-        l1_min_sort[j] <- l1_min_sort[i]
-      }
-    }
-  }
-
-  candidates <- rmat_min_sort %>%
-    matrix_to_dataframe() %>%
-    dplyr::mutate(l1_norm = l1_min_sort) %>%
-    dplyr::group_by(dplyr::across(tidyselect::everything())) %>%
-    dplyr::count() %>%
-    dplyr::arrange(l1_norm) %>%
-    dplyr::ungroup() %>%
+  candidates <- distances$rmat_min_sort |>
+    matrix_to_dataframe() |>
+    dplyr::mutate(l1_norm = distances$l1_min_sort) |>
+    dplyr::group_by(dplyr::across(tidyselect::everything())) |>
+    dplyr::count() |>
+    dplyr::arrange(l1_norm) |>
+    dplyr::ungroup() |>
     dplyr::mutate(non_outlier = n/gridsize(factorno) >= 0.005)
 
   # Construct R from the candidates
-  rmat_min_unique <- candidates %>%
-    dplyr::filter(non_outlier) %>%
-    dplyr::select(-c(l1_norm, n, non_outlier)) %>%
+  rmat_min_unique <- candidates |>
+    dplyr::filter(non_outlier) |>
+    dplyr::select(-c(l1_norm, n, non_outlier)) |>
     dataframe_to_matrix()
 
   h_n <- 1/log(n)
   amount_sparsity <- colSums(abs(Lambda0 %*% rmat_min_unique) < h_n)
 
-  candidates <- candidates %>%
-    dplyr::filter(non_outlier) %>%
+  candidates <- candidates |>
+    dplyr::filter(non_outlier) |>
     dplyr::mutate(l0_norm = amount_sparsity)
 
   # up until here, candidates are arranged by l1 norm
@@ -55,14 +48,12 @@ collate_solutions <- function(rmat_min, Lambda0, eig_X) {
   Lambda_rotated <- consolidated_mins$Lambda_rotated
   R <- consolidated_mins$R
 
-  loadings <- matrix_to_dataframe(R) %>%
-    dplyr::left_join(candidates) %>%
+  loadings <- matrix_to_dataframe(R) |>
+    dplyr::left_join(candidates) |>
     dplyr::mutate(
       l1_norm = c(l1_norm[!is.na(l1_norm)], consolidated_mins$l1_norm_update),
       n = ifelse(is.na(n), 0, n)
     )
-
-  tictoc::toc()
 
   return(
     list(
@@ -73,12 +64,59 @@ collate_solutions <- function(rmat_min, Lambda0, eig_X) {
 
 }
 
+
+calculate_pairwise_distances_old <- function(rmat_min_sort, l1_min_sort, epsilon_rot, factorno) {
+  no_randomgrid <- ncol(rmat_min_sort)
+
+  # Pre-allocate norms matrix
+  norms <- matrix(0, nrow = no_randomgrid, ncol = no_randomgrid)
+
+  # Original nested loop implementation
+  for (i in 1:no_randomgrid) {
+    for (j in i:no_randomgrid) {
+      norms[i,j] <- (pracma::Norm(rmat_min_sort[, i] - rmat_min_sort[, j], p = 2) / sqrt(factorno))
+      if (norms[i,j] < epsilon_rot) {
+        rmat_min_sort[, j] <- rmat_min_sort[, i]
+        l1_min_sort[j] <- l1_min_sort[i]
+      }
+    }
+  }
+
+  list(norms = norms, rmat_min_sort = rmat_min_sort, l1_min_sort = l1_min_sort)
+}
+
+calculate_pairwise_distances <- function(rmat_min_sort, l1_min_sort, epsilon_rot, factorno) {
+  no_randomgrid <- ncol(rmat_min_sort)
+
+  # Pre-allocate results matrix
+  norms <- matrix(0, nrow = no_randomgrid, ncol = no_randomgrid)
+
+  # Calculate cross-product matrix
+  cross_prod <- crossprod(rmat_min_sort)
+  diag_vals <- diag(cross_prod)
+
+  # Calculate distances using matrix operations
+  # ||a - b||^2 = ||a||^2 + ||b||^2 - 2<a,b>
+  for(i in 1:no_randomgrid) {
+    for(j in i:no_randomgrid) {
+      norms[i,j] <- sqrt(diag_vals[i] + diag_vals[j] - 2 * cross_prod[i,j]) / sqrt(factorno)
+      if(norms[i,j] < epsilon_rot) {
+        rmat_min_sort[,j] <- rmat_min_sort[,i]
+        l1_min_sort[j] <- l1_min_sort[i]
+      }
+    }
+  }
+
+  list(norms = norms, rmat_min_sort = rmat_min_sort, l1_min_sort = l1_min_sort)
+}
+
+
 dataframe_to_matrix <- function(dataframe) {
-  dataframe %>% as.matrix() %>% t()
+  dataframe |> as.matrix() |> t()
 }
 
 matrix_to_dataframe <- function(matrix){
-  matrix %>% t() %>% as.data.frame()
+  matrix |> t() |> as.data.frame()
 }
 
 consolidate_local_mins <- function(Lambda0, candidates, sorting_column = "l0_norm") {
@@ -90,11 +128,11 @@ consolidate_local_mins <- function(Lambda0, candidates, sorting_column = "l0_nor
 
   if (sorting_column != "l1_norm") {
 
-    candidates <- candidates %>%
+    candidates <- candidates |>
       dplyr::arrange(dplyr::desc(dplyr::across(tidyselect::all_of(sorting_column))))
 
-    rmat_min_unique <- candidates %>%
-      dplyr::select(tidyr::starts_with("V")) %>%
+    rmat_min_unique <- candidates |>
+      dplyr::select(tidyr::starts_with("V")) |>
       dataframe_to_matrix()
   }
 
@@ -115,9 +153,6 @@ consolidate_local_mins <- function(Lambda0, candidates, sorting_column = "l0_nor
      if(not_singular){
        Lambda_rotated <- temp
        R <- cbind(R, rmat_min_unique[, kk])
-     } else{
-       print("Found a vector that makes R singular:")
-       print(rmat_min_unique[, kk])
      }
    }
 
