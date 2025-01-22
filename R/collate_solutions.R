@@ -1,10 +1,10 @@
-collate_solutions <- function(rmat_min, Lambda0, eig_X) {
+utils::globalVariables(c("l1_norm", "non_outlier"))
+
+collate_solutions <- function(rmat_min, Lambda0, X) {
 
   stopifnot(nrow(rmat_min) == ncol(Lambda0))
-  stopifnot(nrow(Lambda0) == length(eig_X))
   stopifnot(is.matrix(rmat_min))
   stopifnot(is.matrix(Lambda0))
-  stopifnot(is.numeric(eig_X))
 
   n <- nrow(Lambda0)
   factorno <- nrow(rmat_min)
@@ -17,7 +17,7 @@ collate_solutions <- function(rmat_min, Lambda0, eig_X) {
   rmat_min_sort <- rmat_min[, sort_index]
   rmat_min_sort <- rmat_min_sort * pracma::repmat(sign(rmat_min_sort[1, ]), factorno, 1)
 
-  distances <- calculate_pairwise_distances(rmat_min_sort, l1_min_sort, epsilon_rot, factorno)
+  distances <- calculate_pairwise_distances_old(rmat_min_sort, l1_min_sort, epsilon_rot, factorno)
 
   candidates <- distances$rmat_min_sort |>
     matrix_to_dataframe() |>
@@ -43,7 +43,8 @@ collate_solutions <- function(rmat_min, Lambda0, eig_X) {
 
   # up until here, candidates are arranged by l1 norm
   consolidated_mins <- consolidate_local_mins(Lambda0, candidates, sorting_column = "l0_norm")
-  consolidated_mins <- fill_with_pc(consolidated_mins, Lambda0, eig_X, factorno)
+
+  consolidated_mins <- fill_with_pc(consolidated_mins, Lambda0, X, factorno)
 
   Lambda_rotated <- consolidated_mins$Lambda_rotated
   R <- consolidated_mins$R
@@ -99,7 +100,8 @@ calculate_pairwise_distances <- function(rmat_min_sort, l1_min_sort, epsilon_rot
   # ||a - b||^2 = ||a||^2 + ||b||^2 - 2<a,b>
   for(i in 1:no_randomgrid) {
     for(j in i:no_randomgrid) {
-      norms[i,j] <- sqrt(diag_vals[i] + diag_vals[j] - 2 * cross_prod[i,j]) / sqrt(factorno)
+      print(paste(i, j, collapse = ", "))
+      norms[i,j] <- sqrt(round(diag_vals[i] + diag_vals[j] - 2 * cross_prod[i,j], digits = 15)) / sqrt(factorno)
       if(norms[i,j] < epsilon_rot) {
         rmat_min_sort[,j] <- rmat_min_sort[,i]
         l1_min_sort[j] <- l1_min_sort[i]
@@ -122,7 +124,6 @@ matrix_to_dataframe <- function(matrix){
 consolidate_local_mins <- function(Lambda0, candidates, sorting_column = "l0_norm") {
 
   # Sorting column determines what is used to pick local minima
-  # l1_norm
   # n - number of occurences
   # l0_norm - approximate l0-norm
 
@@ -161,7 +162,7 @@ consolidate_local_mins <- function(Lambda0, candidates, sorting_column = "l0_nor
 }
 
 
-fill_with_pc <- function(consolidated_mins, Lambda0, eig_X, factorno){
+fill_with_pc <- function(consolidated_mins, Lambda0, X, factorno){
 
   Lambda_rotated <- consolidated_mins$Lambda_rotated
   R <- consolidated_mins$R
@@ -169,6 +170,11 @@ fill_with_pc <- function(consolidated_mins, Lambda0, eig_X, factorno){
   candidateno <- ncol(Lambda_rotated)
   I <- diag(factorno)
   l1_norm_update <- c()
+  n <- nrow(X)
+  t <- ncol(X)
+
+  temp_F <-(X %*% Lambda0/n) %*% solve(t(Lambda0) %*% Lambda0/n)
+  eig_x <- diag(t(temp_F) %*% temp_F) * (n/t)
 
   while (candidateno < factorno) {
     print("Supplementing with PCs...")
@@ -177,10 +183,10 @@ fill_with_pc <- function(consolidated_mins, Lambda0, eig_X, factorno){
       temp <- cbind(Lambda_rotated, Lambda0[, ell])
       min_eig[ell] <- min(eigen(t(temp) %*% temp)$values)
     }
-    index <- which.max(min_eig * sqrt(eig_X[1:factorno]))
+    index <- which.max(min_eig * sqrt(eig_x[1:factorno]))
     Lambda_rotated <- cbind(Lambda_rotated, Lambda0[, index])
     R <- cbind(R, I[, index])
-    print(str_glue("PC used: {index}"))
+    print(paste("PC used:", index))
     l1_norm_update <- c(l1_norm_update, sum(abs(Lambda0[, index])))
 
     candidateno <- ncol(Lambda_rotated)

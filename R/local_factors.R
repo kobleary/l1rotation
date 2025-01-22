@@ -1,3 +1,5 @@
+utils::globalVariables(c("column", "value"))
+
 #' Test whether local factors are present in a given dataset `X` and return the rotation of the loading matrix with the smallest l1-norm.
 #'
 #' @param X A (usually standardized) t by n matrix of observations.
@@ -77,12 +79,12 @@ plot_small_loadings <- function(result, r, xlab = "k", ylab = "", title = ""){
   gamma <- result$gamma
   h_n <- result$h_n
 
-  tibble::as_tibble(n_small) %>%
-    tibble::rownames_to_column(var = "factor") %>%
-    dplyr::mutate(factor = as.numeric(factor)) %>%
+  tibble::as_tibble(n_small) |>
+    tibble::rownames_to_column(var = "factor") |>
+    dplyr::mutate(factor = as.numeric(factor)) |>
     ggplot2::ggplot() +
     ggplot2::geom_point(ggplot2::aes(x = factor, y = value), size = 3) +
-    ggplot2::geom_hline(yintercept = gamma, linetype = "dashed", size = 1) +
+    ggplot2::geom_hline(yintercept = gamma, linetype = "dashed", linewidth = 1) +
     ggplot2::ylim(c(min(gamma - 10, min(n_small - 5)), max(gamma + 5, max(n_small) + 5))) +
     ggplot2::labs(x = xlab, y = ylab, title = title) +
     ggplot2::xlim(c(1, r)) +
@@ -93,10 +95,10 @@ plot_small_loadings <- function(result, r, xlab = "k", ylab = "", title = ""){
 
 convert_mat_to_df <- function(mat, letter = "V"){
 
-  df <- mat %>% as.data.frame() %>%
-    tibble::rownames_to_column(var = "row") %>%
-    dplyr::mutate(row = factor(row, levels = 1:nrow(mat))) %>%
-    tidyr::pivot_longer(tidyselect::starts_with(letter), names_to = "column") %>%
+  df <- mat |> as.data.frame() |>
+    tibble::rownames_to_column(var = "row") |>
+    dplyr::mutate(row = factor(row, levels = 1:nrow(mat))) |>
+    tidyr::pivot_longer(tidyselect::starts_with(letter), names_to = "column") |>
     dplyr::mutate(column = factor(stringr::str_remove(column, letter), levels = 1:ncol(mat)))
 
   return(df)

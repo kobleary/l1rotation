@@ -60,7 +60,7 @@ test_that("normalization works", {
   norm_mat <- normalize(matrix(stats::rnorm(3 * 4), nrow = 3), p = 2)
 
   # Calculate norms by hand
-  norms <- purrr::map_dbl(1:nrow(norm_mat), ~ sqrt(sum(norm_mat[, .]^2)))
+  norms <- sapply(1:nrow(norm_mat), \(row) sqrt(sum(norm_mat[, row]^2)))
 
   expect_equal(norms, rep(1, nrow(norm_mat)))
 
@@ -90,7 +90,7 @@ test_that("missing values in Lambda returns an error", {
   na_indexes <- sample(1:length(Lambda), 10)
   Lambda[na_indexes] <- NA
 
-  expect_error(find_min_rotation(Lambda, parallel = FALSE), "Lambda contains missing values.")
+  expect_error(find_min_rotation(Lambda, parallel = FALSE), "Lambda contains missing or infinite values.")
 
 })
 
@@ -126,7 +126,7 @@ test_that("objective function works with spherical_to_cartesian(), r = 3", {
 
   expected <- sum(abs(Lambda %*% R))
 
-  expect_equal(computed, expected, tolerance = 0.001)
+  expect_equal(computed, expected)
 
 
 })
@@ -151,7 +151,7 @@ test_that("objective function works with spherical_to_cartesian(), r = 2", {
 
   expected <- sum(abs(Lambda %*% R))
 
-  expect_equal(computed, expected, tolerance = 0.001)
+  expect_equal(computed, expected)
 
 })
 
@@ -166,10 +166,6 @@ test_that("objective function with length(theta) =/= ncol(Lambda) returns non-co
 
 })
 
-load_matrix <- function(path){
-  readr::read_csv(path, col_names = FALSE) |>
-    as.matrix()
-}
 
 
 test_that("single realization returns same R matrix", {
@@ -184,8 +180,6 @@ test_that("single realization returns same R matrix", {
 
   # Compute PCA estimates
   pca <- svd(X / sqrt(M))
-  eig_X <- pca$d^2
-  #Lambda <- sqrt(n) * pca$v[, 1:r]
 
   r <- ncol(Lambda)
   no_draws <- ncol(initial_draws)
@@ -214,164 +208,42 @@ test_that("single realization returns same R matrix", {
   # Convert back to cartesian coordinates, need to edit to generalize across minimum number of factors (requires at least 2)
   R <- spherical_to_cartesian(angles)
 
-  result <- collate_solutions(R, Lambda, eig_X)
+  result <- collate_solutions(R, Lambda, X)
 
 
   R_matlab <- load_matrix(testthat::test_path("fixtures", "R_ex1.csv"))
-  eig_X <- load_matrix(testthat::test_path("fixtures", "eig_X_ex1.csv"))
-  result_matlab <- collate_solutions(R_matlab, Lambda, eig_X)
+  result_matlab <- collate_solutions(R_matlab, Lambda, X)
 
-  # check cosine similarity
   expect_equal(result$diagnostics$R, result_matlab$diagnostics$R, tolerance = 0.0001)
 
 })
 
 test_that("find_min_rotation(), check that parallel gives same R with same seed (4 factors)", {
-  X <- readr::read_csv(testthat::test_path("fixtures", "example_data1.csv"), col_names = FALSE) |>
-    as.matrix()
-  X <- as.matrix(X)
+  X <- load_matrix(testthat::test_path("fixtures", "example_data1.csv"))
   r <- 4
   M <- nrow(X)
   n <- ncol(X)
 
   # Compute PCA estimates
   pca <- svd(X / sqrt(M), nu = M, nv = n)
-  eig_X <- pca$d^2
   Lambda0 <- sqrt(n) * pca$v[, 1:r]
 
   # Find minimum rotation, test for local factors
   set.seed(916)
-  result_ <- find_min_rotation(Lambda0, parallel = TRUE)
+  result_1 <- find_min_rotation(Lambda0, parallel = TRUE)
   set.seed(916)
-  result <- find_min_rotation(Lambda0, parallel = TRUE)
+  result_2 <- find_min_rotation(Lambda0, parallel = TRUE)
 
-  expect_equal(result$R, result_$R)
+  expect_equal(result_1$R, result_2$R)
+  expect_equal(result_1$exitflag, result_2$exitflag)
+  expect_equal(result_1$l1_norm, result_2$l1_norm)
+
 
 })
 
-
-test_that("find_min_rotation(), check that parallel gives same R with same seed (8 factors)", {
-  X <- readr::read_csv(testthat::test_path("fixtures", "example_data2.csv"), col_names = FALSE) |>
-    as.matrix()
-  X <- as.matrix(X)
-  r <- 8
-  M <- nrow(X)
-  n <- ncol(X)
-
-  # Compute PCA estimates
-  pca <- svd(X / sqrt(M), nu = M, nv = n)
-  eig_X <- pca$d^2
-  Lambda0 <- sqrt(n) * pca$v[, 1:r]
-
-  # Find minimum rotation, test for local factors
-  set.seed(916)
-  result_ <- find_min_rotation(Lambda0, parallel = TRUE)
-  set.seed(916)
-  result <- find_min_rotation(Lambda0, parallel = TRUE)
-
-  expect_equal(result$R, result_$R)
-
-})
-
-
-test_that("find_min_rotation(), check that non-parallel gives same R with same seed (4 factors)", {
-  X <- readr::read_csv(testthat::test_path("fixtures", "example_data1.csv"), col_names = FALSE) |>
-    as.matrix()
-  X <- as.matrix(X)
-  r <- 4
-  M <- nrow(X)
-  n <- ncol(X)
-
-  # Compute PCA estimates
-  pca <- svd(X / sqrt(M), nu = M, nv = n)
-  eig_X <- pca$d^2
-  Lambda0 <- sqrt(n) * pca$v[, 1:r]
-
-  # Find minimum rotation, test for local factors
-  set.seed(916)
-  result_ <- find_min_rotation(Lambda0, parallel = FALSE)
-  set.seed(916)
-  result <- find_min_rotation(Lambda0, parallel = FALSE)
-
-  expect_equal(result$R, result_$R)
-
-})
-
-test_that("find_min_rotation(), check that non-parallel gives same R with same seed (8 factors)", {
-  X <- readr::read_csv(testthat::test_path("fixtures", "example_data2.csv"), col_names = FALSE) |>
-    as.matrix()
-  X <- as.matrix(X)
-  r <- 8
-  M <- nrow(X)
-  n <- ncol(X)
-
-  # Compute PCA estimates
-  pca <- svd(X / sqrt(M), nu = M, nv = n)
-  eig_X <- pca$d^2
-  Lambda0 <- sqrt(n) * pca$v[, 1:r]
-
-  # Find minimum rotation, test for local factors
-  set.seed(916)
-  result_ <- find_min_rotation(Lambda0, parallel = FALSE)
-  set.seed(916)
-  result <- find_min_rotation(Lambda0, parallel = FALSE)
-
-  expect_equal(result$R, result_$R)
-
-})
-
-test_that("find_min_rotation(), check that non-parallel/parallel gives same R with same seed (4 factors)", {
-  X <- readr::read_csv(testthat::test_path("fixtures", "example_data1.csv"), col_names = FALSE) |>
-    as.matrix()
-  X <- as.matrix(X)
-  r <- 4
-  M <- nrow(X)
-  n <- ncol(X)
-
-  # Compute PCA estimates
-  pca <- svd(X / sqrt(M), nu = M, nv = n)
-  eig_X <- pca$d^2
-  Lambda0 <- sqrt(n) * pca$v[, 1:r]
-
-  # Find minimum rotation, test for local factors
-  set.seed(916)
-  result_par <- find_min_rotation(Lambda0, parallel = TRUE)
-  set.seed(916)
-  result_nonpar <- find_min_rotation(Lambda0, parallel = FALSE)
-
-  expect_equal(result_par$R, result_nonpar$R)
-
-})
-
-test_that("find_min_rotation(), check that non-parallel/parallel gives same R with same seed (8 factors)", {
-  X <- readr::read_csv(testthat::test_path("fixtures", "example_data2.csv"), col_names = FALSE) |>
-    as.matrix()
-  X <- as.matrix(X)
-  r <- 8
-  M <- nrow(X)
-  n <- ncol(X)
-
-  # Compute PCA estimates
-  pca <- svd(X / sqrt(M), nu = M, nv = n)
-  eig_X <- pca$d^2
-  Lambda0 <- sqrt(n) * pca$v[, 1:r]
-
-  # Find minimum rotation, test for local factors
-  set.seed(916)
-  result_par <- find_min_rotation(Lambda0, parallel = TRUE)
-  set.seed(916)
-  result_nonpar <- find_min_rotation(Lambda0, parallel = FALSE)
-
-  expect_equal(result_par$R, result_nonpar$R)
-
-})
-
-
-
-
-
-# test_that("time find_min_rotation(), check that parallel is faster with stocks data", {
-#   X <- readr::read_csv(testthat::test_path("fixtures", "stocks_data.csv"), col_names = FALSE) |>
+#
+# test_that("find_min_rotation(), check that parallel gives same R with same seed (8 factors)", {
+#   X <- readr::read_csv(testthat::test_path("fixtures", "example_data2.csv"), col_names = FALSE) |>
 #     as.matrix()
 #   X <- as.matrix(X)
 #   r <- 8
@@ -385,21 +257,106 @@ test_that("find_min_rotation(), check that non-parallel/parallel gives same R wi
 #
 #   # Find minimum rotation, test for local factors
 #   set.seed(916)
-#   tictoc::tic.clearlog()
-#   tictoc::tic("parallel")
+#   result_ <- find_min_rotation(Lambda0, parallel = TRUE)
+#   set.seed(916)
 #   result <- find_min_rotation(Lambda0, parallel = TRUE)
-#   tictoc::toc(log = TRUE)
-#   tictoc::tic("non-parallel")
-#   result_slow <- find_min_rotation(Lambda0, parallel = FALSE)
-#   tictoc::toc(log = TRUE)
 #
-#   log <- tictoc::tic.log()
+#   expect_equal(result$R, result_$R)
 #
-#   times <- stringr::str_extract(log, "-?\\d*\\.?\\d+") |>
-#     as.numeric()
-#
-#   expect_lt(times[1], times[2])
 # })
+
+
+test_that("find_min_rotation(), check that non-parallel gives same R with same seed (4 factors)", {
+  X <- load_matrix(testthat::test_path("fixtures", "example_data1.csv"))
+  r <- 4
+  M <- nrow(X)
+  n <- ncol(X)
+
+  # Compute PCA estimates
+  pca <- svd(X / sqrt(M), nu = M, nv = n)
+  Lambda0 <- sqrt(n) * pca$v[, 1:r]
+
+  # Find minimum rotation, test for local factors
+  set.seed(916)
+  result_1 <- find_min_rotation(Lambda0, parallel = FALSE)
+  set.seed(916)
+  result_2 <- find_min_rotation(Lambda0, parallel = FALSE)
+
+  expect_equal(result_1$R, result_2$R)
+  expect_equal(result_1$exitflag, result_2$exitflag)
+  expect_equal(result_1$l1_norm, result_2$l1_norm)
+
+})
+
+# test_that("find_min_rotation(), check that non-parallel gives same R with same seed (8 factors)", {
+#   X <- readr::read_csv(testthat::test_path("fixtures", "example_data2.csv"), col_names = FALSE) |>
+#     as.matrix()
+#   X <- as.matrix(X)
+#   r <- 8
+#   M <- nrow(X)
+#   n <- ncol(X)
+#
+#   # Compute PCA estimates
+#   pca <- svd(X / sqrt(M), nu = M, nv = n)
+#   eig_X <- pca$d^2
+#   Lambda0 <- sqrt(n) * pca$v[, 1:r]
+#
+#   # Find minimum rotation, test for local factors
+#   set.seed(916)
+#   result_ <- find_min_rotation(Lambda0, parallel = FALSE)
+#   set.seed(916)
+#   result <- find_min_rotation(Lambda0, parallel = FALSE)
+#
+#   expect_equal(result$R, result_$R)
+#
+# })
+
+test_that("find_min_rotation(), check that non-parallel/parallel gives same R with same seed (4 factors)", {
+  X <- load_matrix(testthat::test_path("fixtures", "example_data1.csv"))
+  r <- 4
+  M <- nrow(X)
+  n <- ncol(X)
+
+  # Compute PCA estimates
+  pca <- svd(X / sqrt(M), nu = M, nv = n)
+  Lambda0 <- sqrt(n) * pca$v[, 1:r]
+
+  # Find minimum rotation, test for local factors
+  set.seed(916)
+  result_par <- find_min_rotation(Lambda0, parallel = TRUE)
+  set.seed(916)
+  result_nonpar <- find_min_rotation(Lambda0, parallel = FALSE)
+
+  expect_equal(result_par$R, result_nonpar$R)
+  expect_equal(result_par$exitflag, result_nonpar$exitflag)
+  expect_equal(result_par$l1_norm, result_nonpar$l1_norm)
+
+})
+
+test_that("find_min_rotation(), check that non-parallel/parallel gives same R with same seed (8 factors)", {
+  X <- load_matrix(testthat::test_path("fixtures", "example_data2.csv"))
+  r <- 8
+  M <- nrow(X)
+  n <- ncol(X)
+
+  # Compute PCA estimates
+  pca <- svd(X / sqrt(M), nu = M, nv = n)
+  Lambda0 <- sqrt(n) * pca$v[, 1:r]
+
+  # Find minimum rotation, test for local factors
+  set.seed(916)
+  result_par <- find_min_rotation(Lambda0, parallel = TRUE)
+  set.seed(916)
+  result_nonpar <- find_min_rotation(Lambda0, parallel = FALSE)
+
+  expect_equal(result_par$R, result_nonpar$R)
+  expect_equal(result_par$exitflag, result_nonpar$exitflag)
+  expect_equal(result_par$l1_norm, result_nonpar$l1_norm)
+})
+
+
+
+
 
 
 

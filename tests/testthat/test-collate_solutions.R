@@ -1,7 +1,3 @@
-load_matrix <- function(path){
-  readr::read_csv(path, col_names = FALSE) |>
-    as.matrix()
-}
 
 
 test_that("collating solutions does not depend on a seed, returns same result (large X)", {
@@ -18,12 +14,8 @@ test_that("collating solutions does not depend on a seed, returns same result (l
   result <- find_min_rotation(Lambda)
   rmat_min <- result$R
 
-  # Compute PCA estimates
-  pca <- svd(X / sqrt(M))
-  eig_X <- pca$d^2
-
-  sol1 <- collate_solutions(rmat_min, Lambda, eig_X)
-  sol2 <- collate_solutions(rmat_min, Lambda, eig_X)
+  sol1 <- collate_solutions(rmat_min, Lambda, X)
+  sol2 <- collate_solutions(rmat_min, Lambda, X)
 
   expect_equal(sol1$diagnostics$R, sol2$diagnostics$R)
 
@@ -36,16 +28,16 @@ test_that("collating solutions does not depend on seed, returns same result (sin
   n <- ncol(X)
   r <- 4
   pca <- svd(X / sqrt(M))
-  eig_X <- pca$d^2
 
   Lambda0 <- sqrt(n) * pca$v[, 1:r]
 
   rotn <- find_min_rotation(Lambda0, parallel = TRUE)
   rmat_min <- rotn$R
 
-  result1 <- collate_solutions(rotn$R, Lambda0, eig_X)
-  result2 <- collate_solutions(rotn$R, Lambda0, eig_X)
+  result1 <- collate_solutions(rotn$R, Lambda0, X)
+  result2 <- collate_solutions(rotn$R, Lambda0, X)
 
+  expect_equal(result1$R, result2$R)
 
 })
 

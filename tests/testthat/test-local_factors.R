@@ -1,10 +1,9 @@
 test_that("matlab and R produce same rotated Lambda in single realization, r = 2", {
 
-  mat <- readr::read_csv(testthat::test_path("fixtures", "single_realization.csv"), col_names = FALSE)
-  mat <- as.matrix(mat)
+  mat <- load_matrix(testthat::test_path("fixtures", "single_realization.csv"))
   result <- local_factors(mat, r = 2)
 
-  result_matlab <- readr::read_csv(testthat::test_path("fixtures", "single_realization_lambda_rotated.csv"), col_names = FALSE)
+  result_matlab <- load_matrix(testthat::test_path("fixtures", "single_realization_lambda_rotated.csv"))
   result_matlab <- as.matrix(result_matlab)
   dimnames(result_matlab) <- NULL
 
@@ -14,11 +13,9 @@ test_that("matlab and R produce same rotated Lambda in single realization, r = 2
 
 test_that("matlab and R produce same rotated Lambda in example 1 (using l1 norm to order)", {
 
-  mat <- readr::read_csv(testthat::test_path("fixtures","ex1_rot_mat_matlab.csv"), col_names = FALSE) %>%
-    as.matrix()
+  mat <- load_matrix(testthat::test_path("fixtures","ex1_rot_mat_matlab.csv"))
   dimnames(mat) <- NULL
-  X <- readr::read_csv(testthat::test_path("fixtures", "example_data1.csv"), col_names = FALSE) %>%
-    as.matrix()
+  X <- load_matrix(testthat::test_path("fixtures", "example_data1.csv"))
 
   ex1 <- local_factors(X, 4)
 
@@ -28,8 +25,7 @@ test_that("matlab and R produce same rotated Lambda in example 1 (using l1 norm 
 
 
 test_that("local factors produces same rotation matrix (R) across same seed set outside", {
-  mat <- readr::read_csv(testthat::test_path("fixtures","ex1_rot_mat_matlab.csv"), col_names = FALSE) %>%
-    as.matrix()
+  mat <- load_matrix(testthat::test_path("fixtures","ex1_rot_mat_matlab.csv"))
 
   set.seed(916)
   result1 <- local_factors(mat, 4)
@@ -45,11 +41,9 @@ test_that("local factors produces same rotation matrix (R) across same seed set 
 
 test_that("matlab and R produce same rotated Lambda in example 1 (using l0 norm to order)", {
 
-  mat <- readr::read_csv(testthat::test_path("fixtures","lambda_rotated_ex1.csv"), col_names = FALSE) %>%
-    as.matrix()
+  mat <- load_matrix(testthat::test_path("fixtures","lambda_rotated_ex1.csv"))
   dimnames(mat) <- NULL
-  X <- readr::read_csv(testthat::test_path("fixtures", "example_data1.csv"), col_names = FALSE) %>%
-    as.matrix()
+  X <- load_matrix(testthat::test_path("fixtures", "example_data1.csv"))
 
   ex1 <- local_factors(X, 4)
 
@@ -59,8 +53,7 @@ test_that("matlab and R produce same rotated Lambda in example 1 (using l0 norm 
 
 test_that("local_factors returns error when missing values are in the data matrix", {
 
-  X <- readr::read_csv(testthat::test_path("fixtures", "example_data1.csv"), col_names = FALSE) %>%
-    as.matrix()
+  X <- load_matrix(testthat::test_path("fixtures", "example_data1.csv"))
   indices <- sample(1:length(X), 100)
   X[indices] <- NA
   expect_error(local_factors(X, 4))

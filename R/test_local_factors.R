@@ -2,43 +2,35 @@
 #'
 #' @inheritParams local_factors
 #' @param Lambda (optional) a matrix that represents a sparse basis of the loading space
-#' @param eig_X (optional) a vector of eigenvalues of X'X/M in decreasing order (only used if X is empty)
 #' @param alpha_gamma (optional) a numeric value (default = 0.05)
 #'
-#' #' @returns Returns a list with the following components:
+#' @returns Returns a list with the following components:
 #'  * `has_local_factors` a logical equal to `TRUE` if local factors are present
 #'  * `n_small` an integer denoting the number of small loadings in sparse rotation
 #'  * `gamma_n` an integer denoting the critical value to compare `n_small` to.
-#'  * `h_n` a number denoting the cutoffused to determine which loadings are small
+#'  * `h_n` a number denoting the cutoff used to determine which loadings are small
 #'  * `Lambda` rotation of PCs with smallest l1-norm
 #' @export
-test_local_factors <- function(X, r, Lambda = NULL, eig_X = NULL, alpha_gamma = 0.05) {
+test_local_factors <- function(X, r, Lambda = NULL, alpha_gamma = 0.05) {
 
-  ## Preliminaries
-  M <- nrow(X)
-  n <- ncol(X)
+  stopifnot(is.matrix(X) | missing(X))
+  stopifnot(is.numeric(r))
+  if(r %% 1 != 0) stop(stringr::str_glue("Specified r = {r} is not an integer."))
+  stopifnot(is.numeric(alpha_gamma))
 
-  if (is.null(Lambda)) {
+  if(!is.null(Lambda)){
+
+    stopifnot(ncol(Lambda) == r)
+
+    n <- nrow(Lambda)
+    if (any(round(diag(t(Lambda) %*% Lambda)) != rep(n, r))) {
+      stop(stringr::str_glue("Lambda, n, r have mismatched dimensions: {dim(Lambda)} =/= {n}, {r}. Consider passing two arguments (X,r)."))
+    }
+  } else  {
     rotation_results <- find_local_factors(X, r)
     rotation_diagnostics <- rotation_results$diagnostics
     Lambda <- rotation_results$Lambda_rotated
-
-  }
-
-  if (is.null(X)) {
     n <- nrow(Lambda)
-    if (any(round(diag(t(Lambda) %*% Lambda)) != rep(r, n))) {
-      stop("Loading matrix may not be properly normalized. Consider only passing two arguments (X,r).")
-    }
-    if (is.null(eig_X)) {
-      stop("If no data X is supplied, at least eigenvalues needed to determine critical values")
-    }
-  } else {
-    eig_X <- sort(eigen(t(X) %*% X / M)$values, decreasing = TRUE)
-  }
-
-  if (is.null(alpha_gamma)) {
-    alpha_gamma <- 0.05
   }
 
   c_gamma <- -1 * stats::qnorm(1 - alpha_gamma / 2, lower = FALSE)

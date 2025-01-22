@@ -1,147 +1,3 @@
-find_min_rotation <- function(Lambda, parallel = TRUE) {
-
-  tictoc::tic("find_min_rotation")
-
-  if(parallel) cluster <- setup_cluster()
-
-  stopifnot(is.matrix(Lambda))
-  stopifnot(ncol(Lambda) > 1)
-  stopifnot(is.logical(parallel))
-  if(any(is.na(Lambda)) | any(is.infinite(Lambda))) stop("Lambda contains missing or infinite values.")
-  if(!all(is.numeric(Lambda))) stop("Lambda contains non-numeric values.")
-
-
-  r <- ncol(Lambda)
-  no_draws <- gridsize(r)
-  l1_norm <- rep(0, no_draws)
-  exitflag <- rep(0, no_draws)
-
-  # Create starting points for algorithm
-  initial_draws <- matrix(stats::rnorm(r * no_draws), nrow = r)
-  initial_draws <- normalize(initial_draws, p = 2)
-
-  theta <- cartesian_to_spherical(initial_draws)
-
-  # Optimization in polar coordinates happens w.r.t. theta
-  angles <- theta
-  l <- nrow(angles)
-  results <- list()
-  `%dopar%` <- foreach::`%dopar%`
-  bind_rows <- dplyr::bind_rows
-
-  functions_to_keep <- c("col_prod", "spherical_to_cartesian", "objectivefcn_spherical")
-
-  if(parallel) {
-    results <- foreach::foreach(rep = 1:no_draws, .combine = "bind_rows", .export = functions_to_keep) %dopar% {
-
-      starting_point <- theta[, rep]
-      result <- stats::optim(
-        starting_point,
-        objectivefcn_spherical, Lambda = Lambda,
-        control = list(maxit = 200 * l, ndeps = 1e-4, reltol = 1e-7, warn.1d.NelderMead = FALSE),
-        method = 'Nelder-Mead'
-      )
-
-      result_tbl <- tibble::tibble(rep = rep, par = result$par, l1_norm = result$value, exitflag = result$convergence)
-      results[rep] <- list(result_tbl)
-
-    }
-    parallel::stopCluster(cl = cluster)
-
-    angles <- matrix(data = results$par, nrow = l, byrow = FALSE)
-
-    l1_norm <- results %>%
-      dplyr::group_by(rep) %>%
-      dplyr::slice(1) %>%
-      dplyr::pull(l1_norm)
-
-    exitflag <- results %>%
-      dplyr::group_by(rep) %>%
-      dplyr::slice(1) %>%
-      dplyr::pull(exitflag)
-
-  } else{
-
-    for (rep in cli::cli_progress_along(1:no_draws, "Finding rotations")) {
-
-      starting_point <- theta[, rep]
-      result <- stats::optim(
-        starting_point,
-        objectivefcn_spherical, Lambda = Lambda,
-        control = list(maxit = 200 * l, ndeps = 1e-4, reltol = 1e-7, warn.1d.NelderMead = FALSE),
-        method = 'Nelder-Mead'
-      )
-
-      angles[, rep] <- result$par
-      l1_norm[rep] <- result$value
-      exitflag[rep] <- result$convergence
-    }
-  }
-
-  # Convert back to cartesian coordinates
-  R <- spherical_to_cartesian(angles)
-
-  timer <- tictoc::toc()
-
-  return(list(R = R, l1_norm = l1_norm, exitflag = exitflag, time_elapsed = timer$callback_msg))
-}
-
-setup_cluster <- function(){
-  chk <- Sys.getenv("_R_CHECK_LIMIT_CORES_", "")
-
-  if (nzchar(chk)) {
-    # use 2 cores in CRAN
-    n_cores <- 2L
-  } else {
-    # use all cores in devtools::test()
-    n_cores <- parallel::detectCores() - 1
-  }
-  cluster <- parallel::makeCluster(n_cores)
-  parallel::clusterExport(cluster, c('spherical_to_cartesian', 'col_prod'))
-  doParallel::registerDoParallel(cluster)
-  return(cluster)
-}
-
-normalize <- function(X, p = 2){
-  stopifnot(is.matrix(X))
-  norms <- apply(X, p = p, 2, pracma::Norm)
-  X_norm <- sweep(X, 2, norms, FUN = "/")
-  return(X_norm)
-}
-
-# Returns the norm of each column of a matrix
-vecnorm <- function(X, p = 2){
-  #stopifnot(is.matrix(X))
-  if(!is.matrix(X)){
-    pracma::Norm(X[(kk):r, ], p = 2)
-  }
-  apply(X, p = p, 2, pracma::Norm)
-}
-
-
-col_prod <- function(data){
-  if(is.matrix(data)) matrixStats::colProds(data)
-  else{
-    c(data)
-  }
-}
-
-# Assumes radius is equal to 1 (that is, X is normalized)
-cartesian_to_spherical <- function(X){
-  stopifnot(nrow(X) > 1)
-  r <- nrow(X)
-  no_draws <- ncol(X)
-
-  theta <- matrix(0, nrow = r - 1, ncol = no_draws)
-  if(r-2 > 0){
-    for (kk in 1:(r - 2)) {
-      theta[kk, ] <- atan2( vecnorm(X[(kk + 1):r, ]), X[kk, ])
-    }
-  }
-  theta[r - 1, ] <- atan2( X[r, ], X[(r - 1), ] )
-
-  return(theta)
-}
 
 spherical_to_cartesian <- function(theta){
   #stopifnot(all(theta >= 0))
@@ -204,3 +60,150 @@ gridsize <- function(factorno) {
 
   return(no_randomgrid)
 }
+
+
+find_min_rotation <- function(Lambda, parallel = TRUE) {
+
+  tictoc::tic("find_min_rotation")
+
+  if(parallel) cluster <- setup_cluster()
+
+  stopifnot(is.matrix(Lambda))
+  stopifnot(ncol(Lambda) > 1)
+  stopifnot(is.logical(parallel))
+  if(any(is.na(Lambda)) | any(is.infinite(Lambda))) stop("Lambda contains missing or infinite values.")
+  if(!all(is.numeric(Lambda))) stop("Lambda contains non-numeric values.")
+
+
+  r <- ncol(Lambda)
+  no_draws <- gridsize(r)
+  l1_norm <- rep(0, no_draws)
+  exitflag <- rep(0, no_draws)
+
+  # Create starting points for algorithm
+  initial_draws <- matrix(stats::rnorm(r * no_draws), nrow = r)
+  initial_draws <- normalize(initial_draws, p = 2)
+
+  theta <- cartesian_to_spherical(initial_draws)
+
+  # Optimization in polar coordinates happens w.r.t. theta
+  angles <- theta
+  l <- nrow(angles)
+  results <- list()
+  `%dopar%` <- foreach::`%dopar%`
+  bind_rows <- dplyr::bind_rows
+
+  functions_to_keep <- c("col_prod", "spherical_to_cartesian", "objectivefcn_spherical")
+
+  if(parallel) {
+    results <- foreach::foreach(rep = 1:no_draws, .combine = "bind_rows", .export = functions_to_keep) %dopar% {
+
+      starting_point <- theta[, rep]
+      result <- stats::optim(
+        starting_point,
+        objectivefcn_spherical, Lambda = Lambda,
+        control = list(maxit = 200 * l, ndeps = 1e-4, reltol = 1e-7, warn.1d.NelderMead = FALSE),
+        method = 'Nelder-Mead'
+      )
+
+      result_tbl <- tibble::tibble(rep = rep, par = result$par, l1_norm = result$value, exitflag = result$convergence)
+      results[rep] <- list(result_tbl)
+
+    }
+    parallel::stopCluster(cl = cluster)
+
+    angles <- matrix(data = results$par, nrow = l, byrow = FALSE)
+
+    l1_norm <- results |>
+      dplyr::group_by(rep) |>
+      dplyr::slice(1) |>
+      dplyr::pull(l1_norm)
+
+    exitflag <- results |>
+      dplyr::group_by(rep) |>
+      dplyr::slice(1) |>
+      dplyr::pull(exitflag)
+
+  } else{
+
+    for (rep in cli::cli_progress_along(1:no_draws, "Finding rotations")) {
+
+      starting_point <- theta[, rep]
+      result <- stats::optim(
+        starting_point,
+        objectivefcn_spherical, Lambda = Lambda,
+        control = list(maxit = 200 * l, ndeps = 1e-4, reltol = 1e-7, warn.1d.NelderMead = FALSE),
+        method = 'Nelder-Mead'
+      )
+
+      angles[, rep] <- result$par
+      l1_norm[rep] <- result$value
+      exitflag[rep] <- result$convergence
+    }
+  }
+
+  # Convert back to cartesian coordinates
+  R <- spherical_to_cartesian(angles)
+
+  timer <- tictoc::toc()
+
+  return(list(R = R, l1_norm = l1_norm, exitflag = exitflag, time_elapsed = timer$callback_msg))
+}
+
+setup_cluster <- function(){
+  chk <- Sys.getenv("_R_CHECK_LIMIT_CORES_", "")
+
+  if (nzchar(chk)) {
+    # use 2 cores in CRAN
+    n_cores <- 2L
+  } else {
+    # use all cores in devtools::test()
+    n_cores <- parallel::detectCores() - 1
+  }
+  cluster <- parallel::makeCluster(n_cores)
+  #parallel::clusterExport(cluster, c('spherical_to_cartesian', 'col_prod'))
+  doParallel::registerDoParallel(cluster)
+  return(cluster)
+}
+
+normalize <- function(X, p = 2){
+  stopifnot(is.matrix(X))
+  norms <- apply(X, p = p, 2, pracma::Norm)
+  X_norm <- sweep(X, 2, norms, FUN = "/")
+  return(X_norm)
+}
+
+# Returns the norm of each column of a matrix
+vecnorm <- function(X, p = 2){
+  #stopifnot(is.matrix(X))
+  # if(!is.matrix(X)){
+  #   pracma::Norm(X[(kk):r, ], p = 2)
+  # }
+  apply(X, p = p, 2, pracma::Norm)
+}
+
+
+col_prod <- function(data){
+  if(is.matrix(data)) matrixStats::colProds(data)
+  else{
+    c(data)
+  }
+}
+
+# Assumes radius is equal to 1 (that is, X is normalized)
+cartesian_to_spherical <- function(X){
+  stopifnot(nrow(X) > 1)
+  r <- nrow(X)
+  no_draws <- ncol(X)
+
+  theta <- matrix(0, nrow = r - 1, ncol = no_draws)
+  if(r-2 > 0){
+    for (kk in 1:(r - 2)) {
+      theta[kk, ] <- atan2( vecnorm(X[(kk + 1):r, ]), X[kk, ])
+    }
+  }
+  theta[r - 1, ] <- atan2( X[r, ], X[(r - 1), ] )
+
+  return(theta)
+}
+

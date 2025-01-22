@@ -21,6 +21,11 @@ find_local_factors <- function(X, r, Lambda0) {
   #   Lambda0: Principal Component estimate
   #   Lambda_rotated: Rotation of loading matrix with smallest l1-norm
   #   diagnostics: A list of diagnostics
+
+  # X cannot have missing values
+  stopifnot(!any(is.na(X)))
+  stopifnot(!any(is.infinite(X)))
+
   M <- nrow(X)
   n <- ncol(X)
   svd_X <- svd(X / sqrt(M), nu = M, nv = n)
@@ -31,7 +36,7 @@ find_local_factors <- function(X, r, Lambda0) {
   # compute the rotated solution with minimal l1-norm
   rmat_min_results <- find_min_rotation(Lambda0) #Finds solutions across a large grid of starting points
   rmat_min <- rmat_min_results$R
-  rotation_results <- collate_solutions(rmat_min, Lambda0, eig_X) #Combine large number of solutions into candidates
+  rotation_results <- collate_solutions(rmat_min, Lambda0, X) #Combine large number of solutions into candidates
   Lambda_rotated <- rotation_results$Lambda_rotated
   diagnostics <- rotation_results$diagnostics
   return(list(Lambda0 = Lambda0, Lambda_rotated = Lambda_rotated, diagnostics = diagnostics))

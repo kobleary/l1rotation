@@ -4,7 +4,7 @@
 \alias{test_local_factors}
 \title{Test for local factors, as in \code{local_factors} with additional flexibility.}
 \usage{
-test_local_factors(X, r, Lambda = NULL, eig_X = NULL, alpha_gamma = 0.05)
+test_local_factors(X, r, Lambda = NULL, alpha_gamma = 0.05)
 }
 \arguments{
 \item{X}{A (usually standardized) t by n matrix of observations.}
@@ -13,18 +13,17 @@ test_local_factors(X, r, Lambda = NULL, eig_X = NULL, alpha_gamma = 0.05)
 
 \item{Lambda}{(optional) a matrix that represents a sparse basis of the loading space}
 
-\item{eig_X}{(optional) a vector of eigenvalues of X'X/t in decreasing order (only used if X is empty)}
-
-\item{alpha_gamma}{(optional) a numeric value (default = 0.05)
-
-#' @returns Returns a list with the following components:
+\item{alpha_gamma}{(optional) a numeric value (default = 0.05)}
+}
+\value{
+Returns a list with the following components:
 \itemize{
 \item \code{has_local_factors} a logical equal to \code{TRUE} if local factors are present
 \item \code{n_small} an integer denoting the number of small loadings in sparse rotation
 \item \code{gamma_n} an integer denoting the critical value to compare \code{n_small} to.
-\item \code{h_n} a number denoting the cutoffused to determine which loadings are small
+\item \code{h_n} a number denoting the cutoff used to determine which loadings are small
 \item \code{Lambda} rotation of PCs with smallest l1-norm
-}}
+}
 }
 \description{
 Test for local factors, as in \code{local_factors} with additional flexibility.
