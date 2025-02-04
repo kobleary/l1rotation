@@ -17,7 +17,7 @@ collate_solutions <- function(rmat_min, Lambda0, X) {
   rmat_min_sort <- rmat_min[, sort_index]
   rmat_min_sort <- rmat_min_sort * pracma::repmat(sign(rmat_min_sort[1, ]), factorno, 1)
 
-  distances <- calculate_pairwise_distances_old(rmat_min_sort, l1_min_sort, epsilon_rot, factorno)
+  distances <- calculate_pairwise_distances(rmat_min_sort, l1_min_sort, epsilon_rot, factorno)
 
   candidates <- distances$rmat_min_sort |>
     matrix_to_dataframe() |>
@@ -100,7 +100,6 @@ calculate_pairwise_distances <- function(rmat_min_sort, l1_min_sort, epsilon_rot
   # ||a - b||^2 = ||a||^2 + ||b||^2 - 2<a,b>
   for(i in 1:no_randomgrid) {
     for(j in i:no_randomgrid) {
-      print(paste(i, j, collapse = ", "))
       norms[i,j] <- sqrt(round(diag_vals[i] + diag_vals[j] - 2 * cross_prod[i,j], digits = 15)) / sqrt(factorno)
       if(norms[i,j] < epsilon_rot) {
         rmat_min_sort[,j] <- rmat_min_sort[,i]
@@ -148,10 +147,10 @@ consolidate_local_mins <- function(Lambda0, candidates, sorting_column = "l0_nor
    for (kk in 2:upperK) {
 
      temp <- cbind(Lambda_rotated, Lambda0 %*% rmat_min_unique[, kk])
-     not_singular <- min(eigen(t(temp) %*% temp)$values / n) > sqrt(1 / factorno) / 3 &&
+     non_singular <- min(eigen(t(temp) %*% temp)$values / n) > sqrt(1 / factorno) / 3 &&
        min(eigen(t(temp) %*% temp)$values / n) > min(eigen(t(Lambda_rotated) %*% Lambda_rotated)$values / n) / 4
 
-     if(not_singular){
+     if(non_singular){
        Lambda_rotated <- temp
        R <- cbind(R, rmat_min_unique[, kk])
      }

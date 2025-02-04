@@ -34,6 +34,11 @@ test_that("local factors produces same rotation matrix (R) across same seed set 
   result2 <- local_factors(mat, 4)
 
   expect_identical(result1$rotation_diagnostics$R, result2$rotation_diagnostics$R)
+  expect_identical(result1$rotation_diagnostics$fval, result2$rotation_diagnostics$fval)
+  expect_identical(result1$rotation_diagnostics$sol_frequency, result2$rotation_diagnostics$sol_frequency)
+  expect_identical(result1$rotation_diagnostics$Lambda0, result2$rotation_diagnostics$Lambda0)
+  expect_identical(result1$rotation_diagnostics$Lambda_rotated, result2$rotation_diagnostics$Lambda_rotated)
+  expect_identical(result1$rotation_diagnostics$Lambda0, result2$rotation_diagnostics$Lambda0)
 
 })
 

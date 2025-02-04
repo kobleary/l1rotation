@@ -1,20 +1,37 @@
 utils::globalVariables(c("column", "value"))
 
-#' Test whether local factors are present in a given dataset `X` and return the rotation of the loading matrix with the smallest l1-norm.
+#' Check whether local factors are present and find the rotation of the loading matrix with the smallest l1-norm.
+#'
+#' @description
+#' `local_factors` tests whether local factors are present and returns both the Principal Component estimate of Lambda and the rotation of Lambda with the smallest l1-norm. It also produces graphical illustrations of the results.
 #'
 #' @param X A (usually standardized) t by n matrix of observations.
 #' @param r An integer denoting the number of factors in X.
 #'
 #' @returns Returns a list with the following components:
-#'  * `has_local_factors` a logical equal to `TRUE` if local factors are present
-#'  * `Lambda0` the principal component estimate of the loading matrix
-#'  * `Lambda_rotated` a matrix that is the rotation of the loading matrix that produces the smallest l1-norm.
-#'  * `rotation_diagnostics` a list containing 3 components"
-#'      * `R` the rotation matrix that when used to rotate `Lambda0` produces the smallest l1-norm.
-#'      * `l1_norm` a vector of length `r` containing the value of the l1 norm each solution generates
-#'      * `sol_frequency` a vector of length `r` containing the frequency in the initial grid of each solution
+#'  * `has_local_factors` A logical equal to `TRUE` if local factors are present.
+#'  * `Lambda0` Principal component estimate of the loading matrix.
+#'  * `Lambda_rotated` Matrix that is the rotation of the loading matrix that produces the smallest l1-norm.
+#'  * `rotation_diagnostics` A list containing 3 components:
+#'      * `R` Rotation matrix that when used to rotate `Lambda0` produces the smallest l1-norm.
+#'      * `l1_norm` Vector of length `r` containing the value of the l1 norm each solution generates.
+#'      * `sol_frequency` Vector of length `r` containing the frequency in the initial grid of each solution.
+#'  * `pc_plot` Tile plot of the Principal Component estimate of the loading matrix.
+#'  * `pc_rotated_plot` Tile plot of the l1-rotation of the loading matrix estimate.
+#'  * `small_loadings_plot` Plot of the number of small loadings for each column of the l1-rotation of the loading matrix estimate.
 #'
 #' @export
+#'
+#'
+#' @examples
+#' # Minimal example with 4 factors, where X is a 500 by 300 matrix
+#' lf <- local_factors(X = example_data, r = 4)
+#'
+#' # Visualize Principal Component estimate of the loadings
+#' lf$pc_plot
+#'
+#' # Visualize l1-rotation loadings
+#' lf$pc_rotated_plot
 #'
 local_factors <- function(X, r) {
   tictoc::tic("local_factors")

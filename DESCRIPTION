@@ -2,24 +2,18 @@ Package: l1rotation
 Title: Identify Individual Loading Vectors under Sparsity in Factor Models
 Version: 0.0.0.9000
 Authors@R: c(
-    person(
-      "Simon", "Freyaldenhoven", 
-      email = "simon.freyaldenhoven@phil.frb.org",
-      role = "aut"
-    ),
-    person(
-      "Ryan", "Kobler",
-      email = "kobleary@gmail.com",
-      role = c("aut", "cre"))
-    )
-Description: Estimate loading vectors using the l1 criterion as proposed in Freyaldenhoven (2023). 
-  Given a data matrix, find the rotation of the loading matrix with the smallest l1-norm and/or test for the presence of local factors. 
+    person("Simon", "Freyaldenhoven", , "simon.freyaldenhoven@phil.frb.org", role = c("aut", "cph")),
+    person("Ryan", "Kobler", , "kobleary@gmail.com", role = c("aut", "cre"))
+  )
+Description: Estimate loading vectors using the l1 criterion as proposed in Freyaldenhoven (2023) <https://simonfreyaldenhoven.github.io/papers/factor_rotation.pdf>. Given a data matrix, find the rotation of the loading matrix with the smallest l1-norm and/or test for the presence of local factors.
 License: MIT + file LICENSE
-Encoding: UTF-8
-Roxygen: list(markdown = TRUE)
-RoxygenNote: 7.3.1
+Depends: 
+    R (>= 3.5)
 Imports:
+    cli,
+    doParallel,
     dplyr,
+    foreach,
     ggplot2,
     matrixStats,
     pracma,
@@ -29,11 +23,11 @@ Imports:
     tibble,
     tictoc,
     tidyr,
-    tidyselect,
-    readr
-Depends: 
-    R (>= 2.10)
-LazyData: true
+    tidyselect
 Suggests: 
     testthat (>= 3.0.0)
 Config/testthat/edition: 3
+Encoding: UTF-8
+LazyData: true
+Roxygen: list(markdown = TRUE)
+RoxygenNote: 7.3.2

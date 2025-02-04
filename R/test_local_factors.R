@@ -1,16 +1,36 @@
-#' Test for local factors, as in `local_factors` with additional flexibility.
+#' Test for the presence of local factors, as in [local_factors()], with additional flexibility.
 #'
 #' @inheritParams local_factors
-#' @param Lambda (optional) a matrix that represents a sparse basis of the loading space
-#' @param alpha_gamma (optional) a numeric value (default = 0.05)
+#' @param Lambda (optional) Matrix that represents a sparse basis of the loading space.
+#' @param alpha_gamma (optional) A numeric value that represents the tuning parameter (default = 0.05).
 #'
 #' @returns Returns a list with the following components:
-#'  * `has_local_factors` a logical equal to `TRUE` if local factors are present
-#'  * `n_small` an integer denoting the number of small loadings in sparse rotation
-#'  * `gamma_n` an integer denoting the critical value to compare `n_small` to.
-#'  * `h_n` a number denoting the cutoff used to determine which loadings are small
-#'  * `Lambda` rotation of PCs with smallest l1-norm
+#'  * `has_local_factors` Logical equal to `TRUE` if local factors are present.
+#'  * `n_small` Integer denoting the number of small loadings in sparse rotation.
+#'  * `gamma_n` Integer denoting the critical value to compare `n_small` to.
+#'  * `h_n` Number denoting the cutoff used to determine which loadings are small.
+#'  * `Lambda` Matrix that is the rotation of the loading matrix that produces the smallest l1-norm.
 #' @export
+#'
+#' @examples
+#' # Minimal example with 4 factors, where X is a 500 by 300 matrix
+#' r <- 4
+#' M <- nrow(example_data)
+#' n <- ncol(example_data)
+#'
+#' # Find minimum rotation
+#' rotation_result <- find_local_factors(X = example_data, r)
+#'
+#' # Test if sparse basis has local factors
+#' test_result <- test_local_factors(
+#'    X = example_data,
+#'    r = r,
+#'    Lambda = rotation_result$Lambda_rotated,
+#'    alpha_gamma = 0.05
+#' )
+#'
+#' test_result$has_local_factors
+#'
 test_local_factors <- function(X, r, Lambda = NULL, alpha_gamma = 0.05) {
 
   stopifnot(is.matrix(X) | missing(X))
