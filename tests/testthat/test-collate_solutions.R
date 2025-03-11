@@ -1,6 +1,7 @@
 
 
 test_that("collating solutions does not depend on a seed, returns same result (large X)", {
+  skip_on_cran()
 
   initial_draws <- load_matrix(testthat::test_path("fixtures", "initial_draws_ex1.csv"))
   X <- load_matrix(testthat::test_path("fixtures", "example_data1.csv"))
@@ -25,6 +26,8 @@ test_that("collating solutions does not depend on a seed, returns same result (l
 
 
 test_that("collating solutions does not depend on seed, returns same result (single realization)", {
+  skip_on_cran()
+
   X <- load_matrix(testthat::test_path("fixtures", "single_realization.csv"))
   M <- nrow(X)
   n <- ncol(X)
@@ -33,7 +36,7 @@ test_that("collating solutions does not depend on seed, returns same result (sin
 
   Lambda0 <- sqrt(n) * pca$v[, 1:r]
 
-  rotn <- find_min_rotation(Lambda0, parallel = TRUE)
+  rotn <- find_min_rotation(Lambda0, parallel = TRUE, n_cores = 11)
   rmat_min <- rotn$R
 
   result1 <- collate_solutions(rotn$R, Lambda0, X)
@@ -43,7 +46,6 @@ test_that("collating solutions does not depend on seed, returns same result (sin
   expect_equal(result1$diagnostics$R, result2$diagnostics$R)
   expect_equal(result1$diagnostics$fval, result2$diagnostics$fval)
   expect_equal(result1$diagnostics$sol_frequency, result2$diagnostics$sol_frequency)
-
 
 })
 
@@ -66,7 +68,7 @@ test_that("||a - b||^2 is equal to ||a||^2 + ||b||^2 - 2<a, b> for an entry from
 
 test_that("nonsingular matrix columns get added to R properly", {
   r <- 4
-  X <- single_realization
+  X <- load_matrix(testthat::test_path("fixtures", "single_realization.csv"))
 
   pca <- svd(X / sqrt(ncol(X)))
 

@@ -1,6 +1,6 @@
 # MIT License
 
-Copyright (c) 2024 l1rotation authors
+Copyright (c) 2025 l1rotation authors
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal

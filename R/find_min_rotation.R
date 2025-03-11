@@ -1,7 +1,5 @@
 
 spherical_to_cartesian <- function(theta){
-  #stopifnot(all(theta >= 0))
-  #print(theta)
   if(!is.matrix(theta)) {
     r <- length(theta) + 1
     R <- rep(0, r)
@@ -62,18 +60,20 @@ gridsize <- function(factorno) {
 }
 
 
-find_min_rotation <- function(Lambda, parallel = TRUE) {
+find_min_rotation <- function(Lambda, parallel = FALSE, n_cores = NULL) {
 
-  tictoc::tic("find_min_rotation")
+  #tictoc::tic("find_min_rotation")
+  stopifnot((n_cores %% 1 == 0 & n_cores > 0) | is.null(n_cores))
+  if(parallel & is.null(n_cores)) stop("parallel set to TRUE but n_cores is NULL. Please specify n_cores for parallel execution.")
+  if(!parallel & !is.null(n_cores)) warning("parallel set to FALSE but n_cores is not null. Defaulting to sequential execution.")
 
-  if(parallel) cluster <- setup_cluster()
 
   stopifnot(is.matrix(Lambda))
   stopifnot(ncol(Lambda) > 1)
-  stopifnot(is.logical(parallel))
   if(any(is.na(Lambda)) | any(is.infinite(Lambda))) stop("Lambda contains missing or infinite values.")
   if(!all(is.numeric(Lambda))) stop("Lambda contains non-numeric values.")
 
+  if(parallel) cluster <- setup_cluster(n_cores)
 
   r <- ncol(Lambda)
   no_draws <- gridsize(r)
@@ -145,23 +145,21 @@ find_min_rotation <- function(Lambda, parallel = TRUE) {
   # Convert back to cartesian coordinates
   R <- spherical_to_cartesian(angles)
 
-  timer <- tictoc::toc()
+  #timer <- tictoc::toc()
 
-  return(list(R = R, l1_norm = l1_norm, exitflag = exitflag, time_elapsed = timer$callback_msg))
+  return(list(R = R, l1_norm = l1_norm, exitflag = exitflag))
 }
 
-setup_cluster <- function(){
+setup_cluster <- function(n_cores){
   chk <- Sys.getenv("_R_CHECK_LIMIT_CORES_", "")
 
   if (nzchar(chk)) {
     # use 2 cores in CRAN
-    n_cores <- 2L
+    n_cores <- 1L
   } else {
     # use all cores in devtools::test()
-    n_cores <- parallel::detectCores() - 1
   }
   cluster <- parallel::makeCluster(n_cores)
-  #parallel::clusterExport(cluster, c('spherical_to_cartesian', 'col_prod'))
   doParallel::registerDoParallel(cluster)
   return(cluster)
 }

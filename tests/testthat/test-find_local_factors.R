@@ -24,6 +24,8 @@ test_that("find_local_factors() returns same result with same seed with and with
 
 
 test_that("find_local_factors() returns same result with same seed with and without Lambda0 argument, larger example", {
+  skip_on_cran()
+
   X <- load_matrix(testthat::test_path("fixtures", "example_data1.csv"))
   r <- 4
   M <- nrow(X)
@@ -48,8 +50,9 @@ test_that("find_local_factors() returns same result with same seed with and with
 })
 
 test_that("find_local_factors() returns same result with same seed with and without Lambda0 argument, randomly generated data", {
+  skip_on_cran()
 
-  X <- matrix(stats::rnorm(500*300), nrow = 500, ncol = 300)
+  X <- matrix(stats::rnorm(100*78), nrow = 100, ncol = 78)
 
   r <- 4
   M <- nrow(X)

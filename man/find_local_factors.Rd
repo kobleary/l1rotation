@@ -2,9 +2,9 @@
 % Please edit documentation in R/find_local_factors.R
 \name{find_local_factors}
 \alias{find_local_factors}
-\title{Find the rotation of the loading matrix with the smallest l1-norm, as in \code{local_factors}, with additional flexibility.}
+\title{Find the rotation of the loading matrix with the smallest l1-norm, as in \code{\link[=local_factors]{local_factors()}}, with additional flexibility.}
 \usage{
-find_local_factors(X, r, Lambda0)
+find_local_factors(X, r, Lambda0, parallel = FALSE, n_cores = NULL)
 }
 \arguments{
 \item{X}{A (usually standardized) t by n matrix of observations.}
@@ -12,6 +12,10 @@ find_local_factors(X, r, Lambda0)
 \item{r}{An integer denoting the number of factors in X.}
 
 \item{Lambda0}{Matrix that represents an orthonormal basis of the loading space. If not supplied, PCA is used by default in this function and also in \code{local_factors}.}
+
+\item{parallel}{A logical denoting whether the algorithm should be run in parallel.}
+
+\item{n_cores}{An integer denoting how many cores should be used, if parallel == TRUE.}
 }
 \value{
 Returns a list with the following components:

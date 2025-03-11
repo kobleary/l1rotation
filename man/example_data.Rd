@@ -7,11 +7,11 @@
 \format{
 \subsection{\code{example_data}}{
 
-A matrix with 500 rows and 300 columns.
+A matrix with 224 rows and 207 columns.
 }
 }
 \source{
-Dataset available as a .mat file can be found as "example1.mat" under local_factors.zip \url{https://simonfreyaldenhoven.github.io/software/}
+Dataset available as a .mat file can be found under local_factors.zip \url{https://simonfreyaldenhoven.github.io/software/}
 }
 \usage{
 example_data

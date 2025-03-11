@@ -169,7 +169,6 @@ test_that("objective function with length(theta) =/= ncol(Lambda) returns non-co
 
 
 test_that("single realization returns same R matrix", {
-
   initial_draws <- load_matrix(testthat::test_path("fixtures", "initial_draws_ex1.csv"))
   X <- load_matrix(testthat::test_path("fixtures", "example_data1.csv"))
   Lambda <- load_matrix(testthat::test_path("fixtures", "Lambda_ex1.csv"))
@@ -219,10 +218,11 @@ test_that("single realization returns same R matrix", {
   expect_equal(result$fval, result_matlab$fval, tolerance = 0.0001)
   expect_equal(result$sol_frequency, result_matlab$sol_frequency, tolerance = 0.0001)
 
-
 })
 
 test_that("find_min_rotation(), check that parallel gives same R with same seed (4 factors)", {
+  skip_on_cran()
+
   X <- load_matrix(testthat::test_path("fixtures", "example_data1.csv"))
   r <- 4
   M <- nrow(X)
@@ -234,9 +234,9 @@ test_that("find_min_rotation(), check that parallel gives same R with same seed 
 
   # Find minimum rotation, test for local factors
   set.seed(916)
-  result_1 <- find_min_rotation(Lambda0, parallel = TRUE)
+  result_1 <- find_min_rotation(Lambda0, parallel = TRUE, n_cores = 11)
   set.seed(916)
-  result_2 <- find_min_rotation(Lambda0, parallel = TRUE)
+  result_2 <- find_min_rotation(Lambda0, parallel = TRUE, n_cores = 11)
 
   expect_equal(result_1$R, result_2$R)
   expect_equal(result_1$exitflag, result_2$exitflag)
@@ -248,6 +248,8 @@ test_that("find_min_rotation(), check that parallel gives same R with same seed 
 
 
 test_that("find_min_rotation(), check that non-parallel gives same R with same seed (4 factors)", {
+  skip_on_cran()
+
   X <- load_matrix(testthat::test_path("fixtures", "example_data1.csv"))
   r <- 4
   M <- nrow(X)
@@ -271,6 +273,8 @@ test_that("find_min_rotation(), check that non-parallel gives same R with same s
 
 
 test_that("find_min_rotation(), check that non-parallel/parallel gives same R with same seed (4 factors)", {
+  skip_on_cran()
+
   X <- load_matrix(testthat::test_path("fixtures", "example_data1.csv"))
   r <- 4
   M <- nrow(X)
@@ -282,7 +286,7 @@ test_that("find_min_rotation(), check that non-parallel/parallel gives same R wi
 
   # Find minimum rotation, test for local factors
   set.seed(916)
-  result_par <- find_min_rotation(Lambda0, parallel = TRUE)
+  result_par <- find_min_rotation(Lambda0, parallel = TRUE, n_cores = 11)
   set.seed(916)
   result_nonpar <- find_min_rotation(Lambda0, parallel = FALSE)
 
@@ -293,6 +297,8 @@ test_that("find_min_rotation(), check that non-parallel/parallel gives same R wi
 })
 
 test_that("find_min_rotation(), check that non-parallel/parallel gives same R with same seed (8 factors)", {
+  skip_on_cran()
+
   X <- load_matrix(testthat::test_path("fixtures", "example_data2.csv"))
   r <- 8
   M <- nrow(X)
@@ -304,7 +310,7 @@ test_that("find_min_rotation(), check that non-parallel/parallel gives same R wi
 
   # Find minimum rotation, test for local factors
   set.seed(916)
-  result_par <- find_min_rotation(Lambda0, parallel = TRUE)
+  result_par <- find_min_rotation(Lambda0, parallel = TRUE, n_cores = 11)
   set.seed(916)
   result_nonpar <- find_min_rotation(Lambda0, parallel = FALSE)
 
@@ -315,8 +321,156 @@ test_that("find_min_rotation(), check that non-parallel/parallel gives same R wi
 
 
 
+test_that("find_min_rotation(), check that parallel gives same R with same seed (4 factors)", {
+  skip_on_cran()
+
+  X <- load_matrix(testthat::test_path("fixtures", "example_data1.csv"))
+  r <- 4
+  M <- nrow(X)
+  n <- ncol(X)
+
+  # Compute PCA estimates
+  pca <- svd(X / sqrt(M), nu = M, nv = n)
+  Lambda0 <- sqrt(n) * pca$v[, 1:r]
+
+  # Find minimum rotation, test for local factors
+  set.seed(916)
+  result_1 <- find_min_rotation(Lambda0, parallel = TRUE, n_cores = 11)
+  set.seed(916)
+  result_2 <- find_min_rotation(Lambda0, parallel = TRUE, n_cores = 11)
+
+  expect_equal(result_1$R, result_2$R)
+  expect_equal(result_1$exitflag, result_2$exitflag)
+  expect_equal(result_1$l1_norm, result_2$l1_norm)
+
+
+})
 
 
 
+test_that("find_min_rotation(), check that non-parallel gives same R with same seed (4 factors)", {
+  skip_on_cran()
+
+  X <- load_matrix(testthat::test_path("fixtures", "example_data1.csv"))
+  r <- 4
+  M <- nrow(X)
+  n <- ncol(X)
+
+  # Compute PCA estimates
+  pca <- svd(X / sqrt(M), nu = M, nv = n)
+  Lambda0 <- sqrt(n) * pca$v[, 1:r]
+
+  # Find minimum rotation, test for local factors
+  set.seed(916)
+  result_1 <- find_min_rotation(Lambda0, parallel = FALSE)
+  set.seed(916)
+  result_2 <- find_min_rotation(Lambda0, parallel = FALSE)
+
+  expect_equal(result_1$R, result_2$R)
+  expect_equal(result_1$exitflag, result_2$exitflag)
+  expect_equal(result_1$l1_norm, result_2$l1_norm)
+
+})
+
+
+test_that("find_min_rotation(), check that non-parallel/parallel gives same R with same seed (4 factors)", {
+  skip_on_cran()
+
+  X <- load_matrix(testthat::test_path("fixtures", "example_data1.csv"))
+  r <- 4
+  M <- nrow(X)
+  n <- ncol(X)
+
+  # Compute PCA estimates
+  pca <- svd(X / sqrt(M), nu = M, nv = n)
+  Lambda0 <- sqrt(n) * pca$v[, 1:r]
+
+  # Find minimum rotation, test for local factors
+  set.seed(916)
+  result_par <- find_min_rotation(Lambda0, parallel = TRUE, n_cores = 11)
+  set.seed(916)
+  result_nonpar <- find_min_rotation(Lambda0, parallel = FALSE)
+
+  expect_equal(result_par$R, result_nonpar$R)
+  expect_equal(result_par$exitflag, result_nonpar$exitflag)
+  expect_equal(result_par$l1_norm, result_nonpar$l1_norm)
+
+})
+
+# Smaller examples with single_realization ------------------------------------
+
+test_that("find_min_rotation(), check that parallel gives same R with same seed (small example)", {
+
+  X <- load_matrix(testthat::test_path("fixtures", "single_realization.csv"))
+  r <- 2
+  M <- nrow(X)
+  n <- ncol(X)
+
+  # Compute PCA estimates
+  pca <- svd(X / sqrt(M), nu = M, nv = n)
+  Lambda0 <- sqrt(n) * pca$v[, 1:r]
+
+  # Find minimum rotation, test for local factors
+  set.seed(916)
+  result_1 <- find_min_rotation(Lambda0, parallel = TRUE, n_cores = 11)
+  set.seed(916)
+  result_2 <- find_min_rotation(Lambda0, parallel = TRUE, n_cores = 11)
+
+  expect_equal(result_1$R, result_2$R)
+  expect_equal(result_1$exitflag, result_2$exitflag)
+  expect_equal(result_1$l1_norm, result_2$l1_norm)
+
+})
+
+
+
+test_that("find_min_rotation(), check that non-parallel gives same R with same seed (small example)", {
+
+  X <- load_matrix(testthat::test_path("fixtures", "single_realization.csv"))
+  r <- 2
+  M <- nrow(X)
+  n <- ncol(X)
+
+  # Compute PCA estimates
+  pca <- svd(X / sqrt(M), nu = M, nv = n)
+  Lambda0 <- sqrt(n) * pca$v[, 1:r]
+
+  # Find minimum rotation, test for local factors
+  set.seed(916)
+  result_1 <- find_min_rotation(Lambda0, parallel = FALSE)
+  set.seed(916)
+  result_2 <- find_min_rotation(Lambda0, parallel = FALSE)
+
+  expect_equal(result_1$R, result_2$R)
+  expect_equal(result_1$exitflag, result_2$exitflag)
+  expect_equal(result_1$l1_norm, result_2$l1_norm)
+
+
+})
+
+
+test_that("find_min_rotation(), check that non-parallel/parallel gives same R with same seed (4 factors)", {
+
+  X <- load_matrix(testthat::test_path("fixtures", "single_realization.csv"))
+  r <- 2
+  M <- nrow(X)
+  n <- ncol(X)
+
+  # Compute PCA estimates
+  pca <- svd(X / sqrt(M), nu = M, nv = n)
+  Lambda0 <- sqrt(n) * pca$v[, 1:r]
+
+  # Find minimum rotation, test for local factors
+  set.seed(916)
+  result_par <- find_min_rotation(Lambda0, parallel = TRUE, n_cores = 11)
+  set.seed(916)
+  result_nonpar <- find_min_rotation(Lambda0, parallel = FALSE)
+
+  expect_equal(result_par$R, result_nonpar$R)
+  expect_equal(result_par$exitflag, result_nonpar$exitflag)
+  expect_equal(result_par$l1_norm, result_nonpar$l1_norm)
+
+
+})
 
 

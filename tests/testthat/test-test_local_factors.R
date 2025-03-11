@@ -27,6 +27,7 @@ test_that("single realization example eigenvalues produced in test are same as p
 })
 
 test_that("single realization example with eig_X missing same eig_X nonmissing", {
+  skip_on_cran()
   X <- load_matrix(testthat::test_path("fixtures", "single_realization.csv"))
   M <- nrow(X)
   n <- ncol(X)

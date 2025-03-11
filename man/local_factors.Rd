@@ -4,12 +4,16 @@
 \alias{local_factors}
 \title{Check whether local factors are present and find the rotation of the loading matrix with the smallest l1-norm.}
 \usage{
-local_factors(X, r)
+local_factors(X, r, parallel = FALSE, n_cores = NULL)
 }
 \arguments{
 \item{X}{A (usually standardized) t by n matrix of observations.}
 
 \item{r}{An integer denoting the number of factors in X.}
+
+\item{parallel}{A logical denoting whether the algorithm should be run in parallel.}
+
+\item{n_cores}{An integer denoting how many cores should be used, if parallel == TRUE.}
 }
 \value{
 Returns a list with the following components:

@@ -21,7 +21,6 @@ Imports:
     stats,
     stringr,
     tibble,
-    tictoc,
     tidyr,
     tidyselect
 Suggests: 

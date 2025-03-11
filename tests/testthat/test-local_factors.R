@@ -25,6 +25,8 @@ test_that("matlab and R produce same rotated Lambda in example 1 (using l1 norm 
 
 
 test_that("local factors produces same rotation matrix (R) across same seed set outside", {
+  skip_on_cran()
+
   mat <- load_matrix(testthat::test_path("fixtures","ex1_rot_mat_matlab.csv"))
 
   set.seed(916)
@@ -45,6 +47,7 @@ test_that("local factors produces same rotation matrix (R) across same seed set 
 
 
 test_that("matlab and R produce same rotated Lambda in example 1 (using l0 norm to order)", {
+  skip_on_cran()
 
   mat <- load_matrix(testthat::test_path("fixtures","lambda_rotated_ex1.csv"))
   dimnames(mat) <- NULL

@@ -7,6 +7,8 @@ utils::globalVariables(c("column", "value"))
 #'
 #' @param X A (usually standardized) t by n matrix of observations.
 #' @param r An integer denoting the number of factors in X.
+#' @param parallel A logical denoting whether the algorithm should be run in parallel.
+#' @param n_cores An integer denoting how many cores should be used, if parallel == TRUE.
 #'
 #' @returns Returns a list with the following components:
 #'  * `has_local_factors` A logical equal to `TRUE` if local factors are present.
@@ -33,11 +35,9 @@ utils::globalVariables(c("column", "value"))
 #' # Visualize l1-rotation loadings
 #' lf$pc_rotated_plot
 #'
-local_factors <- function(X, r) {
-  tictoc::tic("local_factors")
+local_factors <- function(X, r, parallel = FALSE, n_cores = NULL) {
   stopifnot(r <= ncol(X))
 
-  #set.seed(1909)
   M <- nrow(X)
   n <- ncol(X)
 
@@ -47,7 +47,7 @@ local_factors <- function(X, r) {
   Lambda0 <- sqrt(n) * pca$v[, 1:r]
 
   # Find minimum rotation, test for local factors
-  rotn_result <- find_local_factors(X, r)
+  rotn_result <- find_local_factors(X, r, parallel = parallel, n_cores = n_cores)
   test_result <- test_local_factors(X, r, Lambda = rotn_result$Lambda_rotated)
   has_local_factors <- test_result$has_local_factors
   Lambda_rotated <- test_result$Lambda
@@ -56,7 +56,6 @@ local_factors <- function(X, r) {
   pc_plot <- plot_loading_matrix(Lambda0, xlab = "k", title = "Principal Component estimate")
   pc_rotated_plot <- plot_loading_matrix(Lambda_rotated, xlab = "k", title = "Rotated estimate (l1-criterion)")
   small_loadings_plot <- plot_small_loadings(test_result, r)
-  tictoc::toc()
   return(list(
     has_local_factors = has_local_factors,
     Lambda0 = Lambda0,
