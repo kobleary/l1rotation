@@ -1,6 +1,6 @@
 
 max_cosine_similarity <- function(est_mat, true_mat){
-  colMaxs(abs(t(est_mat) %*% true_mat)/nrow(true_mat))
+  matrixStats::colMaxs(abs(t(est_mat) %*% true_mat)/nrow(true_mat))
 }
 
 orthonormalize <- function(matrix){

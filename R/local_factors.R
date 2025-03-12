@@ -95,9 +95,8 @@ plot_small_loadings <- function(result, r, xlab = "k", ylab = "", title = ""){
   gamma <- result$gamma
   h_n <- result$h_n
 
-  tibble::as_tibble(n_small) |>
-    tibble::rownames_to_column(var = "factor") |>
-    dplyr::mutate(factor = as.numeric(factor)) |>
+  data.frame(value = result$n_small) |>
+    dplyr::mutate(factor = 1:r) |>
     ggplot2::ggplot() +
     ggplot2::geom_point(ggplot2::aes(x = factor, y = value), size = 3) +
     ggplot2::geom_hline(yintercept = gamma, linetype = "dashed", linewidth = 1) +
@@ -112,8 +111,8 @@ plot_small_loadings <- function(result, r, xlab = "k", ylab = "", title = ""){
 convert_mat_to_df <- function(mat, letter = "V"){
 
   df <- mat |> as.data.frame() |>
-    tibble::rownames_to_column(var = "row") |>
-    dplyr::mutate(row = factor(row, levels = 1:nrow(mat))) |>
+    dplyr::mutate(
+      row = factor(1:nrow(mat), levels = 1:nrow(mat))) |>
     tidyr::pivot_longer(tidyselect::starts_with(letter), names_to = "column") |>
     dplyr::mutate(column = factor(stringr::str_remove(column, letter), levels = 1:ncol(mat)))
 

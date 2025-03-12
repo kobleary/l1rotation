@@ -105,7 +105,7 @@ find_min_rotation <- function(Lambda, parallel = FALSE, n_cores = NULL) {
         method = 'Nelder-Mead'
       )
 
-      result_tbl <- tibble::tibble(rep = rep, par = result$par, l1_norm = result$value, exitflag = result$convergence)
+      result_tbl <- data.frame(rep = rep, par = result$par, l1_norm = result$value, exitflag = result$convergence)
       results[rep] <- list(result_tbl)
 
     }

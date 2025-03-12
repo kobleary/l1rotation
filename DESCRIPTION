@@ -15,12 +15,12 @@ Imports:
     dplyr,
     foreach,
     ggplot2,
+    magrittr,
     matrixStats,
     pracma,
     scales,
     stats,
     stringr,
-    tibble,
     tidyr,
     tidyselect
 Suggests: 

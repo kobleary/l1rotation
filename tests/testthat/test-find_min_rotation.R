@@ -75,14 +75,6 @@ test_that("data.frame to find_min_rotation returns an error", {
 
 })
 
-test_that("tibble to find_min_rotation returns an error", {
-  r <- 4
-  Lambda <- matrix(stats::rnorm(r * 100), nrow = 100) |>
-    as.data.frame() |>
-    tibble::as_tibble()
-  expect_error(find_min_rotation(Lambda))
-})
-
 test_that("missing values in Lambda returns an error", {
   r <- 8
   Lambda <- matrix(stats::rnorm(r * 100), nrow = 100)
