@@ -98,14 +98,15 @@ test_that("find_local_factors() returns matrix similar to truth using a orthonor
   i <- 10
 
   X <- load_matrix(testthat::test_path("fixtures", stringr::str_glue("X_{i}.csv")))
+  M <- nrow(X)
+  n <- ncol(X)
+  r <- 4
+
   true_lambda <- load_matrix(testthat::test_path("fixtures", stringr::str_glue("true_lambda_{i}.csv")))
   e <- matrix(rnorm(n * r, sd = 0.1), nrow = n, ncol = r)
 
   true_lambda_rotated_plus_noise <- orthonormalize(true_lambda + e)
 
-  M <- nrow(X)
-  n <- ncol(X)
-  r <- 4
 
   lambda_rotated_true_plus_noise <- find_local_factors(X, r, true_lambda_rotated_plus_noise)$Lambda_rotated
   cos_sim_true_plus_noise <- max_cosine_similarity(lambda_rotated_true_plus_noise, true_lambda)[-1]

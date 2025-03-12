@@ -43,19 +43,20 @@ find_local_factors <- function(X, r, Lambda0, parallel = FALSE, n_cores = NULL) 
   # X cannot have missing values
   stopifnot(!any(is.na(X)))
   stopifnot(!any(is.infinite(X)))
+  M <- nrow(X)
+  n <- ncol(X)
+  svd_X <- svd(X / sqrt(M), nu = M, nv = n)
+  eig_X <- svd_X$d^2
+
+  if (missing(Lambda0)) {
+    Lambda0 <- sqrt(n) * svd_X$v[, 1:r]
+  }
 
   if (any(round(t(Lambda0) %*% Lambda0) != diag(nrow = r)*n)){
     stop('The initial estimate Lambda0 should be an orthonormal basis of the loading space.
         Either drop argument (PCs will be used), or orthonormalize.')
   }
 
-  M <- nrow(X)
-  n <- ncol(X)
-  svd_X <- svd(X / sqrt(M), nu = M, nv = n)
-  eig_X <- svd_X$d^2
-  if (missing(Lambda0)) {
-    Lambda0 <- sqrt(n) * svd_X$v[, 1:r]
-  }
   # compute the rotated solution with minimal l1-norm
   rmat_min_results <- find_min_rotation(Lambda0, parallel = parallel, n_cores = n_cores) #Finds solutions across a large grid of starting points
   rmat_min <- rmat_min_results$R

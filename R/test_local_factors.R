@@ -44,8 +44,8 @@ test_local_factors <- function(X, r, Lambda = NULL, alpha_gamma = 0.05) {
 
     n <- nrow(Lambda)
     if (any(round(diag(t(Lambda) %*% Lambda)) != rep(n, r))) {
-      stop(stringr::str_glue("Lambda, n, r have mismatched dimensions: {dim(Lambda)} =/= {n}, {r}. Consider passing two arguments (X,r)."))
-    }
+      stop('The initial estimate Lambda0 should be an orthonormal basis of the loading space.
+        Either drop argument (PCs will be used), or orthonormalize.') }
   } else  {
     rotation_results <- find_local_factors(X, r)
     rotation_diagnostics <- rotation_results$diagnostics

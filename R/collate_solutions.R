@@ -19,26 +19,26 @@ collate_solutions <- function(rmat_min, Lambda0, X) {
 
   distances <- calculate_pairwise_distances(rmat_min_sort, l1_min_sort, epsilon_rot, factorno)
 
-  candidates <- distances$rmat_min_sort |>
-    matrix_to_dataframe() |>
-    dplyr::mutate(l1_norm = distances$l1_min_sort) |>
-    dplyr::group_by(dplyr::across(tidyselect::everything())) |>
-    dplyr::count() |>
-    dplyr::arrange(l1_norm) |>
-    dplyr::ungroup() |>
+  candidates <- distances$rmat_min_sort %>%
+    matrix_to_dataframe() %>%
+    dplyr::mutate(l1_norm = distances$l1_min_sort) %>%
+    dplyr::group_by(dplyr::across(tidyselect::everything())) %>%
+    dplyr::count() %>%
+    dplyr::arrange(l1_norm) %>%
+    dplyr::ungroup() %>%
     dplyr::mutate(non_outlier = n/gridsize(factorno) >= 0.005)
 
   # Construct R from the candidates
-  rmat_min_unique <- candidates |>
-    dplyr::filter(non_outlier) |>
-    dplyr::select(-c(l1_norm, n, non_outlier)) |>
+  rmat_min_unique <- candidates %>%
+    dplyr::filter(non_outlier) %>%
+    dplyr::select(-c(l1_norm, n, non_outlier)) %>%
     dataframe_to_matrix()
 
   h_n <- 1/log(n)
   amount_sparsity <- colSums(abs(Lambda0 %*% rmat_min_unique) < h_n)
 
-  candidates <- candidates |>
-    dplyr::filter(non_outlier) |>
+  candidates <- candidates %>%
+    dplyr::filter(non_outlier) %>%
     dplyr::mutate(l0_norm = amount_sparsity)
 
   # up until here, candidates are arranged by l1 norm
@@ -49,8 +49,8 @@ collate_solutions <- function(rmat_min, Lambda0, X) {
   Lambda_rotated <- consolidated_mins$Lambda_rotated
   R <- consolidated_mins$R
 
-  loadings <- matrix_to_dataframe(R) |>
-    dplyr::left_join(candidates) |>
+  loadings <- matrix_to_dataframe(R) %>%
+    dplyr::left_join(candidates, by = paste0("V", 1:factorno)) %>%
     dplyr::mutate(
       l1_norm = c(l1_norm[!is.na(l1_norm)], consolidated_mins$l1_norm_update),
       n = ifelse(is.na(n), 0, n)
@@ -113,11 +113,11 @@ calculate_pairwise_distances <- function(rmat_min_sort, l1_min_sort, epsilon_rot
 
 
 dataframe_to_matrix <- function(dataframe) {
-  dataframe |> as.matrix() |> t()
+  dataframe %>% as.matrix() %>% t()
 }
 
 matrix_to_dataframe <- function(matrix){
-  matrix |> t() |> as.data.frame()
+  matrix %>% t() %>% as.data.frame()
 }
 
 consolidate_local_mins <- function(Lambda0, candidates, sorting_column = "l0_norm") {
@@ -128,11 +128,11 @@ consolidate_local_mins <- function(Lambda0, candidates, sorting_column = "l0_nor
 
   if (sorting_column != "l1_norm") {
 
-    candidates <- candidates |>
+    candidates <- candidates %>%
       dplyr::arrange(dplyr::desc(dplyr::across(tidyselect::all_of(sorting_column))))
 
-    rmat_min_unique <- candidates |>
-      dplyr::select(tidyr::starts_with("V")) |>
+    rmat_min_unique <- candidates %>%
+      dplyr::select(tidyr::starts_with("V")) %>%
       dataframe_to_matrix()
   }
 
