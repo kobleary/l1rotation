@@ -62,7 +62,6 @@ gridsize <- function(factorno) {
 
 find_min_rotation <- function(Lambda, parallel = FALSE, n_cores = NULL) {
 
-  #tictoc::tic("find_min_rotation")
   stopifnot((n_cores %% 1 == 0 & n_cores > 0) | is.null(n_cores))
   if(parallel & is.null(n_cores)) stop("parallel set to TRUE but n_cores is NULL. Please specify n_cores for parallel execution.")
   if(!parallel & !is.null(n_cores)) warning("parallel set to FALSE but n_cores is not null. Defaulting to sequential execution.")
@@ -144,8 +143,6 @@ find_min_rotation <- function(Lambda, parallel = FALSE, n_cores = NULL) {
 
   # Convert back to cartesian coordinates
   R <- spherical_to_cartesian(angles)
-
-  #timer <- tictoc::toc()
 
   return(list(R = R, l1_norm = l1_norm, exitflag = exitflag))
 }

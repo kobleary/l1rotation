@@ -44,6 +44,11 @@ find_local_factors <- function(X, r, Lambda0, parallel = FALSE, n_cores = NULL) 
   stopifnot(!any(is.na(X)))
   stopifnot(!any(is.infinite(X)))
 
+  if (any(round(t(Lambda0) %*% Lambda0) != diag(nrow = r)*n)){
+    stop('The initial estimate Lambda0 should be an orthonormal basis of the loading space.
+        Either drop argument (PCs will be used), or orthonormalize.')
+  }
+
   M <- nrow(X)
   n <- ncol(X)
   svd_X <- svd(X / sqrt(M), nu = M, nv = n)
