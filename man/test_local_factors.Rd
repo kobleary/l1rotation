@@ -2,36 +2,49 @@
 % Please edit documentation in R/test_local_factors.R
 \name{test_local_factors}
 \alias{test_local_factors}
-\title{Test for local factors, as in \code{local_factors} with additional flexibility.}
+\title{Test for the presence of local factors, as in \code{\link[=local_factors]{local_factors()}}, with additional flexibility.}
 \usage{
-test_local_factors(X, r, Lambda = NULL, eig_X = NULL, alpha_gamma = 0.05)
+test_local_factors(X, r, Lambda = NULL, alpha_gamma = 0.05)
 }
 \arguments{
 \item{X}{A (usually standardized) t by n matrix of observations.}
 
 \item{r}{An integer denoting the number of factors in X.}
 
-\item{Lambda}{(optional) a matrix that represents a sparse basis of the loading space}
+\item{Lambda}{(optional) Matrix that represents a sparse basis of the loading space.}
 
-\item{eig_X}{(optional) a vector of eigenvalues of X'X/t in decreasing order (only used if X is empty)}
-
-\item{alpha_gamma}{(optional) a numeric value (default = 0.05)
-
-#' @returns Returns a list with the following components:
-\itemize{
-\item \code{has_local_factors} a logical equal to \code{TRUE} if local factors are present
-\item \code{n_small} an integer denoting the number of small loadings in sparse rotation
-\item \code{gamma_n} an integer denoting the critical value to compare \code{n_small} to.
-\item \code{h_n} a number denoting the cutoffused to determine which loadings are small
-\item \code{Lambda} rotation of PCs with smallest l1-norm
-\item \code{rotation_diagnostics} a list containing 3 components"
-\itemize{
-\item \code{R} the rotation matrix that when used to rotate \code{Lambda0} produces the smallest l1-norm.
-\item \code{l1_norm} a vector of length \code{r} containing the value of the l1 norm each solution generates
-\item \code{sol_frequency} a vector of length \code{r} containing the frequency in the initial grid of each solution
+\item{alpha_gamma}{(optional) A numeric value that represents the tuning parameter (default = 0.05).}
 }
-}}
+\value{
+Returns a list with the following components:
+\itemize{
+\item \code{has_local_factors} Logical equal to \code{TRUE} if local factors are present.
+\item \code{n_small} Integer denoting the number of small loadings in sparse rotation.
+\item \code{gamma_n} Integer denoting the critical value to compare \code{n_small} to.
+\item \code{h_n} Number denoting the cutoff used to determine which loadings are small.
+\item \code{Lambda} Matrix that is the rotation of the loading matrix that produces the smallest l1-norm.
+}
 }
 \description{
-Test for local factors, as in \code{local_factors} with additional flexibility.
+Test for the presence of local factors, as in \code{\link[=local_factors]{local_factors()}}, with additional flexibility.
+}
+\examples{
+# Minimal example with 4 factors, where X is a 500 by 300 matrix
+r <- 4
+M <- nrow(example_data)
+n <- ncol(example_data)
+
+# Find minimum rotation
+rotation_result <- find_local_factors(X = example_data, r)
+
+# Test if sparse basis has local factors
+test_result <- test_local_factors(
+   X = example_data,
+   r = r,
+   Lambda = rotation_result$Lambda_rotated,
+   alpha_gamma = 0.05
+)
+
+test_result$has_local_factors
+
 }

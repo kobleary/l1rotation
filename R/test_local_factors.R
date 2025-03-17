@@ -1,44 +1,56 @@
-#' Test for local factors, as in `local_factors` with additional flexibility.
+#' Test for the presence of local factors, as in [local_factors()], with additional flexibility.
 #'
 #' @inheritParams local_factors
-#' @param Lambda (optional) a matrix that represents a sparse basis of the loading space
-#' @param eig_X (optional) a vector of eigenvalues of X'X/t in decreasing order (only used if X is empty)
-#' @param alpha_gamma (optional) a numeric value (default = 0.05)
+#' @param Lambda (optional) Matrix that represents a sparse basis of the loading space.
+#' @param alpha_gamma (optional) A numeric value that represents the tuning parameter (default = 0.05).
 #'
-#' #' @returns Returns a list with the following components:
-#'  * `has_local_factors` a logical equal to `TRUE` if local factors are present
-#'  * `n_small` an integer denoting the number of small loadings in sparse rotation
-#'  * `gamma_n` an integer denoting the critical value to compare `n_small` to.
-#'  * `h_n` a number denoting the cutoffused to determine which loadings are small
-#'  * `Lambda` rotation of PCs with smallest l1-norm
+#' @returns Returns a list with the following components:
+#'  * `has_local_factors` Logical equal to `TRUE` if local factors are present.
+#'  * `n_small` Integer denoting the number of small loadings in sparse rotation.
+#'  * `gamma_n` Integer denoting the critical value to compare `n_small` to.
+#'  * `h_n` Number denoting the cutoff used to determine which loadings are small.
+#'  * `Lambda` Matrix that is the rotation of the loading matrix that produces the smallest l1-norm.
 #' @export
-test_local_factors <- function(X, r, Lambda = NULL, eig_X = NULL, alpha_gamma = 0.05) {
+#'
+#' @examples
+#' # Minimal example with 4 factors, where X is a 500 by 300 matrix
+#' r <- 4
+#' M <- nrow(example_data)
+#' n <- ncol(example_data)
+#'
+#' # Find minimum rotation
+#' rotation_result <- find_local_factors(X = example_data, r)
+#'
+#' # Test if sparse basis has local factors
+#' test_result <- test_local_factors(
+#'    X = example_data,
+#'    r = r,
+#'    Lambda = rotation_result$Lambda_rotated,
+#'    alpha_gamma = 0.05
+#' )
+#'
+#' test_result$has_local_factors
+#'
+test_local_factors <- function(X, r, Lambda = NULL, alpha_gamma = 0.05) {
 
-  ## Preliminaries
-  T <- nrow(X)
-  n <- ncol(X)
+  stopifnot(is.matrix(X) | missing(X))
+  stopifnot(is.numeric(r))
+  if(r %% 1 != 0) stop(stringr::str_glue("Specified r = {r} is not an integer."))
+  stopifnot(is.numeric(alpha_gamma))
 
-  if (is.null(Lambda)) {
+  if(!is.null(Lambda)){
+
+    stopifnot(ncol(Lambda) == r)
+
+    n <- nrow(Lambda)
+    if (any(round(diag(t(Lambda) %*% Lambda)) != rep(n, r))) {
+      stop('The initial estimate Lambda0 should be an orthonormal basis of the loading space.
+        Either drop argument (PCs will be used), or orthonormalize.') }
+  } else  {
     rotation_results <- find_local_factors(X, r)
     rotation_diagnostics <- rotation_results$diagnostics
     Lambda <- rotation_results$Lambda_rotated
-
-  }
-
-  if (is.null(X)) {
     n <- nrow(Lambda)
-    if (any(round(diag(t(Lambda) %*% Lambda)) != rep(r, n))) {
-      stop("Loading matrix may not be properly normalized. Consider only passing two arguments (X,r).")
-    }
-    if (is.null(eig_X)) {
-      stop("If no data X is supplied, at least eigenvalues needed to determine critical values")
-    }
-  } else {
-    eig_X <- sort(eigen(t(X) %*% X / T)$values, decreasing = TRUE)
-  }
-
-  if (is.null(alpha_gamma)) {
-    alpha_gamma <- 0.05
   }
 
   c_gamma <- -1 * stats::qnorm(1 - alpha_gamma / 2, lower = FALSE)

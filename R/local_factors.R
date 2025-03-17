@@ -1,32 +1,53 @@
-#' Test whether local factors are present in a given dataset `X` and return the rotation of the loading matrix with the smallest l1-norm.
+utils::globalVariables(c("column", "value"))
+
+#' Check whether local factors are present and find the rotation of the loading matrix with the smallest l1-norm.
+#'
+#' @description
+#' `local_factors` tests whether local factors are present and returns both the Principal Component estimate of Lambda and the rotation of Lambda with the smallest l1-norm. It also produces graphical illustrations of the results.
 #'
 #' @param X A (usually standardized) t by n matrix of observations.
 #' @param r An integer denoting the number of factors in X.
+#' @param parallel A logical denoting whether the algorithm should be run in parallel.
+#' @param n_cores An integer denoting how many cores should be used, if parallel == TRUE.
 #'
 #' @returns Returns a list with the following components:
-#'  * `has_local_factors` a logical equal to `TRUE` if local factors are present
-#'  * `Lambda0` the principal component estimate of the loading matrix
-#'  * `Lambda_rotated` a matrix that is the rotation of the loading matrix that produces the smallest l1-norm.
-#'  * `rotation_diagnostics` a list containing 3 components"
-#'      * `R` the rotation matrix that when used to rotate `Lambda0` produces the smallest l1-norm.
-#'      * `l1_norm` a vector of length `r` containing the value of the l1 norm each solution generates
-#'      * `sol_frequency` a vector of length `r` containing the frequency in the initial grid of each solution
+#'  * `has_local_factors` A logical equal to `TRUE` if local factors are present.
+#'  * `Lambda0` Principal component estimate of the loading matrix.
+#'  * `Lambda_rotated` Matrix that is the rotation of the loading matrix that produces the smallest l1-norm.
+#'  * `rotation_diagnostics` A list containing 3 components:
+#'      * `R` Rotation matrix that when used to rotate `Lambda0` produces the smallest l1-norm.
+#'      * `l1_norm` Vector of length `r` containing the value of the l1 norm each solution generates.
+#'      * `sol_frequency` Vector of length `r` containing the frequency in the initial grid of each solution.
+#'  * `pc_plot` Tile plot of the Principal Component estimate of the loading matrix.
+#'  * `pc_rotated_plot` Tile plot of the l1-rotation of the loading matrix estimate.
+#'  * `small_loadings_plot` Plot of the number of small loadings for each column of the l1-rotation of the loading matrix estimate.
 #'
 #' @export
 #'
-local_factors <- function(X, r) {
+#'
+#' @examples
+#' # Minimal example with 4 factors, where X is a 500 by 300 matrix
+#' lf <- local_factors(X = example_data, r = 4)
+#'
+#' # Visualize Principal Component estimate of the loadings
+#' lf$pc_plot
+#'
+#' # Visualize l1-rotation loadings
+#' lf$pc_rotated_plot
+#'
+local_factors <- function(X, r, parallel = FALSE, n_cores = NULL) {
+  stopifnot(r <= ncol(X))
 
-  #set.seed(1909)
-  T <- nrow(X)
+  M <- nrow(X)
   n <- ncol(X)
 
   # Compute PCA estimates
-  pca <- svd(X / sqrt(T))
+  pca <- svd(X / sqrt(M), nu = M, nv = n)
   eig_X <- pca$d^2
   Lambda0 <- sqrt(n) * pca$v[, 1:r]
 
   # Find minimum rotation, test for local factors
-  rotn_result <- find_local_factors(X, r)
+  rotn_result <- find_local_factors(X, r, parallel = parallel, n_cores = n_cores)
   test_result <- test_local_factors(X, r, Lambda = rotn_result$Lambda_rotated)
   has_local_factors <- test_result$has_local_factors
   Lambda_rotated <- test_result$Lambda
@@ -35,7 +56,6 @@ local_factors <- function(X, r) {
   pc_plot <- plot_loading_matrix(Lambda0, xlab = "k", title = "Principal Component estimate")
   pc_rotated_plot <- plot_loading_matrix(Lambda_rotated, xlab = "k", title = "Rotated estimate (l1-criterion)")
   small_loadings_plot <- plot_small_loadings(test_result, r)
-
   return(list(
     has_local_factors = has_local_factors,
     Lambda0 = Lambda0,
@@ -48,7 +68,7 @@ local_factors <- function(X, r) {
 
 plot_loading_matrix <- function(data, xlab = "", ylab = "", title = ""){
 
-  if(is.matrix(data)) data <- convert_mat_to_df(data) %>% dplyr::glimpse()
+  if(is.matrix(data)) data <- convert_mat_to_df(data)
 
   scale_fill_pal <- select_palette(data$value, type = "level")
 
@@ -75,12 +95,11 @@ plot_small_loadings <- function(result, r, xlab = "k", ylab = "", title = ""){
   gamma <- result$gamma
   h_n <- result$h_n
 
-  tibble::as_tibble(n_small) %>%
-    tibble::rownames_to_column(var = "factor") %>%
-    dplyr::mutate(factor = as.numeric(factor)) %>%
+  data.frame(value = result$n_small) |>
+    dplyr::mutate(factor = 1:r) |>
     ggplot2::ggplot() +
     ggplot2::geom_point(ggplot2::aes(x = factor, y = value), size = 3) +
-    ggplot2::geom_hline(yintercept = gamma, linetype = "dashed", size = 1) +
+    ggplot2::geom_hline(yintercept = gamma, linetype = "dashed", linewidth = 1) +
     ggplot2::ylim(c(min(gamma - 10, min(n_small - 5)), max(gamma + 5, max(n_small) + 5))) +
     ggplot2::labs(x = xlab, y = ylab, title = title) +
     ggplot2::xlim(c(1, r)) +
@@ -89,13 +108,13 @@ plot_small_loadings <- function(result, r, xlab = "k", ylab = "", title = ""){
 }
 
 
-convert_mat_to_df <- function(mat){
+convert_mat_to_df <- function(mat, letter = "V"){
 
-  df <- mat %>% as.data.frame() %>%
-    tibble::rownames_to_column(var = "row") %>%
-    dplyr::mutate(row = factor(row, levels = 1:nrow(mat))) %>%
-    tidyr::pivot_longer(tidyselect::starts_with("V"), names_to = "column") %>%
-    dplyr::mutate(column = factor(stringr::str_remove(column, "V"), levels = 1:ncol(mat)))
+  df <- mat |> as.data.frame() |>
+    dplyr::mutate(
+      row = factor(1:nrow(mat), levels = 1:nrow(mat))) |>
+    tidyr::pivot_longer(tidyselect::starts_with(letter), names_to = "column") |>
+    dplyr::mutate(column = factor(stringr::str_remove(column, letter), levels = 1:ncol(mat)))
 
   return(df)
 }
