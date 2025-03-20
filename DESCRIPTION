@@ -24,6 +24,8 @@ Imports:
     tidyr,
     tidyselect
 Suggests: 
+    knitr,
+    rmarkdown,
     testthat (>= 3.0.0)
 Config/testthat/edition: 3
 Encoding: UTF-8
@@ -32,3 +34,4 @@ Roxygen: list(markdown = TRUE)
 RoxygenNote: 7.3.2
 URL: https://github.com/SimonFreyaldenhoven/l1rotation
 BugReports: https://github.com/SimonFreyaldenhoven/l1rotation/issues
+VignetteBuilder: knitr
