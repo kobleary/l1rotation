@@ -1,4 +1,4 @@
 load_matrix <- function(path){
-  read.csv(path, header = FALSE) |>
+  read.csv(path, header = FALSE) %>%
     as.matrix()
 }

@@ -113,14 +113,14 @@ find_min_rotation <- function(Lambda, parallel = FALSE, n_cores = NULL) {
 
     angles <- matrix(data = results$par, nrow = l, byrow = FALSE)
 
-    l1_norm <- results |>
-      dplyr::group_by(rep) |>
-      dplyr::slice(1) |>
+    l1_norm <- results %>%
+      dplyr::group_by(rep) %>%
+      dplyr::slice(1) %>%
       dplyr::pull(l1_norm)
 
-    exitflag <- results |>
-      dplyr::group_by(rep) |>
-      dplyr::slice(1) |>
+    exitflag <- results %>%
+      dplyr::group_by(rep) %>%
+      dplyr::slice(1) %>%
       dplyr::pull(exitflag)
 
   } else{

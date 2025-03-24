@@ -1,4 +1,4 @@
-utils::globalVariables(c("l1_norm", "non_outlier"))
+utils::globalVariables(c("l1_norm", "non_outlier", ".data", "x"))
 
 collate_solutions <- function(rmat_min, Lambda0, X) {
 
@@ -19,11 +19,22 @@ collate_solutions <- function(rmat_min, Lambda0, X) {
 
   distances <- calculate_pairwise_distances(rmat_min_sort, l1_min_sort, epsilon_rot, factorno)
 
+  # candidates <- distances$rmat_min_sort %>%
+  #   matrix_to_dataframe() %>%
+  #   dplyr::mutate(l1_norm = distances$l1_min_sort) %>%
+  #   dplyr::group_by(dplyr::across(tidyselect::everything())) %>%
+  #   dplyr::count() %>%
+  #   dplyr::arrange(l1_norm) %>%
+  #   dplyr::ungroup() %>%
+  #   dplyr::mutate(non_outlier = n/gridsize(factorno) >= 0.005)
+  #
+
   candidates <- distances$rmat_min_sort %>%
     matrix_to_dataframe() %>%
-    dplyr::mutate(l1_norm = distances$l1_min_sort) %>%
-    dplyr::group_by(dplyr::across(tidyselect::everything())) %>%
-    dplyr::count() %>%
+    dplyr::mutate(l1_norm = distances$l1_min_sort)
+
+  candidates <- stats::aggregate(rep(1, nrow(candidates)), by = as.list(candidates), FUN = sum) %>%
+    dplyr::rename(n = x) %>%
     dplyr::arrange(l1_norm) %>%
     dplyr::ungroup() %>%
     dplyr::mutate(non_outlier = n/gridsize(factorno) >= 0.005)
@@ -129,10 +140,11 @@ consolidate_local_mins <- function(Lambda0, candidates, sorting_column = "l0_nor
   if (sorting_column != "l1_norm") {
 
     candidates <- candidates %>%
-      dplyr::arrange(dplyr::desc(dplyr::across(tidyselect::all_of(sorting_column))))
+      dplyr::arrange(dplyr::desc(.data[[sorting_column]]))
 
-    rmat_min_unique <- candidates %>%
-      dplyr::select(tidyr::starts_with("V")) %>%
+    factor_cols <- grepl("^V", names(candidates))
+
+    rmat_min_unique <- candidates[factor_cols] %>%
       dataframe_to_matrix()
   }
 

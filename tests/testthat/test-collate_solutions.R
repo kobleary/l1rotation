@@ -90,26 +90,27 @@ test_that("nonsingular matrix columns get added to R properly", {
 
   distances <- calculate_pairwise_distances(rmat_min_sort, l1_min_sort, epsilon_rot, factorno)
 
-  candidates <- distances$rmat_min_sort |>
-    matrix_to_dataframe() |>
-    dplyr::mutate(l1_norm = distances$l1_min_sort) |>
-    dplyr::group_by(dplyr::across(tidyselect::everything())) |>
-    dplyr::count() |>
-    dplyr::arrange(l1_norm) |>
-    dplyr::ungroup() |>
+  candidates <- distances$rmat_min_sort %>%
+    matrix_to_dataframe() %>%
+    dplyr::mutate(l1_norm = distances$l1_min_sort)
+
+  candidates <- stats::aggregate(rep(1, nrow(candidates)), by = as.list(candidates), FUN = sum) %>%
+    dplyr::rename(n = x) %>%
+    dplyr::arrange(l1_norm) %>%
+    dplyr::ungroup() %>%
     dplyr::mutate(non_outlier = n/gridsize(factorno) >= 0.005)
 
   # Construct R from the candidates
-  rmat_min_unique <- candidates |>
-    dplyr::filter(non_outlier) |>
-    dplyr::select(-c(l1_norm, n, non_outlier)) |>
+  rmat_min_unique <- candidates %>%
+    dplyr::filter(non_outlier) %>%
+    dplyr::select(-c(l1_norm, n, non_outlier)) %>%
     dataframe_to_matrix()
 
   h_n <- 1/log(n)
   amount_sparsity <- colSums(abs(Lambda0 %*% rmat_min_unique) < h_n)
 
-  candidates <- candidates |>
-    dplyr::filter(non_outlier) |>
+  candidates <- candidates %>%
+    dplyr::filter(non_outlier) %>%
     dplyr::mutate(l0_norm = amount_sparsity)
 
   # up until here, candidates are arranged by l1 norm

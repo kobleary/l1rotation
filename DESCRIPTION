@@ -20,9 +20,7 @@ Imports:
     pracma,
     scales,
     stats,
-    stringr,
-    tidyr,
-    tidyselect
+    stringr
 Suggests: 
     knitr,
     rmarkdown,
