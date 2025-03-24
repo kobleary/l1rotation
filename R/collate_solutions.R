@@ -19,16 +19,6 @@ collate_solutions <- function(rmat_min, Lambda0, X) {
 
   distances <- calculate_pairwise_distances(rmat_min_sort, l1_min_sort, epsilon_rot, factorno)
 
-  # candidates <- distances$rmat_min_sort %>%
-  #   matrix_to_dataframe() %>%
-  #   dplyr::mutate(l1_norm = distances$l1_min_sort) %>%
-  #   dplyr::group_by(dplyr::across(tidyselect::everything())) %>%
-  #   dplyr::count() %>%
-  #   dplyr::arrange(l1_norm) %>%
-  #   dplyr::ungroup() %>%
-  #   dplyr::mutate(non_outlier = n/gridsize(factorno) >= 0.005)
-  #
-
   candidates <- distances$rmat_min_sort %>%
     matrix_to_dataframe() %>%
     dplyr::mutate(l1_norm = distances$l1_min_sort)

@@ -122,20 +122,6 @@ convert_mat_to_df <- function(mat){
   return(df)
 }
 
-# convert_mat_to_df <- function(mat, letter = "V"){
-#
-#   df <- mat %>% as.data.frame() %>%
-#     dplyr::mutate(
-#       row = factor(1:nrow(mat), levels = 1:nrow(mat))) %>%
-#     tidyr::pivot_longer(tidyselect::starts_with(letter), names_to = "column") %>%
-#     dplyr::mutate(column = factor(stringr::str_remove(column, letter), levels = 1:ncol(mat)))
-#
-#   return(df)
-# }
-
-
-
-
 select_palette <- function(range, type, breaks = NULL){
 
   # Define midpoint
