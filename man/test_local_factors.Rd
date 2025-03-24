@@ -4,7 +4,7 @@
 \alias{test_local_factors}
 \title{Test for the presence of local factors, as in \code{\link[=local_factors]{local_factors()}}, with additional flexibility.}
 \usage{
-test_local_factors(X, r, Lambda = NULL, alpha_gamma = 0.05)
+test_local_factors(X, r, Lambda = NULL)
 }
 \arguments{
 \item{X}{A (usually standardized) t by n matrix of observations.}
@@ -12,8 +12,6 @@ test_local_factors(X, r, Lambda = NULL, alpha_gamma = 0.05)
 \item{r}{An integer denoting the number of factors in X.}
 
 \item{Lambda}{(optional) Matrix that represents a sparse basis of the loading space.}
-
-\item{alpha_gamma}{(optional) A numeric value that represents the tuning parameter (default = 0.05).}
 }
 \value{
 Returns a list with the following components:
@@ -41,8 +39,7 @@ rotation_result <- find_local_factors(X = example_data, r)
 test_result <- test_local_factors(
    X = example_data,
    r = r,
-   Lambda = rotation_result$Lambda_rotated,
-   alpha_gamma = 0.05
+   Lambda = rotation_result$Lambda_rotated
 )
 
 test_result$has_local_factors

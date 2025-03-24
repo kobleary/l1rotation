@@ -2,7 +2,6 @@
 #'
 #' @inheritParams local_factors
 #' @param Lambda (optional) Matrix that represents a sparse basis of the loading space.
-#' @param alpha_gamma (optional) A numeric value that represents the tuning parameter (default = 0.05).
 #'
 #' @returns Returns a list with the following components:
 #'  * `has_local_factors` Logical equal to `TRUE` if local factors are present.
@@ -25,18 +24,16 @@
 #' test_result <- test_local_factors(
 #'    X = example_data,
 #'    r = r,
-#'    Lambda = rotation_result$Lambda_rotated,
-#'    alpha_gamma = 0.05
+#'    Lambda = rotation_result$Lambda_rotated
 #' )
 #'
 #' test_result$has_local_factors
 #'
-test_local_factors <- function(X, r, Lambda = NULL, alpha_gamma = 0.05) {
+test_local_factors <- function(X, r, Lambda = NULL) {
 
   stopifnot(is.matrix(X) | missing(X))
   stopifnot(is.numeric(r))
   if(r %% 1 != 0) stop(stringr::str_glue("Specified r = {r} is not an integer."))
-  stopifnot(is.numeric(alpha_gamma))
 
   if(!is.null(Lambda)){
 
@@ -53,12 +50,15 @@ test_local_factors <- function(X, r, Lambda = NULL, alpha_gamma = 0.05) {
     n <- nrow(Lambda)
   }
 
+  # Set hyperparameters
+  alpha_gamma <- 0.05
   c_gamma <- -1 * stats::qnorm(1 - alpha_gamma / 2, lower = FALSE)
   gamma0 <- 0.03
   h_n <- 1 / log(n)
   expected_small <- 1 / 2 * pracma::erfc(-h_n / sqrt(2)) - 1 / 2 * pracma::erfc(h_n / sqrt(2))
   gamma <- gamma0 + expected_small + c_gamma * sqrt((expected_small * (1 - expected_small)) / n)
   gamma_n <- floor(gamma * n)
+
   n_small <- colSums(abs(Lambda) < h_n)
   most_small <- sort(n_small, decreasing = TRUE)
   has_local_factors <- most_small[1] > gamma_n
