@@ -1,0 +1,9 @@
+citHeader("To cite l1rotation in publications use:")
+
+bibentry(
+  bibtype  = "Misc",
+  title    = "l1rotation package",
+  author   = "Simon Freyaldenhoven, Ryan Kobler",
+  url      = "https://github.com/SimonFreyaldenhoven/l1rotation",
+  year     = 2025
+)

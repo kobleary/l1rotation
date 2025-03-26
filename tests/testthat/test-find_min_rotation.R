@@ -69,7 +69,7 @@ test_that("normalization works", {
 
 test_that("data.frame to find_min_rotation returns an error", {
   r <- 4
-  Lambda <- matrix(stats::rnorm(r * 100), nrow = 100) |>
+  Lambda <- matrix(stats::rnorm(r * 100), nrow = 100) %>%
     as.data.frame()
   expect_error(find_min_rotation(Lambda))
 
@@ -102,7 +102,7 @@ test_that("objective function works with spherical_to_cartesian(), r = 3", {
 
   r <- 3
   Lambda <- matrix(stats::rnorm(r * 100), nrow = 100)
-  theta <- matrix(stats::rnorm(r * 4), nrow = r) |> cartesian_to_spherical()
+  theta <- matrix(stats::rnorm(r * 4), nrow = r) %>% cartesian_to_spherical()
   theta <- theta[,1]
 
   computed <- objectivefcn_spherical(theta, Lambda)
@@ -127,7 +127,7 @@ test_that("objective function works with spherical_to_cartesian(), r = 2", {
 
   r <- 2
   Lambda <- matrix(stats::rnorm(r * 100), nrow = 100)
-  theta <- matrix(stats::rnorm(r * 4), nrow = r) |> cartesian_to_spherical()
+  theta <- matrix(stats::rnorm(r * 4), nrow = r) %>% cartesian_to_spherical()
   theta <- theta[,1]
 
   computed <- objectivefcn_spherical(theta, Lambda)
@@ -151,7 +151,7 @@ test_that("objective function with length(theta) =/= ncol(Lambda) returns non-co
 
   r <- 2
   Lambda <- matrix(stats::rnorm((r + 1) * 100), nrow = 100)
-  theta <- matrix(stats::rnorm((r-1) * 4), nrow = r) |> cartesian_to_spherical()
+  theta <- matrix(stats::rnorm((r-1) * 4), nrow = r) %>% cartesian_to_spherical()
   theta <- theta[,1]
 
   expect_error(objectivefcn_spherical(theta, Lambda), "non-conformable")

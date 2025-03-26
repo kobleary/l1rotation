@@ -95,8 +95,8 @@ plot_small_loadings <- function(result, r, xlab = "k", ylab = "", title = ""){
   gamma <- result$gamma
   h_n <- result$h_n
 
-  data.frame(value = result$n_small) |>
-    dplyr::mutate(factor = 1:r) |>
+  data.frame(value = result$n_small) %>%
+    dplyr::mutate(factor = 1:r) %>%
     ggplot2::ggplot() +
     ggplot2::geom_point(ggplot2::aes(x = factor, y = value), size = 3) +
     ggplot2::geom_hline(yintercept = gamma, linetype = "dashed", linewidth = 1) +
@@ -108,18 +108,19 @@ plot_small_loadings <- function(result, r, xlab = "k", ylab = "", title = ""){
 }
 
 
-convert_mat_to_df <- function(mat, letter = "V"){
+convert_mat_to_df <- function(mat){
 
-  df <- mat |> as.data.frame() |>
-    dplyr::mutate(
-      row = factor(1:nrow(mat), levels = 1:nrow(mat))) |>
-    tidyr::pivot_longer(tidyselect::starts_with(letter), names_to = "column") |>
-    dplyr::mutate(column = factor(stringr::str_remove(column, letter), levels = 1:ncol(mat)))
+  r <- ncol(mat)
+  n <- nrow(mat)
+
+  df <- data.frame(
+    value = as.numeric(mat), row = rep(1:n, r),
+    column = as.numeric(sapply(1:r, rep, times = n))
+  ) %>%
+    dplyr::mutate(column = factor(column, levels = 1:ncol(mat)))
 
   return(df)
 }
-
-
 
 select_palette <- function(range, type, breaks = NULL){
 

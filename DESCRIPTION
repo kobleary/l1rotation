@@ -1,5 +1,5 @@
 Package: l1rotation
-Title: Identify Individual Loading Vectors under Sparsity in Factor Models
+Title: Identify Loading Vectors under Sparsity in Factor Models
 Version: 0.0.0.9000
 Authors@R: c(
     person("Simon", "Freyaldenhoven", , "simon.freyaldenhoven@phil.frb.org", role = c("aut", "cph")),
@@ -20,10 +20,10 @@ Imports:
     pracma,
     scales,
     stats,
-    stringr,
-    tidyr,
-    tidyselect
+    stringr
 Suggests: 
+    knitr,
+    rmarkdown,
     testthat (>= 3.0.0)
 Config/testthat/edition: 3
 Encoding: UTF-8
@@ -32,3 +32,4 @@ Roxygen: list(markdown = TRUE)
 RoxygenNote: 7.3.2
 URL: https://github.com/SimonFreyaldenhoven/l1rotation
 BugReports: https://github.com/SimonFreyaldenhoven/l1rotation/issues
+VignetteBuilder: knitr
