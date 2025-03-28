@@ -19,7 +19,7 @@
 #'
 #' @examples
 #' # Minimal example with 4 factors, where X is a 500 by 300 matrix
-#' r <- 4
+#' r <- 2
 #' M <- nrow(example_data)
 #' n <- ncol(example_data)
 #'
@@ -40,15 +40,34 @@ find_local_factors <- function(X, r, Lambda0, parallel = FALSE, n_cores = NULL) 
   #   Lambda_rotated: Rotation of loading matrix with smallest l1-norm
   #   diagnostics: A list of diagnostics
 
-  # X cannot have missing values
-  stopifnot(!any(is.na(X)))
-  stopifnot(!any(is.infinite(X)))
-  M <- nrow(X)
+  stopifnot(is.matrix(X) | is.data.frame(X))
+  if("data.frame" %in% class(X)) X <- as.matrix(X)
+  stopifnot(is.numeric(r))
+  stopifnot(r %% 1 == 0 & r > 0)
+  stopifnot(ncol(X) >= r)
+  if(any(is.na(X)) | any(is.infinite(X))) stop("X cannot contain missing or infinite values.")
+  if(!all(is.numeric(X))) stop("X cannot contain non-numeric values.")
+
+
+  if(!missing(Lambda0)){
+    stopifnot(is.matrix(Lambda0))
+    stopifnot(ncol(Lambda0) > 1)
+    if(any(is.na(Lambda0)) | any(is.infinite(Lambda0))) stop("Lambda0 cannot contain missing or infinite values.")
+    if(!all(is.numeric(Lambda0))) stop("Lambda0 cannot contain non-numeric values.")
+  }
+
+  stopifnot(is.numeric(n_cores) | is.null(n_cores))
+  if(is.numeric(n_cores)) stopifnot(n_cores %% 1 == 0)
+  stopifnot(is.logical(parallel))
+  if(parallel & is.null(n_cores)) stop("parallel set to TRUE but n_cores is NULL. Please specify n_cores for parallel execution.")
+  if(!parallel & !is.null(n_cores)) warning("parallel set to FALSE but n_cores is not null. Defaulting to sequential execution.")
+
   n <- ncol(X)
-  svd_X <- svd(X / sqrt(M), nu = M, nv = n)
-  eig_X <- svd_X$d^2
 
   if (missing(Lambda0)) {
+    M <- nrow(X)
+    svd_X <- svd(X / sqrt(M), nu = M, nv = n)
+    eig_X <- svd_X$d^2
     Lambda0 <- sqrt(n) * svd_X$v[, 1:r]
   }
 

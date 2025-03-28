@@ -5,6 +5,7 @@ collate_solutions <- function(rmat_min, Lambda0, X) {
   stopifnot(nrow(rmat_min) == ncol(Lambda0))
   stopifnot(is.matrix(rmat_min))
   stopifnot(is.matrix(Lambda0))
+  stopifnot(is.matrix(X))
 
   n <- nrow(Lambda0)
   factorno <- nrow(rmat_min)

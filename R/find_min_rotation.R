@@ -62,15 +62,16 @@ gridsize <- function(factorno) {
 
 find_min_rotation <- function(Lambda, parallel = FALSE, n_cores = NULL) {
 
-  stopifnot((n_cores %% 1 == 0 & n_cores > 0) | is.null(n_cores))
-  if(parallel & is.null(n_cores)) stop("parallel set to TRUE but n_cores is NULL. Please specify n_cores for parallel execution.")
-  if(!parallel & !is.null(n_cores)) warning("parallel set to FALSE but n_cores is not null. Defaulting to sequential execution.")
-
-
   stopifnot(is.matrix(Lambda))
   stopifnot(ncol(Lambda) > 1)
   if(any(is.na(Lambda)) | any(is.infinite(Lambda))) stop("Lambda contains missing or infinite values.")
   if(!all(is.numeric(Lambda))) stop("Lambda contains non-numeric values.")
+
+  stopifnot((n_cores %% 1 == 0 & n_cores > 0) | is.null(n_cores))
+  stopifnot(is.logical(parallel))
+  if(parallel & is.null(n_cores)) stop("parallel set to TRUE but n_cores is NULL. Please specify n_cores for parallel execution.")
+  if(!parallel & !is.null(n_cores)) warning("parallel set to FALSE but n_cores is not null. Defaulting to sequential execution.")
+
 
   if(parallel) cluster <- setup_cluster(n_cores)
 

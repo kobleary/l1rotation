@@ -13,7 +13,7 @@
 #'
 #' @examples
 #' # Minimal example with 4 factors, where X is a 500 by 300 matrix
-#' r <- 4
+#' r <- 2
 #' M <- nrow(example_data)
 #' n <- ncol(example_data)
 #'
@@ -31,26 +31,27 @@
 #'
 test_local_factors <- function(X, r, Lambda = NULL) {
 
-  stopifnot(is.matrix(X) | missing(X))
+  stopifnot(is.matrix(X) | is.data.frame(X))
+  if("data.frame" %in% class(X)) X <- as.matrix(X)
   stopifnot(is.numeric(r))
-  if(r %% 1 != 0) stop(stringr::str_glue("Specified r = {r} is not an integer."))
+  stopifnot(r %% 1 == 0 & r > 0)
+  stopifnot(ncol(X) >= r)
+
+  if(any(is.na(X)) | any(is.infinite(X))) stop("X cannot contain missing or infinite values.")
+  if(!all(is.numeric(X))) stop("X cannot contain non-numeric values.")
 
   if(!is.null(Lambda)){
-
+    stopifnot(is.matrix(Lambda))
     stopifnot(ncol(Lambda) == r)
-
-    n <- nrow(Lambda)
-    if (any(round(diag(t(Lambda) %*% Lambda)) != rep(n, r))) {
-      stop('The initial estimate Lambda0 should be an orthonormal basis of the loading space.
-        Either drop argument (PCs will be used), or orthonormalize.') }
+    stopifnot(ncol(Lambda) > 1)
+    if(any(is.na(Lambda)) | any(is.infinite(Lambda))) stop("Lambda cannot contain missing or infinite values.")
+    if(!all(is.numeric(Lambda))) stop("Lambda cannot contain non-numeric values.")
   } else  {
-    rotation_results <- find_local_factors(X, r)
-    rotation_diagnostics <- rotation_results$diagnostics
-    Lambda <- rotation_results$Lambda_rotated
-    n <- nrow(Lambda)
+    Lambda <- find_local_factors(X, r)$Lambda_rotated
   }
 
   # Set hyperparameters
+  n <- nrow(Lambda)
   alpha_gamma <- 0.05
   c_gamma <- -1 * stats::qnorm(1 - alpha_gamma / 2, lower = FALSE)
   gamma0 <- 0.03

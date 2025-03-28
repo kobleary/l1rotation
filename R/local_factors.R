@@ -27,7 +27,7 @@ utils::globalVariables(c("column", "value"))
 #'
 #' @examples
 #' # Minimal example with 4 factors, where X is a 500 by 300 matrix
-#' lf <- local_factors(X = example_data, r = 4)
+#' lf <- local_factors(X = example_data, r = 2)
 #'
 #' # Visualize Principal Component estimate of the loadings
 #' lf$pc_plot
@@ -36,7 +36,22 @@ utils::globalVariables(c("column", "value"))
 #' lf$pc_rotated_plot
 #'
 local_factors <- function(X, r, parallel = FALSE, n_cores = NULL) {
-  stopifnot(r <= ncol(X))
+
+  stopifnot(is.matrix(X) | is.data.frame(X))
+  if("data.frame" %in% class(X)) X <- as.matrix(X)
+  stopifnot(is.numeric(r))
+  stopifnot(r %% 1 == 0 & r > 0)
+  stopifnot(ncol(X) >= r)
+
+  if(any(is.na(X)) | any(is.infinite(X))) stop("X cannot contain missing or infinite values.")
+  if(!all(is.numeric(X))) stop("X cannot contain non-numeric values.")
+
+  stopifnot(is.numeric(n_cores) | is.null(n_cores))
+  if(is.numeric(n_cores)) stopifnot(n_cores %% 1 == 0 & n_cores > 0)
+  stopifnot(is.logical(parallel))
+  if(parallel & is.null(n_cores)) stop("parallel set to TRUE but n_cores is NULL. Please specify n_cores for parallel execution.")
+  if(!parallel & !is.null(n_cores)) warning("parallel set to FALSE but n_cores is not null. Defaulting to sequential execution.")
+
 
   M <- nrow(X)
   n <- ncol(X)
