@@ -59,6 +59,19 @@ test_that("matlab and R produce same rotated Lambda in example 1 (using l0 norm 
 
 })
 
+test_that("matlab and csv R produce same rotated Lambda in example 1 (using l0 norm to order)", {
+  skip_on_cran()
+
+  mat <- load_matrix(testthat::test_path("fixtures","lambda_rotated_ex1.csv"))
+  dimnames(mat) <- NULL
+  X <- read.csv(testthat::test_path("fixtures", "example_data1.csv"), header = FALSE)
+
+  ex1 <- local_factors(X, 4)
+
+  expect_equal(ex1$Lambda_rotated, mat, tolerance = 0.01)
+
+})
+
 test_that("local_factors returns error when missing values are in the data matrix", {
 
   X <- load_matrix(testthat::test_path("fixtures", "example_data1.csv"))
