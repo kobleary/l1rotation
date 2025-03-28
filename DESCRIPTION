@@ -19,8 +19,7 @@ Imports:
     matrixStats,
     pracma,
     scales,
-    stats,
-    stringr
+    stats
 Suggests: 
     knitr,
     rmarkdown,
