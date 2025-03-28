@@ -38,10 +38,10 @@ library(l1rotation)
 set.seed(916) 
 
 # Minimal example with 4 factors, where X is a 224 by 207 matrix
-lf <- local_factors(X = example_data, r = 4)
+lf <- local_factors(X = example_data, r = 2)
 
 # Rerun with parallel processing
-lf_lambdas <- find_local_factors(X = example_data, r = 4, parallel = TRUE, n_cores = 10)
+lf_lambdas <- find_local_factors(X = example_data, r = 2, parallel = TRUE, n_cores = 10)
 
 # Visualize Principal Component estimate of the loadings
 lf$pc_plot

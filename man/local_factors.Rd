@@ -37,7 +37,7 @@ Returns a list with the following components:
 }
 \examples{
 # Minimal example with 4 factors, where X is a 500 by 300 matrix
-lf <- local_factors(X = example_data, r = 4)
+lf <- local_factors(X = example_data, r = 2)
 
 # Visualize Principal Component estimate of the loadings
 lf$pc_plot

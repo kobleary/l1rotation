@@ -28,7 +28,7 @@ Test for the presence of local factors, as in \code{\link[=local_factors]{local_
 }
 \examples{
 # Minimal example with 4 factors, where X is a 500 by 300 matrix
-r <- 4
+r <- 2
 M <- nrow(example_data)
 n <- ncol(example_data)
 

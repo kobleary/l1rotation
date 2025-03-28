@@ -35,7 +35,7 @@ Find the most sparse rotation of an orthonormal basis of the loading space of a 
 }
 \examples{
 # Minimal example with 4 factors, where X is a 500 by 300 matrix
-r <- 4
+r <- 2
 M <- nrow(example_data)
 n <- ncol(example_data)
 
