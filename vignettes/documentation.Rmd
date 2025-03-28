@@ -88,7 +88,7 @@ Additionally, there are several rotation diagnostics accessible via `rotation_di
 ```{r}
 lf$rotation_diagnostics
 ```
-For a visual interpretation of this rotation, we provide tile plots contrasting the initial estimate $\Lambda_0$, `pc_plot` and the rotated estimate, $\hat{\Lambda}^*$, `pc_rotated_plot`.
+For a visual interpretation of this rotation, we provide tile plots contrasting the initial estimate $\Lambda_0$, `pc_plot` and the rotated estimate, $\hat{\Lambda}^*$, `rotated_plot`.
 
 ```{r}
 lf$pc_plot
@@ -97,7 +97,7 @@ lf$pc_plot
 In the initial principal component estimate, recall that each factor is simply a principal component. Of the 207 variables in $X$, the first factor loads negatively along the variables between 90 and 120, and slightly negatively almost everywhere else. Along the second factor, there are positive loadings between variables 125 and 200 and slightly negative loadings elsewhere. However, it may be difficult to interpret the relationship between variables and factors when all loadings are nonzero. 
 
 ```{r}
-lf$pc_rotated_plot
+lf$rotated_plot
 ```
 
 
@@ -143,10 +143,10 @@ This value is the result of `test_local_factors()`. To verify, we can call `test
 
 ```{r}
 # Check for local factors in PC estimate...
-test_pc_estimate <- test_local_factors(X = example_data, r = 2, Lambda = lf$Lambda0)
+test_pc_estimate <- test_local_factors(X = example_data, r = 2, loadings = lf$initial_loadings)
 
 # And rotated estimate
-test_rot_estimate <- test_local_factors(X = example_data, r = 2, Lambda = lf$Lambda)
+test_rot_estimate <- test_local_factors(X = example_data, r = 2, loadings = lf$rotated_loadings)
 
 test_pc_estimate$has_local_factors
 test_rot_estimate$has_local_factors
@@ -163,7 +163,7 @@ round_hn <- round(test_rot_estimate$h_n, digits = 3)
 lf$small_loadings_plot + 
   ggplot2::labs(
     title = 'Number of "small" loadings per factor', 
-    caption = stringr::str_glue('"Small" is defined as loadings less than {round_hn}')
+    caption = paste('"Small" is defined as loadings less than', round_hn)
   )
 ```
 

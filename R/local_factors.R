@@ -3,7 +3,7 @@ utils::globalVariables(c("column", "value"))
 #' Check whether local factors are present and find the rotation of the loading matrix with the smallest l1-norm.
 #'
 #' @description
-#' `local_factors` tests whether local factors are present and returns both the Principal Component estimate of Lambda and the rotation of Lambda with the smallest l1-norm. It also produces graphical illustrations of the results.
+#' `local_factors` tests whether local factors are present and returns both the Principal Component estimate of the loadings and the rotation of the loadings with the smallest l1-norm. It also produces graphical illustrations of the results.
 #'
 #' @param X A (usually standardized) t by n matrix of observations.
 #' @param r An integer denoting the number of factors in X.
@@ -12,21 +12,21 @@ utils::globalVariables(c("column", "value"))
 #'
 #' @returns Returns a list with the following components:
 #'  * `has_local_factors` A logical equal to `TRUE` if local factors are present.
-#'  * `Lambda0` Principal component estimate of the loading matrix.
-#'  * `Lambda_rotated` Matrix that is the rotation of the loading matrix that produces the smallest l1-norm.
+#'  * `initial_loadings` Principal component estimate of the loading matrix.
+#'  * `rotated_loadings` Matrix that is the rotation of the loading matrix that produces the smallest l1-norm.
 #'  * `rotation_diagnostics` A list containing 3 components:
-#'      * `R` Rotation matrix that when used to rotate `Lambda0` produces the smallest l1-norm.
+#'      * `R` Rotation matrix that when used to rotate `initial_loadings` produces the smallest l1-norm.
 #'      * `l1_norm` Vector of length `r` containing the value of the l1 norm each solution generates.
 #'      * `sol_frequency` Vector of length `r` containing the frequency in the initial grid of each solution.
 #'  * `pc_plot` Tile plot of the Principal Component estimate of the loading matrix.
-#'  * `pc_rotated_plot` Tile plot of the l1-rotation of the loading matrix estimate.
+#'  * `rotated_plot` Tile plot of the l1-rotation of the loading matrix estimate.
 #'  * `small_loadings_plot` Plot of the number of small loadings for each column of the l1-rotation of the loading matrix estimate.
 #'
 #' @export
 #'
 #'
 #' @examples
-#' # Minimal example with 4 factors, where X is a 500 by 300 matrix
+#' # Minimal example with 2 factors, where X is a 224 by 207 matrix
 #' lf <- local_factors(X = example_data, r = 2)
 #'
 #' # Visualize Principal Component estimate of the loadings
@@ -59,25 +59,25 @@ local_factors <- function(X, r, parallel = FALSE, n_cores = NULL) {
   # Compute PCA estimates
   pca <- svd(X / sqrt(M), nu = M, nv = n)
   eig_X <- pca$d^2
-  Lambda0 <- sqrt(n) * pca$v[, 1:r]
+  initial_loadings <- sqrt(n) * pca$v[, 1:r]
 
   # Find minimum rotation, test for local factors
   rotn_result <- find_local_factors(X, r, parallel = parallel, n_cores = n_cores)
-  test_result <- test_local_factors(X, r, Lambda = rotn_result$Lambda_rotated)
+  test_result <- test_local_factors(X, r, loadings = rotn_result$rotated_loadings)
   has_local_factors <- test_result$has_local_factors
-  Lambda_rotated <- test_result$Lambda
+  rotated_loadings <- rotn_result$rotated_loadings
 
   # Illustrate loading matrices
-  pc_plot <- plot_loading_matrix(Lambda0, xlab = "k", title = "Principal Component estimate")
-  pc_rotated_plot <- plot_loading_matrix(Lambda_rotated, xlab = "k", title = "Rotated estimate (l1-criterion)")
+  pc_plot <- plot_loading_matrix(initial_loadings, xlab = "k", title = "Principal Component estimate")
+  rotated_plot <- plot_loading_matrix(rotated_loadings, xlab = "k", title = "Rotated estimate (l1-criterion)")
   small_loadings_plot <- plot_small_loadings(test_result, r)
   return(list(
     has_local_factors = has_local_factors,
-    Lambda0 = Lambda0,
-    Lambda_rotated = Lambda_rotated,
+    initial_loadings = initial_loadings,
+    rotated_loadings = rotated_loadings,
     rotation_diagnostics = rotn_result$diagnostics,
     pc_plot = pc_plot,
-    pc_rotated_plot = pc_rotated_plot,
+    rotated_plot = rotated_plot,
     small_loadings_plot = small_loadings_plot))
 }
 
@@ -85,7 +85,7 @@ plot_loading_matrix <- function(data, xlab = "", ylab = "", title = ""){
 
   if(is.matrix(data)) data <- convert_mat_to_df(data)
 
-  scale_fill_pal <- select_palette(data$value, type = "level")
+  scale_fill_pal <- select_palette(data$value, type = "difference")
 
   ggplot2::ggplot(data, ggplot2::aes(column, as.numeric(row), fill = value)) +
     ggplot2::geom_tile() +

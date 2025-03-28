@@ -4,14 +4,14 @@
 \alias{test_local_factors}
 \title{Test for the presence of local factors, as in \code{\link[=local_factors]{local_factors()}}, with additional flexibility.}
 \usage{
-test_local_factors(X, r, Lambda = NULL)
+test_local_factors(X, r, loadings = NULL)
 }
 \arguments{
 \item{X}{A (usually standardized) t by n matrix of observations.}
 
 \item{r}{An integer denoting the number of factors in X.}
 
-\item{Lambda}{(optional) Matrix that represents a sparse basis of the loading space.}
+\item{loadings}{(optional) Matrix that represents a sparse basis of the loading space.}
 }
 \value{
 Returns a list with the following components:
@@ -20,14 +20,14 @@ Returns a list with the following components:
 \item \code{n_small} Integer denoting the number of small loadings in sparse rotation.
 \item \code{gamma_n} Integer denoting the critical value to compare \code{n_small} to.
 \item \code{h_n} Number denoting the cutoff used to determine which loadings are small.
-\item \code{Lambda} Matrix that is the rotation of the loading matrix that produces the smallest l1-norm.
+\item \code{loadings} Matrix that is the rotation of the loadings that produces the smallest l1-norm (if not supplied).
 }
 }
 \description{
 Test for the presence of local factors, as in \code{\link[=local_factors]{local_factors()}}, with additional flexibility.
 }
 \examples{
-# Minimal example with 4 factors, where X is a 500 by 300 matrix
+# Minimal example with 2 factors, where X is a 224 by 207 matrix
 r <- 2
 M <- nrow(example_data)
 n <- ncol(example_data)
@@ -39,7 +39,7 @@ rotation_result <- find_local_factors(X = example_data, r)
 test_result <- test_local_factors(
    X = example_data,
    r = r,
-   Lambda = rotation_result$Lambda_rotated
+   loadings = rotation_result$rotated_loadings
 )
 
 test_result$has_local_factors

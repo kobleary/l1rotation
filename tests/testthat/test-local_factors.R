@@ -7,7 +7,7 @@ test_that("matlab and R produce same rotated Lambda in single realization, r = 2
   result_matlab <- as.matrix(result_matlab)
   dimnames(result_matlab) <- NULL
 
-  expect_equal(result$Lambda_rotated, result_matlab, tolerance = 0.0001)
+  expect_equal(result$rotated_loadings, result_matlab, tolerance = 0.0001)
 
 })
 
@@ -19,7 +19,7 @@ test_that("matlab and R produce same rotated Lambda in example 1 (using l1 norm 
 
   ex1 <- local_factors(X, 4)
 
-  expect_equal(ex1$Lambda_rotated, mat, tolerance = 0.0001)
+  expect_equal(ex1$rotated_loadings, mat, tolerance = 0.0001)
 
 })
 
@@ -38,9 +38,9 @@ test_that("local factors produces same rotation matrix (R) across same seed set 
   expect_identical(result1$rotation_diagnostics$R, result2$rotation_diagnostics$R)
   expect_identical(result1$rotation_diagnostics$fval, result2$rotation_diagnostics$fval)
   expect_identical(result1$rotation_diagnostics$sol_frequency, result2$rotation_diagnostics$sol_frequency)
-  expect_identical(result1$rotation_diagnostics$Lambda0, result2$rotation_diagnostics$Lambda0)
-  expect_identical(result1$rotation_diagnostics$Lambda_rotated, result2$rotation_diagnostics$Lambda_rotated)
-  expect_identical(result1$rotation_diagnostics$Lambda0, result2$rotation_diagnostics$Lambda0)
+  expect_identical(result1$rotation_diagnostics$initial_loadings, result2$rotation_diagnostics$initial_loadings)
+  expect_identical(result1$rotation_diagnostics$rotated_loadings, result2$rotation_diagnostics$rotated_loadings)
+  expect_identical(result1$rotation_diagnostics$initial_loadings, result2$rotation_diagnostics$initial_loadings)
 
 })
 
@@ -55,7 +55,7 @@ test_that("matlab and R produce same rotated Lambda in example 1 (using l0 norm 
 
   ex1 <- local_factors(X, 4)
 
-  expect_equal(ex1$Lambda_rotated, mat, tolerance = 0.01)
+  expect_equal(ex1$rotated_loadings, mat, tolerance = 0.01)
 
 })
 
@@ -68,7 +68,7 @@ test_that("matlab and csv R produce same rotated Lambda in example 1 (using l0 n
 
   ex1 <- local_factors(X, 4)
 
-  expect_equal(ex1$Lambda_rotated, mat, tolerance = 0.01)
+  expect_equal(ex1$rotated_loadings, mat, tolerance = 0.01)
 
 })
 

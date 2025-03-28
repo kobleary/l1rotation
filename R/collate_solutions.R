@@ -1,18 +1,18 @@
 utils::globalVariables(c("l1_norm", "non_outlier", ".data", "x"))
 
-collate_solutions <- function(rmat_min, Lambda0, X) {
+collate_solutions <- function(rmat_min, initial_loadings, X) {
 
-  stopifnot(nrow(rmat_min) == ncol(Lambda0))
+  stopifnot(nrow(rmat_min) == ncol(initial_loadings))
   stopifnot(is.matrix(rmat_min))
-  stopifnot(is.matrix(Lambda0))
+  stopifnot(is.matrix(initial_loadings))
   stopifnot(is.matrix(X))
 
-  n <- nrow(Lambda0)
+  n <- nrow(initial_loadings)
   factorno <- nrow(rmat_min)
   no_randomgrid <- ncol(rmat_min)
   epsilon_rot <- 0.05
 
-  l1_min <- colSums(abs(Lambda0 %*% rmat_min))
+  l1_min <- colSums(abs(initial_loadings %*% rmat_min))
   sort_index <- order(l1_min)
   l1_min_sort <- l1_min[sort_index]
   rmat_min_sort <- rmat_min[, sort_index]
@@ -37,18 +37,18 @@ collate_solutions <- function(rmat_min, Lambda0, X) {
     dataframe_to_matrix()
 
   h_n <- 1/log(n)
-  amount_sparsity <- colSums(abs(Lambda0 %*% rmat_min_unique) < h_n)
+  amount_sparsity <- colSums(abs(initial_loadings %*% rmat_min_unique) < h_n)
 
   candidates <- candidates %>%
     dplyr::filter(non_outlier) %>%
     dplyr::mutate(l0_norm = amount_sparsity)
 
   # up until here, candidates are arranged by l1 norm
-  consolidated_mins <- consolidate_local_mins(Lambda0, candidates, sorting_column = "l0_norm")
+  consolidated_mins <- consolidate_local_mins(initial_loadings, candidates, sorting_column = "l0_norm")
 
-  consolidated_mins <- fill_with_pc(consolidated_mins, Lambda0, X, factorno)
+  consolidated_mins <- fill_with_pc(consolidated_mins, initial_loadings, X, factorno)
 
-  Lambda_rotated <- consolidated_mins$Lambda_rotated
+  rotated_loadings <- consolidated_mins$rotated_loadings
   R <- consolidated_mins$R
 
   loadings <- matrix_to_dataframe(R) %>%
@@ -61,7 +61,7 @@ collate_solutions <- function(rmat_min, Lambda0, X) {
   return(
     list(
       diagnostics = list(R = R, fval = loadings$l1_norm, sol_frequency = loadings$n),
-      Lambda_rotated = consolidated_mins$Lambda_rotated
+      rotated_loadings = consolidated_mins$rotated_loadings
     )
   )
 
@@ -122,7 +122,7 @@ matrix_to_dataframe <- function(matrix){
   matrix %>% t() %>% as.data.frame()
 }
 
-consolidate_local_mins <- function(Lambda0, candidates, sorting_column = "l0_norm") {
+consolidate_local_mins <- function(initial_loadings, candidates, sorting_column = "l0_norm") {
 
   # Sorting column determines what is used to pick local minima
   # n - number of occurences
@@ -140,60 +140,60 @@ consolidate_local_mins <- function(Lambda0, candidates, sorting_column = "l0_nor
   }
 
   # Consolidate candidates
-  Lambda_rotated <- Lambda0 %*% rmat_min_unique[, 1] # First candidate
+  rotated_loadings <- initial_loadings %*% rmat_min_unique[, 1] # First candidate
   R <- rmat_min_unique[, 1]
 
   factorno <- nrow(rmat_min_unique)
   upperK <- ncol(rmat_min_unique)
-  n <- nrow(Lambda0)
+  n <- nrow(initial_loadings)
 
    for (kk in 2:upperK) {
 
-     temp <- cbind(Lambda_rotated, Lambda0 %*% rmat_min_unique[, kk])
+     temp <- cbind(rotated_loadings, initial_loadings %*% rmat_min_unique[, kk])
      non_singular <- min(eigen(t(temp) %*% temp)$values / n) > sqrt(1 / factorno) / 3 &&
-       min(eigen(t(temp) %*% temp)$values / n) > min(eigen(t(Lambda_rotated) %*% Lambda_rotated)$values / n) / 4
+       min(eigen(t(temp) %*% temp)$values / n) > min(eigen(t(rotated_loadings) %*% rotated_loadings)$values / n) / 4
 
      if(non_singular){
-       Lambda_rotated <- temp
+       rotated_loadings <- temp
        R <- cbind(R, rmat_min_unique[, kk])
      }
    }
 
-  return(list(Lambda_rotated = Lambda_rotated, R = R))
+  return(list(rotated_loadings = rotated_loadings, R = R))
 
 }
 
 
-fill_with_pc <- function(consolidated_mins, Lambda0, X, factorno){
+fill_with_pc <- function(consolidated_mins, initial_loadings, X, factorno){
 
-  Lambda_rotated <- consolidated_mins$Lambda_rotated
+  rotated_loadings <- consolidated_mins$rotated_loadings
   R <- consolidated_mins$R
 
-  candidateno <- ncol(Lambda_rotated)
+  candidateno <- ncol(rotated_loadings)
   I <- diag(factorno)
   l1_norm_update <- c()
   n <- nrow(X)
   t <- ncol(X)
 
-  temp_F <-(X %*% Lambda0/n) %*% solve(t(Lambda0) %*% Lambda0/n)
+  temp_F <-(X %*% initial_loadings/n) %*% solve(t(initial_loadings) %*% initial_loadings/n)
   eig_x <- diag(t(temp_F) %*% temp_F) * (n/t)
 
   while (candidateno < factorno) {
     print("Supplementing with PCs...")
     min_eig <- rep(0, factorno)
     for (ell in 1:factorno) {
-      temp <- cbind(Lambda_rotated, Lambda0[, ell])
+      temp <- cbind(rotated_loadings, initial_loadings[, ell])
       min_eig[ell] <- min(eigen(t(temp) %*% temp)$values)
     }
     index <- which.max(min_eig * sqrt(eig_x[1:factorno]))
-    Lambda_rotated <- cbind(Lambda_rotated, Lambda0[, index])
+    rotated_loadings <- cbind(rotated_loadings, initial_loadings[, index])
     R <- cbind(R, I[, index])
     print(paste("PC used:", index))
-    l1_norm_update <- c(l1_norm_update, sum(abs(Lambda0[, index])))
+    l1_norm_update <- c(l1_norm_update, sum(abs(initial_loadings[, index])))
 
-    candidateno <- ncol(Lambda_rotated)
+    candidateno <- ncol(rotated_loadings)
   }
 
-  return(list(Lambda_rotated = Lambda_rotated, R = R, l1_norm_update = l1_norm_update))
+  return(list(rotated_loadings = rotated_loadings, R = R, l1_norm_update = l1_norm_update))
 
 }

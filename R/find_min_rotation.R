@@ -35,9 +35,9 @@ spherical_to_cartesian <- function(theta){
   return(R)
 }
 
-objectivefcn_spherical <- function(theta, Lambda) {
+objectivefcn_spherical <- function(theta, initial_loadings) {
   R <- spherical_to_cartesian(theta)
-  sum(abs(Lambda %*% R))
+  sum(abs(initial_loadings %*% R))
 }
 
 gridsize <- function(factorno) {
@@ -60,12 +60,12 @@ gridsize <- function(factorno) {
 }
 
 
-find_min_rotation <- function(Lambda, parallel = FALSE, n_cores = NULL) {
+find_min_rotation <- function(initial_loadings, parallel = FALSE, n_cores = NULL) {
 
-  stopifnot(is.matrix(Lambda))
-  stopifnot(ncol(Lambda) > 1)
-  if(any(is.na(Lambda)) | any(is.infinite(Lambda))) stop("Lambda contains missing or infinite values.")
-  if(!all(is.numeric(Lambda))) stop("Lambda contains non-numeric values.")
+  stopifnot(is.matrix(initial_loadings))
+  stopifnot(ncol(initial_loadings) > 1)
+  if(any(is.na(initial_loadings)) | any(is.infinite(initial_loadings))) stop("initial_loadings contains missing or infinite values.")
+  if(!all(is.numeric(initial_loadings))) stop("initial_loadings contains non-numeric values.")
 
   stopifnot((n_cores %% 1 == 0 & n_cores > 0) | is.null(n_cores))
   stopifnot(is.logical(parallel))
@@ -75,7 +75,7 @@ find_min_rotation <- function(Lambda, parallel = FALSE, n_cores = NULL) {
 
   if(parallel) cluster <- setup_cluster(n_cores)
 
-  r <- ncol(Lambda)
+  r <- ncol(initial_loadings)
   no_draws <- gridsize(r)
   l1_norm <- rep(0, no_draws)
   exitflag <- rep(0, no_draws)
@@ -101,7 +101,7 @@ find_min_rotation <- function(Lambda, parallel = FALSE, n_cores = NULL) {
       starting_point <- theta[, rep]
       result <- stats::optim(
         starting_point,
-        objectivefcn_spherical, Lambda = Lambda,
+        objectivefcn_spherical, initial_loadings = initial_loadings,
         control = list(maxit = 200 * l, ndeps = 1e-4, reltol = 1e-7, warn.1d.NelderMead = FALSE),
         method = 'Nelder-Mead'
       )
@@ -131,7 +131,7 @@ find_min_rotation <- function(Lambda, parallel = FALSE, n_cores = NULL) {
       starting_point <- theta[, rep]
       result <- stats::optim(
         starting_point,
-        objectivefcn_spherical, Lambda = Lambda,
+        objectivefcn_spherical, initial_loadings = initial_loadings,
         control = list(maxit = 200 * l, ndeps = 1e-4, reltol = 1e-7, warn.1d.NelderMead = FALSE),
         method = 'Nelder-Mead'
       )
@@ -171,10 +171,6 @@ normalize <- function(X, p = 2){
 
 # Returns the norm of each column of a matrix
 vecnorm <- function(X, p = 2){
-  #stopifnot(is.matrix(X))
-  # if(!is.matrix(X)){
-  #   pracma::Norm(X[(kk):r, ], p = 2)
-  # }
   apply(X, p = p, 2, pracma::Norm)
 }
 

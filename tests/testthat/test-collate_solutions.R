@@ -19,7 +19,7 @@ test_that("collating solutions does not depend on a seed, returns same result (l
   sol2 <- collate_solutions(rmat_min, Lambda, X)
 
   expect_equal(sol1$diagnostics$R, sol2$diagnostics$R)
-  expect_equal(sol1$Lambda_rotated, sol2$Lambda_rotated)
+  expect_equal(sol1$rotated_loadings, sol2$rotated_loadings)
   expect_equal(sol1$diagnostics$fval, sol2$diagnostics$fval)
   expect_equal(sol1$diagnostics$sol_frequency, sol2$diagnostics$sol_frequency)
 })
@@ -42,7 +42,7 @@ test_that("collating solutions does not depend on seed, returns same result (sin
   result1 <- collate_solutions(rotn$R, Lambda0, X)
   result2 <- collate_solutions(rotn$R, Lambda0, X)
 
-  expect_equal(result1$Lambda_rotated, result2$Lambda_rotated)
+  expect_equal(result1$rotated_loadings, result2$rotated_loadings)
   expect_equal(result1$diagnostics$R, result2$diagnostics$R)
   expect_equal(result1$diagnostics$fval, result2$diagnostics$fval)
   expect_equal(result1$diagnostics$sol_frequency, result2$diagnostics$sol_frequency)
@@ -116,9 +116,9 @@ test_that("nonsingular matrix columns get added to R properly", {
   # up until here, candidates are arranged by l1 norm
   consolidated_mins <- consolidate_local_mins(Lambda0, candidates, sorting_column = "l0_norm")
 
-  consolidated_mins$Lambda_rotated <- consolidated_mins$Lambda_rotated[,1:3]
+  consolidated_mins$rotated_loadings <- consolidated_mins$rotated_loadings[,1:3]
 
-  Lambda_rotated <- fill_with_pc(consolidated_mins, Lambda0, X, r)$Lambda_rotated
+  Lambda_rotated <- fill_with_pc(consolidated_mins, Lambda0, X, r)$rotated_loadings
 
   is_equal_to_pca_column <- any(sapply(1:4, \(col) all(Lambda_rotated[,4] == Lambda0[,col])))
 
