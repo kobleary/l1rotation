@@ -52,7 +52,7 @@ lf_lambdas <- find_local_factors(X = example_data, r = 2, parallel = TRUE, n_cor
 lf$pc_plot
 
 # Visualize l1-rotation loadings
-lf$pc_rotated_plot
+lf$rotated_plot
 ```
 
 ## Citation

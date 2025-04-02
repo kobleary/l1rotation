@@ -52,7 +52,7 @@ lf$pc_plot
 ``` r
 
 # Visualize l1-rotation loadings
-lf$pc_rotated_plot
+lf$rotated_plot
 ```
 
 ![](man/figures/README-example-2.png)<!-- -->
