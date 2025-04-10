@@ -22,14 +22,6 @@ knitr::opts_chunk$set(
 )
 ```
 
-
-## Table of Contents {#toc}
-
-1. [Introduction](#intro)
-2. [Quick Start](#start)
-3. [Refining the Details](#details)
-    a. [find_local_factors()](#flf)
-    b. [test_local_factors()](#tlf)
   
 
 ## Introduction {#intro}
@@ -59,7 +51,7 @@ This package is designed to identify and estimate $\Lambda^{*}$ subject to addit
 
 ## Quick start {#start}
 
-We will use the `example_data` data that ships with the package to show its basic functionality. This data is a matrix containing numeric information with $n = 224$, $T = 207$. In general, you will need to convert data.frames, tibbles, or other data types to a matrix or array for use with `l1rotation` functions. Note also that the package cannot handle missing values in the data matrix. 
+We will use the `example_data` data that ships with the package to show its basic functionality. This data is a matrix containing numeric information with $n = 224$, $T = 207$. In general, data.frames, tibbles, or other data types can also be used with `l1rotation` functions, as long as all columns are numeric. Note also that the package cannot handle missing values in the data matrix. 
 
 To start, let's look at the first seven columns of the example data:
 
@@ -67,7 +59,7 @@ To start, let's look at the first seven columns of the example data:
 head(example_data[,1:7])
 ```
 
-We assume that the number of underlying factors can be learned from the data (following the procedure in [Bai and Ng (2002)](https://onlinelibrary.wiley.com/doi/epdf/10.1111/1468-0262.00273)). For the `example_data` we will use four factors. With just the data, $X$, and the number of factors, $r$, we can start estimating the loadings with `local_factors()`. This function estimates $\Lambda^{*}$ and provides helpful diagnostics and figures. 
+We assume that the number of underlying factors can be learned from the data (following the procedure in [Bai and Ng (2002)](https://onlinelibrary.wiley.com/doi/epdf/10.1111/1468-0262.00273)). For the `example_data` we will use two factors. With just the data, $X$, and the number of factors, $r$, we can start estimating the loadings with `local_factors()`. This function estimates $\Lambda^{*}$ and provides helpful diagnostics and figures. 
 
 Below is an example using `example_data` (note that estimation can also be run in parallel with a selected number of cores, `n_cores`):
 
@@ -75,7 +67,7 @@ Below is an example using `example_data` (note that estimation can also be run i
 set.seed(916)
 
 lf <- local_factors(
-  X = example_data, r = 4,
+  X = example_data, r = 2,
   parallel = FALSE, n_cores = NULL # Runs non-parallel by default
 )
 
@@ -88,7 +80,7 @@ Additionally, there are several rotation diagnostics accessible via `rotation_di
 ```{r}
 lf$rotation_diagnostics
 ```
-For a visual interpretation of this rotation, we provide tile plots contrasting the initial estimate $\Lambda_0$, `pc_plot` and the rotated estimate, $\hat{\Lambda}^*$, `pc_rotated_plot`.
+For a visual interpretation of this rotation, we provide tile plots contrasting the initial estimate $\Lambda_0$, `pc_plot` and the rotated estimate, $\hat{\Lambda}^*$, `rotated_plot`.
 
 ```{r}
 lf$pc_plot
@@ -97,7 +89,7 @@ lf$pc_plot
 In the initial principal component estimate, recall that each factor is simply a principal component. Of the 207 variables in $X$, the first factor loads negatively along the variables between 90 and 120, and slightly negatively almost everywhere else. Along the second factor, there are positive loadings between variables 125 and 200 and slightly negative loadings elsewhere. However, it may be difficult to interpret the relationship between variables and factors when all loadings are nonzero. 
 
 ```{r}
-lf$pc_rotated_plot
+lf$rotated_plot
 ```
 
 
@@ -143,10 +135,10 @@ This value is the result of `test_local_factors()`. To verify, we can call `test
 
 ```{r}
 # Check for local factors in PC estimate...
-test_pc_estimate <- test_local_factors(X = example_data, r = 4, Lambda = lf$Lambda0)
+test_pc_estimate <- test_local_factors(X = example_data, r = 2, loadings = lf$initial_loadings)
 
 # And rotated estimate
-test_rot_estimate <- test_local_factors(X = example_data, r = 4, Lambda = lf$Lambda)
+test_rot_estimate <- test_local_factors(X = example_data, r = 2, loadings = lf$rotated_loadings)
 
 test_pc_estimate$has_local_factors
 test_rot_estimate$has_local_factors
@@ -163,9 +155,9 @@ round_hn <- round(test_rot_estimate$h_n, digits = 3)
 lf$small_loadings_plot + 
   ggplot2::labs(
     title = 'Number of "small" loadings per factor', 
-    caption = stringr::str_glue('"Small" is defined as loadings less than {round_hn}')
+    caption = paste('"Small" is defined as loadings less than', round_hn)
   )
 ```
 
-Finally, given the testing plot above, we can conclude that factors 1 and 2 are likely local whereas 3 and 4 are not, since they do not have enough "small" loadings (i.e., smaller than a value of $h_n = 1/\log(n) =$ `r round_hn` in the `example_data`).
+Finally, given the testing plot above, we can conclude that factors 1 and 2 are likely local since they have enough "small" loadings (i.e., smaller than a value of $h_n = 1/\log(n) =$ `r round_hn` in the `example_data`).
 

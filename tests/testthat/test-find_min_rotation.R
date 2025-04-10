@@ -82,7 +82,7 @@ test_that("missing values in Lambda returns an error", {
   na_indexes <- sample(1:length(Lambda), 10)
   Lambda[na_indexes] <- NA
 
-  expect_error(find_min_rotation(Lambda, parallel = FALSE), "Lambda contains missing or infinite values.")
+  expect_error(find_min_rotation(Lambda, parallel = FALSE), "initial_loadings contains missing or infinite values.")
 
 })
 
@@ -93,7 +93,7 @@ test_that("non-numeric values in Lambda returns an error", {
   indexes <- sample(1:length(Lambda), 10)
   Lambda[indexes] <- "string"
 
-  expect_error(find_min_rotation(Lambda, parallel = FALSE), "Lambda contains non-numeric values.")
+  expect_error(find_min_rotation(Lambda, parallel = FALSE), "initial_loadings contains non-numeric values.")
 })
 
 
@@ -186,7 +186,7 @@ test_that("single realization returns same R matrix", {
     starting_point <- theta[, rep]
     result <- stats::optim(
       starting_point,
-      objectivefcn_spherical, Lambda = Lambda,
+      objectivefcn_spherical, initial_loadings = Lambda,
       control = list(maxit = 200 * l, ndeps = 1e-8, reltol = 1e-8, warn.1d.NelderMead = FALSE),
       method = 'Nelder-Mead'
     )
@@ -206,7 +206,7 @@ test_that("single realization returns same R matrix", {
   result_matlab <- collate_solutions(R_matlab, Lambda, X)
 
   expect_equal(result$diagnostics$R, result_matlab$diagnostics$R, tolerance = 0.0001)
-  expect_equal(result$Lambda_rotated, result_matlab$Lambda_rotated, tolerance = 0.0001)
+  expect_equal(result$rotated_loadings, result_matlab$rotated_loadings, tolerance = 0.0001)
   expect_equal(result$fval, result_matlab$fval, tolerance = 0.0001)
   expect_equal(result$sol_frequency, result_matlab$sol_frequency, tolerance = 0.0001)
 
