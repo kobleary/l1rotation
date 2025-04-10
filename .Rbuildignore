@@ -10,3 +10,8 @@
 ^issues
 ^example.R
 ^docs$
+^vignettes/articles/\.quarto$
+^vignettes/articles/*_files$
+^vignettes/articles$
+^vignettes/\.quarto$
+^vignettes/*.qmd

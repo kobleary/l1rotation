@@ -22,14 +22,6 @@ knitr::opts_chunk$set(
 )
 ```
 
-
-## Table of Contents {#toc}
-
-1. [Introduction](#intro)
-2. [Quick Start](#start)
-3. [Refining the Details](#details)
-    a. [find_local_factors()](#flf)
-    b. [test_local_factors()](#tlf)
   
 
 ## Introduction {#intro}
