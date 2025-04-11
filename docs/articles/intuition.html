@@ -37,8 +37,9 @@
 <li class="active nav-item dropdown">
   <button class="nav-link dropdown-toggle" type="button" id="dropdown-articles" data-bs-toggle="dropdown" aria-expanded="false" aria-haspopup="true">Articles</button>
   <ul class="dropdown-menu" aria-labelledby="dropdown-articles">
-<li><a class="dropdown-item" href="../articles/documentation.html">Introduction to l1rotation</a></li>
+<li><a class="dropdown-item" href="../articles/documentation.html">Getting Started</a></li>
     <li><a class="dropdown-item" href="../articles/intuition.html">Background and Intuition</a></li>
+    <li><a class="dropdown-item" href="../articles/macro_application.html">Application</a></li>
   </ul>
 </li>
 <li class="nav-item"><a class="nav-link" href="../news/index.html">Changelog</a></li>
@@ -96,10 +97,10 @@
 <li><p><span class="math inline">\(\lambda_{ik}^*\)</span> as the entry in <span class="math inline">\(\Lambda^{*}\)</span> in the <span class="math inline">\(i\)</span>th row and <span class="math inline">\(k\)</span>th column</p></li>
 </ul>
 <p>This <span class="math inline">\(\lambda_{ik}^*\)</span> shows how factor <span class="math inline">\(k\)</span> is related to, or “loads onto,” variable <span class="math inline">\(i\)</span>. Note that the <span class="math inline">\(k\)</span>th column of <span class="math inline">\(\Lambda^*\)</span> will be referred to as <span class="math inline">\(\lambda_k^*\)</span>.</p>
-<p>Since <span class="math inline">\(r\)</span> can be learned from the data (cite) we can assume <span class="math inline">\(r\)</span> is known. Next, we’re interested in estimating a set of factors <span class="math inline">\(F\)</span>, that compress the data into fewer columns, and loadings <span class="math inline">\(\Lambda^*\)</span>, that show how the factors are related to the original columns. However, there is no unique <span class="math inline">\(F\)</span> and <span class="math inline">\(\Lambda^*\)</span> that satisfies the equation above. In fact, infinitely many will. This is referred to as rotational indeterminacy and this issue makes interpretation of the loadings matrix tricky.</p>
+<p>Since <span class="math inline">\(r\)</span> can be learned from the data (following the procedure in <a href="https://onlinelibrary.wiley.com/doi/epdf/10.1111/1468-0262.00273" class="external-link">Bai and Ng (2002)</a>) we can assume <span class="math inline">\(r\)</span> is known. Next, we’re interested in estimating a set of factors <span class="math inline">\(F\)</span>, that compress the data into fewer columns, and loadings <span class="math inline">\(\Lambda^*\)</span>, that show how the factors are related to the original columns. However, there is no unique <span class="math inline">\(F\)</span> and <span class="math inline">\(\Lambda^*\)</span> that satisfies the equation above. In fact, infinitely many will. This is referred to as rotational indeterminacy and this issue makes interpretation of the loadings matrix tricky.</p>
 </section><section class="level2"><h2 id="problem-rotational-indeterminacy">Problem: Rotational Indeterminacy<a class="anchor" aria-label="anchor" href="#problem-rotational-indeterminacy"></a>
 </h2>
-<p>To see the problem, let <span class="math inline">\(H\)</span> be any nonsingular <span class="math inline">\(r \times r\)</span> matrix. We can define <span class="math inline">\(\Lambda^0 = \Lambda^* (H^T)^{-1}\)</span> and <span class="math inline">\(F^0 = FH\)</span>. This tells us that</p>
+<p>To see the problem, let <span class="math inline">\(H\)</span> be any nonsingular <span class="math inline">\(r \times r\)</span> matrix. We can define <span class="math inline">\(\Lambda^0 = \Lambda^* (H')^{-1}\)</span> and <span class="math inline">\(F^0 = FH\)</span>. This tells us that</p>
 <p><span class="math display">\[
 \begin{align}
 X &amp; = F^0 \Lambda^{0'} \\
@@ -145,10 +146,10 @@ X &amp; = F^0 \Lambda^{0'} \\
 \]</span> such that <span class="math inline">\(R\)</span> is nonsingular and <span class="math inline">\(||r_k||_2 = 1\)</span> where <span class="math inline">\(r_k\)</span> is a row in <span class="math inline">\(R\)</span>. This keeps the length of each loading vector fixed, ensuring we look only at rotations of each initial loading vector. Since the length remains constant, we can transform this constrained optimization problem into an unconstrained one by converting to polar coordinates. In the case of two factors, in the constrained version we want to find weights <span class="math inline">\(w_1, w_2\)</span> that minimize</p>
 <p><span class="math display">\[
 || w_1 \lambda_1^0 + w_2 \lambda_2^0 ||_1 \quad s.t. \quad w_1^2 + w_2^2 = 1.
-\]</span> In spherical (in this case, polar) coordinates, this amounts to finding an angle <span class="math inline">\(\theta\)</span> that minimizes</p>
+\]</span> In spherical coordinates, this amounts to finding an angle <span class="math inline">\(\theta\)</span> that minimizes</p>
 <p><span class="math display">\[
 ||\lambda_1^0 \cos \theta + \lambda_2^0 \sin \theta ||_1.
-\]</span> The objective function becomes slightly more complicated with more than two factors because we span higher dimensional space than a plane and therefore need to optimize across multiple angles. But the idea remains the same.</p>
+\]</span> The unconstrained objective function becomes slightly more complicated in the general case of more than two factors because we span higher dimensional space than a plane and therefore need to optimize across multiple angles. But the idea remains the same.</p>
 </section></section><section class="level2"><h2 id="a-simple-example">A simple example<a class="anchor" aria-label="anchor" href="#a-simple-example"></a>
 </h2>
 <p>Let’s consider an example we can visualize fully: we’ll use the following simulated data that has three columns (<span class="math inline">\(n = 3\)</span>) and suppose we know that there are two factors, <span class="math inline">\(r = 2\)</span>. Below only the first 6 of 224 total rows are printed.</p>

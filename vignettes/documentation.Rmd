@@ -1,5 +1,5 @@
 ---
-title: "Introduction to l1rotation"
+title: "Getting Started"
 output: 
   rmarkdown::html_vignette:
   toc: true
@@ -35,7 +35,7 @@ The `l1rotation` package offers functionality to estimate the loadings matrix in
 Factor models take the form 
 
 $$
-X = F \Lambda^{*T} + e
+X = F \Lambda^{*'} + e
 $$
 where 
 
@@ -43,7 +43,7 @@ where
 
 - $F$ is a $T \times r$ matrix of $r$ factors that the data is decomposed into
 
-- $\Lambda^{*T}$ is an $r \times n$ matrix of true loadings
+- $\Lambda^{*'}$ is an $r \times n$ matrix of true loadings
 
 - $e$ is a $T \times n$ error matrix.
 

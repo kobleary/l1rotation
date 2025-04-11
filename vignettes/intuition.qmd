@@ -41,12 +41,12 @@ where there are
 
 This $\lambda_{ik}^*$ shows how factor $k$ is related to, or "loads onto," variable $i$. Note that the $k$th column of $\Lambda^*$ will be referred to as $\lambda_k^*$. 
 
-Since $r$ can be learned from the data (cite) we can assume $r$ is known. Next, we're interested in estimating a set of factors $F$, that compress the data into fewer columns, and loadings $\Lambda^*$, that show how the factors are related to the original columns. However, there is no unique $F$ and $\Lambda^*$ that satisfies the equation above. In fact, infinitely many will. This is referred to as rotational indeterminacy and this issue makes interpretation of the loadings matrix tricky. 
+Since $r$ can be learned from the data (following the procedure in [Bai and Ng (2002)](https://onlinelibrary.wiley.com/doi/epdf/10.1111/1468-0262.00273)) we can assume $r$ is known. Next, we're interested in estimating a set of factors $F$, that compress the data into fewer columns, and loadings $\Lambda^*$, that show how the factors are related to the original columns. However, there is no unique $F$ and $\Lambda^*$ that satisfies the equation above. In fact, infinitely many will. This is referred to as rotational indeterminacy and this issue makes interpretation of the loadings matrix tricky. 
 
 
 ## Problem: Rotational Indeterminacy 
 
-To see the problem, let $H$ be any nonsingular $r \times r$ matrix. We can define $\Lambda^0 = \Lambda^* (H^T)^{-1}$ and $F^0 = FH$. This tells us that 
+To see the problem, let $H$ be any nonsingular $r \times r$ matrix. We can define $\Lambda^0 = \Lambda^* (H')^{-1}$ and $F^0 = FH$. This tells us that 
 
 $$
 \begin{align}
@@ -109,12 +109,12 @@ such that $R$ is nonsingular and $||r_k||_2 = 1$ where $r_k$ is a row in $R$. Th
 $$
 || w_1 \lambda_1^0 + w_2 \lambda_2^0 ||_1 \quad s.t. \quad w_1^2 + w_2^2 = 1.
 $$
-In spherical (in this case, polar) coordinates, this amounts to finding an angle $\theta$ that minimizes 
+In spherical coordinates, this amounts to finding an angle $\theta$ that minimizes 
 
 $$
 ||\lambda_1^0 \cos \theta + \lambda_2^0 \sin \theta ||_1.
 $$
-The objective function becomes slightly more complicated with more than two factors because we span higher dimensional space than a plane and therefore need to optimize across multiple angles. But the idea remains the same. 
+The unconstrained objective function becomes slightly more complicated in the general case of more than two factors because we span higher dimensional space than a plane and therefore need to optimize across multiple angles. But the idea remains the same. 
 
 ## A simple example
 
