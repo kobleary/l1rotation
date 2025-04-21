@@ -25,7 +25,7 @@ We say the data, $X$, follows a **factor structure** if:
 
 $$
 \begin{align}
-\underset{(n \times 1)}{X_{t}} &= \underset{(n \times r)}{\Lambda^{*}_{\vphantom{t}}} \underset{(r \times 1)}{F_t} + \underset{(n \times 1)}{e_{t}} \forall t, \qquad \text{or more compactly,} \qquad \underset{(T \times n)}{X} = \underset{(T \times r)}{F} \underset{(r \times n)}{\Lambda^{*'}}  + \underset{(T \times n)}{e} 
+\underset{(T \times n)}{X} = \underset{(T \times r)}{F} \underset{(r \times n)}{\Lambda^{*'}}  + \underset{(T \times n)}{e} 
 \end{align}
 $$
 
@@ -41,12 +41,13 @@ where there are
 
 This $\lambda_{ik}^*$ shows how factor $k$ is related to, or "loads onto," variable $i$. Note that the $k$th column of $\Lambda^*$ will be referred to as $\lambda_k^*$. 
 
-Since $r$ can be learned from the data (following the procedure in [Bai and Ng (2002)](https://onlinelibrary.wiley.com/doi/epdf/10.1111/1468-0262.00273)) we can assume $r$ is known. Next, we're interested in estimating a set of factors $F$, that compress the data into fewer columns, and loadings $\Lambda^*$, that show how the factors are related to the original columns. However, there is no unique $F$ and $\Lambda^*$ that satisfies the equation above. In fact, infinitely many will. This is referred to as rotational indeterminacy and this issue makes interpretation of the loadings matrix tricky. 
-
+Since $r$ can be learned from the data (following the procedure in [Bai and Ng (2002)](https://onlinelibrary.wiley.com/doi/epdf/10.1111/1468-0262.00273)) we can assume $r$ is known. Next, we're interested in estimating the true set of factors $F$, that compress the data into fewer columns, and true loadings $\Lambda^*$, that show how the factors are related to the original columns. 
 
 ## Problem: Rotational Indeterminacy 
 
-To see the problem, let $H$ be any nonsingular $r \times r$ matrix. We can define $\Lambda^0 = \Lambda^* (H')^{-1}$ and $F^0 = FH$. This tells us that 
+However, there is no unique estimate of $F$ and estimate of $\Lambda^*$ that satisfies the equation above. In fact, infinitely many will. This is referred to as rotational indeterminacy and this issue makes interpretation of the loadings matrix tricky. 
+
+To see the problem, let $H$ be any nonsingular $r \times r$ matrix. We can define an estimate $\Lambda^0 = \Lambda^* (H')^{-1}$ and $F^0 = FH$. This tells us that 
 
 $$
 \begin{align}
@@ -57,7 +58,7 @@ X & = F^0 \Lambda^{0'} \\
 \end{align}
 $$
 
-Hence $X$ can be explained identically well by any "rotation" $H$ of the loadings and factors, and each rotation provides a different interpretation of how the factors and variables are related. So how can we find the correct rotation, or interpretation?
+Hence $X = F^0\Lambda^0' = F\Lambda^*$ can be explained identically well by any "rotation" $H$ of the true loadings and factors. Each arbitrary rotation $H$ corresponds to a different but seemingly valid decomposition of $X$ that provides an alternate interpretation of how the factors and variables are related. But we are interested in the true relationship, $\Lambda^*$. So how can we recover the true interpretation?
 
 
 ## Solution: Use Sparsity
@@ -85,14 +86,14 @@ The steps are below:
 1. Take the principal components estimator as starting point to obtain $\Lambda^0$
 2. Find loadings $\Lambda^*$ equal to the rotation of $\Lambda^0$ that minimizes the number of non-zero elements (the $l_0$ norm) in the loading vectors
 
-Unfortunately, the $l_0$ norm is infeasible to optimize over in practice. To see why, let's examine the figure below. The distance from the origin to each red point depicts the $l_0$ norm of points along the unit circle. The blue points depict the $l_1$ norm and the gray points depict the $l_2$ norm In the $l_2$ case, these distances remain constant as we traverse the circle. 
+Unfortunately, the $l_0$ norm is infeasible to optimize over in practice. To see why, let's examine the figure below. The distance from the origin to each red point depicts the $l_0$ norm of points along the unit circle. The blue points depict the $l_1$ norm and the gray points depict the $l_2$ norm. In the $l_2$ case, these distances remain constant as we traverse the circle. 
 
 
 ![Geometric Intuition of Various Norms](geom_intuition.png)
 
 The $l_0$ norm directly computes the number of nonzero elements, shown by the red points at (1, 0), (0, 1), (-1, 0) and (0, -1) that are each a distance of 1 away from the origin. The remaining red points are a distance of 2 away from the origin corresponding to the 2 nonzero elements in all other points along the unit circle.  Since the blue and red dots coincide at the above four points, the $l_1$ norm is minimized at the same points as the $l_0$ norm. But the $l_1$ norm has a much smoother descent to these minima compared with the discontinuities that occur with the red points. This smooth function is easier to traverse and optimize over.
 
-So throughout, we'll continue to maximize sparsity indirectly but more easily by swapping the $l_1$ norm for the $l_0$ norm for the optimization benefits. 
+So throughout, we'll continue to maximize sparsity indirectly but more easily by using the $l_1$ norm instead of the $l_0$ norm for the optimization benefits. 
 
 
 ### Objective Function

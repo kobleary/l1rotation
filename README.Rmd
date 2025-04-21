@@ -38,7 +38,6 @@ Find a minimal example below.
 For more examples see the package [documentation](https://cran.r-project.org/package=l1rotation/l1rotation.pdf) and [vignette](https://cran.r-project.org/package=l1rotation/vignettes/documentation.html).
 
 ```{r example}
-
 library(l1rotation)
 set.seed(916) 
 
@@ -57,7 +56,7 @@ lf$rotated_plot
 
 ## Citation
 
-Simon Freyaldenhoven."Identification Through Sparsity in Factor Models: the l1-rotation criterion" [Working Paper](https://simonfreyaldenhoven.github.io/papers/factor_rotation.pdf),
+Simon Freyaldenhoven. "Identification Through Sparsity in Factor Models: the l1-rotation criterion." [Working Paper](https://simonfreyaldenhoven.github.io/papers/factor_rotation.pdf),
 February 2025.
 
 Simon Freyaldenhoven, Ryan Kobler. "`l1rotation` package." Code and data repository at https://github.com/SimonFreyaldenhoven/l1rotation, March 2025.
