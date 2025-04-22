@@ -58,7 +58,7 @@ X & = F^0 \Lambda^{0'} \\
 \end{align}
 $$
 
-Hence $X = F^0\Lambda^0' = F\Lambda^*$ can be explained identically well by any "rotation" $H$ of the true loadings and factors. Each arbitrary rotation $H$ corresponds to a different but seemingly valid decomposition of $X$ that provides an alternate interpretation of how the factors and variables are related. But we are interested in the true relationship, $\Lambda^*$. So how can we recover the true interpretation?
+Hence $X = F^0\Lambda^{0'} = F\Lambda^*$ can be explained identically well by any "rotation" $H$ of the true loadings and factors. Each arbitrary rotation $H$ corresponds to a different but seemingly valid decomposition of $X$ that provides an alternate interpretation of how the factors and variables are related. But we are interested in the true relationship, $\Lambda^*$. So how can we recover the true interpretation?
 
 
 ## Solution: Use Sparsity
@@ -271,14 +271,14 @@ Plot.plot({
 //| echo: false
 //| output: false
 
-height = 400;
+height = 450;
 camera = {
   const fov = 45;
   const aspect = width / height;
   const near = 1;
   const far = 1000;
   const camera = new THREE.PerspectiveCamera(fov, aspect, near, far);
-  camera.position.set(2, 2, -2)
+  camera.position.set(-2*2, 2*2, -2*2)
   camera.lookAt(new THREE.Vector3(0, 0, 0));
   return camera;
 }
