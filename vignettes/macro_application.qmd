@@ -28,7 +28,11 @@ me <- normalizePath(
 
 ## Macroeconomic Indicators
 
-Let's now apply the `l1rotation` package to a large panel of US macroeconomic indicators. The below dataset is the FRED_QD data collected and maintained by Michael W. McCracken available [here](https://www.stlouisfed.org/research/economists/mccracken/fred-databases). The below final sample is also used in the paper and can be found under the local_factors.zip [here](https://simonfreyaldenhoven.github.io/software/). Let's read it in.
+Let's now apply the `l1rotation` package to a large panel of US macroeconomic indicators, following one of the examples provided in [Freyaldenhoven (2025)](https://simonfreyaldenhoven.github.io/papers/factor_rotation.pdf). The below dataset is the FRED_QD data collected and maintained by Michael W. McCracken available [here](https://www.stlouisfed.org/research/economists/mccracken/fred-databases). 
+
+This specific example uses data from 1967Q1-2019Q1 and follows transformations recommended by [McCracken and Ng (2016)](https://www.jstor.org/stable/44166591) to remove outliers.  All aggregated data series are dropped as well.  So the final cleaned sample used in the paper and below consists of only disaggregated stationary time series and can be found [here](https://raw.githubusercontent.com/kobleary/l1rotation/refs/heads/main/vignettes/fred.csv).  For more information, see the paper.  
+
+Let's read it in.
 
 ```{r}
 library(l1rotation)

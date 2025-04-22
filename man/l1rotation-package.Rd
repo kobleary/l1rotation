@@ -11,6 +11,7 @@ Estimate loading vectors using the l1 criterion as proposed in Freyaldenhoven (2
 \seealso{
 Useful links:
 \itemize{
+  \item \url{https://kobleary.github.io/l1rotation/}
   \item \url{https://github.com/SimonFreyaldenhoven/l1rotation}
   \item Report bugs at \url{https://github.com/SimonFreyaldenhoven/l1rotation/issues}
 }

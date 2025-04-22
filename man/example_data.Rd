@@ -3,7 +3,7 @@
 \docType{data}
 \name{example_data}
 \alias{example_data}
-\title{Example data with four factors from the replication files of Freyaldenhoven et. al (2023).}
+\title{Example data with four factors from the replication files of \href{https://simonfreyaldenhoven.github.io/papers/factor_rotation.pdf}{Freyaldenhoven et. al (2025)}.}
 \format{
 \subsection{\code{example_data}}{
 
@@ -11,12 +11,12 @@ A matrix with 224 rows and 207 columns.
 }
 }
 \source{
-Dataset available as a .mat file can be found under local_factors.zip \url{https://simonfreyaldenhoven.github.io/software/}
+Dataset available as a .mat file can be generated from local_factors.zip \url{https://simonfreyaldenhoven.github.io/software/}
 }
 \usage{
 example_data
 }
 \description{
-Example data with four factors from the replication files of Freyaldenhoven et. al (2023).
+Example data with four factors from the replication files of \href{https://simonfreyaldenhoven.github.io/papers/factor_rotation.pdf}{Freyaldenhoven et. al (2025)}.
 }
 \keyword{datasets}
