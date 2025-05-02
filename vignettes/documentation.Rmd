@@ -147,7 +147,6 @@ test_pc_estimate$has_local_factors
 test_rot_estimate$has_local_factors
 ```
 
-
 Thus, no local factors are detected using the principal components estimate, while the rotated estimate reveals two local factors. We can also visualise the number of small loadings using the `small_loadings_plot` element in our `lf' results: 
 
 ```{r}
