@@ -9,10 +9,8 @@ downloads](https://cranlogs.r-pkg.org/badges/grand-total/l1rotation)](https://r-
 
 ## Overview
 
-The **l1rotation** package implements the l1-rotation rotation criterion
-to identify and estimate the loadings matrix in factor models following
-[Freyaldenhoven
-(2025)](https://simonfreyaldenhoven.github.io/papers/factor_rotation.pdf).
+The **l1rotation** package implements the l1-rotation criterion of [Freyaldenhoven (2025)](https://simonfreyaldenhoven.github.io/papers/factor_rotation.pdf) to simplify the loading matrix in factor models.
+
 
 ## Installation
 
