@@ -41,13 +41,13 @@ where there are
 
 This $\lambda_{ik}^*$ shows how factor $k$ is related to, or "loads onto," variable $i$. Note that the $k$th column of $\Lambda^*$ will be referred to as $\lambda_k^*$. 
 
-Since $r$ can be learned from the data (following the procedure in [Bai and Ng (2002)](https://onlinelibrary.wiley.com/doi/epdf/10.1111/1468-0262.00273)) we can assume $r$ is known. Next, we're interested in estimating the true set of factors $F$, that compress the data into fewer columns, and true loadings $\Lambda^*$, that show how the factors are related to the original columns. 
+We assume that the number of underlying factors can be learned from the data (e.g. following the procedure in [Bai and Ng (2002)](https://onlinelibrary.wiley.com/doi/epdf/10.1111/1468-0262.00273) or [Ahn and Horenstein (2013)](https://onlinelibrary.wiley.com/doi/abs/10.3982/ECTA8968)).^[Note that this package does not include functionality to calculate the number of factors - we simply take the number of factors as a user input.] Next, we're interested in estimating the loading matrix $\Lambda^*$, which shows how the factors are related to the data matrix $X$. 
 
 ## Problem: Rotational Indeterminacy 
 
-However, there is no unique estimate of $F$ and estimate of $\Lambda^*$ that satisfies the equation above. In fact, infinitely many will. This is referred to as rotational indeterminacy and this issue makes interpretation of the loadings matrix tricky. 
+However, there is no unique estimate of $F$ and estimate of $\Lambda^*$ that satisfies the equation above. 
 
-To see the problem, let $H$ be any nonsingular $r \times r$ matrix. We can define an estimate $\Lambda^0 = \Lambda^* (H')^{-1}$ and $F^0 = FH$. This tells us that 
+To illustrate, let $H$ be any nonsingular $r \times r$ matrix. We can define an alternative loading matrix $\Lambda^0 = \Lambda^* (H')^{-1}$ and alternative factors $F^0 = FH$, and it follows that
 
 $$
 \begin{align}
@@ -58,42 +58,41 @@ X & = F^0 \Lambda^{0'} \\
 \end{align}
 $$
 
-Hence $X = F^0\Lambda^{0'} = F\Lambda^*$ can be explained identically well by any "rotation" $H$ of the true loadings and factors. Each arbitrary rotation $H$ corresponds to a different but seemingly valid decomposition of $X$ that provides an alternate interpretation of how the factors and variables are related. But we are interested in the true relationship, $\Lambda^*$. So how can we recover the true interpretation?
-
+Hence $(F^0,\Lambda^{0'})$ and $(F,\Lambda^*)$ are observationally equivalent. This is referred to as rotational indeterminacy and makes interpretation of any estimate of the loading matrix delicate.  Each arbitrary rotation $H$ will result in an alternate interpretation of how the factors and variables are related. But we are interested in the true relationship, $\Lambda^*$. So how can we recover the true interpretation?
 
 ## Solution: Use Sparsity
 
-The key idea in Freyaldenhoven (2025) is that assuming a sparsity pattern in the true loadings matrix $\Lambda^*$ solves the issue of rotational indeterminacy since the sparsity pattern is not invariant to rotations. Intuitively, any rotation (or linear combination) of a sparse loading vector will be less sparse.  In general, with PCA we can obtain estimates that are a linear combination of the true loadings vectors. That is, we can obtain principal component vectors in the columns of $\Lambda^0$ such that 
+The key idea in Freyaldenhoven (2025) is that assuming a sparsity pattern in the true loadings matrix $\Lambda^*$ solves the issue of rotational indeterminacy since the sparsity pattern is not invariant to rotations. Intuitively, any rotation (or linear combination) of a sparse loading vector will be less sparse.  
+
+To see this, note that PCA gives us estimates that are asymptotically a linear combination of the true loadings vectors. That is, we can obtain principal component vectors in the columns of $\Lambda^0$ such that 
 
 $$
 \begin{align}
 \Lambda^0 = \Lambda^*(H^{-1})' + \epsilon
 \end{align}
 $$
-where $H$ is as above. 
+where $H$ is a nonsingular $r \times r$ matrix and $\epsilon$ is ``small''. 
 
-Therefore, since $\Lambda^0$ is a linear combination of $\Lambda^*$, $\Lambda^*$ is also equal to some linear combination of $\Lambda^0$. And because linear combinations of sparse loadings are generally dense, there must be a linear combination of $\Lambda^0$ that is sparse. We can then use this sparse linear combination of $\Lambda^0$ as an estimator for $\Lambda^*$. 
+Thus, $\Lambda^0$ is (close to) a linear combination of $\Lambda^*$. However, even if $\Lambda^*$ is sparse, linear combinations of the sparse loadings in $\Lambda^*$, such as $\Lambda^0$, are generally not sparse.
 
-Assuming the true loadings are sparse is fairly reasonable, particularly when we're interested in factors that are thought to affect only a subset of the original columns (i.e., local factors). These types of factors are common in economic applications. 
-
+Conversely, $\Lambda^*$ is also (close to) a linear combination of $\Lambda^0$. Thus, there must be a linear combination of $\Lambda^0$ that is sparse. This sparse linear combination of $\Lambda^0$ will be our estimator for $\Lambda^*$. 
 
 ## Recovering Sparsity
 
 Now, how do we find this sparse linear combination of loading vectors?
 
-The steps are below:
+A simple approach would be:
 
 1. Take the principal components estimator as starting point to obtain $\Lambda^0$
 2. Find loadings $\Lambda^*$ equal to the rotation of $\Lambda^0$ that minimizes the number of non-zero elements (the $l_0$ norm) in the loading vectors
 
 Unfortunately, the $l_0$ norm is infeasible to optimize over in practice. To see why, let's examine the figure below. The distance from the origin to each red point depicts the $l_0$ norm of points along the unit circle. The blue points depict the $l_1$ norm and the gray points depict the $l_2$ norm. In the $l_2$ case, these distances remain constant as we traverse the circle. 
 
-
 ![Geometric Intuition of Various Norms](geom_intuition.png)
 
-The $l_0$ norm directly computes the number of nonzero elements, shown by the red points at (1, 0), (0, 1), (-1, 0) and (0, -1) that are each a distance of 1 away from the origin. The remaining red points are a distance of 2 away from the origin corresponding to the 2 nonzero elements in all other points along the unit circle.  Since the blue and red dots coincide at the above four points, the $l_1$ norm is minimized at the same points as the $l_0$ norm. But the $l_1$ norm has a much smoother descent to these minima compared with the discontinuities that occur with the red points. This smooth function is easier to traverse and optimize over.
+The $l_0$ norm directly computes the number of nonzero elements, shown by the red points. At (1, 0), (0, 1), (-1, 0) and (0, -1), these are a distance of 1 away from the origin. The remaining red points are a distance of 2 away from the origin corresponding to the 2 nonzero elements in all other points along the unit circle.  Since the blue and red dots coincide at the above four points, the $l_1$ norm is minimized at the same points as the $l_0$ norm. But the $l_1$ norm has a smooth descent to these minima compared with the discontinuities of $l_0$ norm around these minima. This makes the $l_1$ easier to minimize.
 
-So throughout, we'll continue to maximize sparsity indirectly but more easily by using the $l_1$ norm instead of the $l_0$ norm for the optimization benefits. 
+Thus, to maximize sparsity we minimize the $l_1$ norm instead of the $l_0$ norm. 
 
 
 ### Objective Function
@@ -105,7 +104,7 @@ $$
 \min_R ||\Lambda^0R||_1
 \end{align}
 $$
-such that $R$ is nonsingular and $||r_k||_2 = 1$ where $r_k$ is a row in $R$. This keeps the length of each loading vector fixed, ensuring we look only at rotations of each initial loading vector. Since the length remains constant, we can transform this constrained optimization problem into an unconstrained one by converting to polar coordinates. In the case of two factors, in the constrained version we want to find weights $w_1, w_2$ that minimize 
+such that $R$ is nonsingular and $||r_k||_2 = 1$ where $r_k$ is a row in $R$. This keeps the length of each loading vector fixed, ensuring we look only at rotations of each initial loading vector. Since the length remains constant, we can transform this constrained optimization problem into an unconstrained one by converting to polar coordinates. For example, in the case of two factors, in the constrained version we want to find weights $w_1, w_2$ that minimize 
 
 $$
 || w_1 \lambda_1^0 + w_2 \lambda_2^0 ||_1 \quad s.t. \quad w_1^2 + w_2^2 = 1.
@@ -115,7 +114,6 @@ In spherical coordinates, this amounts to finding an angle $\theta$ that minimiz
 $$
 ||\lambda_1^0 \cos \theta + \lambda_2^0 \sin \theta ||_1.
 $$
-The unconstrained objective function becomes slightly more complicated in the general case of more than two factors because we span higher dimensional space than a plane and therefore need to optimize across multiple angles. But the idea remains the same. 
 
 ## A simple example
 
@@ -136,7 +134,7 @@ true_loadings <- read.csv("https://raw.githubusercontent.com/kobleary/l1rotation
 head(true_loadings)
 ```
 
-Now, let's look at the PCA estimator for $X$ for the first two principal components. The zeroes from above are no longer present, but the principal component estimate still provides a great starting point as they are generally linear combinations of the true loading vectors as $n \to \infty$ (cite).  
+Now, let's look at the PCA estimator for $X$ for the first two principal components. The zeroes from above are no longer present, but the principal component estimate still provides a great starting point as they are generally linear combinations of the true loading vectors as $n \to \infty$ (e.g., [Bai (2003)](https://onlinelibrary.wiley.com/doi/abs/10.1111/1468-0262.00392)).  
 
 ```{r}
 pca_loadings <- read.csv('https://raw.githubusercontent.com/kobleary/l1rotation/refs/heads/main/vignettes/lambda0.csv') %>% 
