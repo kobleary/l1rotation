@@ -122,22 +122,24 @@ The unconstrained objective function becomes slightly more complicated in the ge
 Let's consider an example we can visualize fully: we'll use the following simulated data that has three columns ($n = 3$) and suppose we know that there are two factors, $r = 2$. Below only the first 6 of 224 total rows are printed.
 
 ```{r}
-X <- read.csv("https://raw.githubusercontent.com/kobleary/quarto-example/refs/heads/main/data/data.csv")
+X <- read.csv("https://raw.githubusercontent.com/kobleary/l1rotation/refs/heads/main/vignettes/data.csv")
+
 head(X)
 ```
 
 Let the true loadings matrix, $\Lambda^*$ have 2 columns and 3 rows. As we can see there is a sparsity pattern in the matrix with the first factor affecting only the first column and the second factor affecting the second and third columns of $X$. 
 
 ```{r}
-true_loadings <- read.csv("https://raw.githubusercontent.com/kobleary/quarto-example/refs/heads/main/data/lambda.csv") %>% 
+true_loadings <- read.csv("https://raw.githubusercontent.com/kobleary/l1rotation/refs/heads/main/vignettes/lambda.csv") %>% 
   rename(loadings_1 = V1, loadings_2 = V2)
+
 head(true_loadings)
 ```
 
 Now, let's look at the PCA estimator for $X$ for the first two principal components. The zeroes from above are no longer present, but the principal component estimate still provides a great starting point as they are generally linear combinations of the true loading vectors as $n \to \infty$ (cite).  
 
 ```{r}
-pca_loadings <- read.csv('https://raw.githubusercontent.com/kobleary/quarto-example/refs/heads/main/data/lambda0.csv') %>% 
+pca_loadings <- read.csv('https://raw.githubusercontent.com/kobleary/l1rotation/refs/heads/main/vignettes/lambda0.csv') %>% 
     rename(loadings_1 = V1, loadings_2 = V2)
 
 head(pca_loadings)
