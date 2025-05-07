@@ -66,7 +66,7 @@ fred_lf$rotated_plot +
 
 Based on the plot above, the sparsity pattern in the estimated loading matrix makes the result interpretable. The first factor corresponds to group 6 and corresponds to price variables - suggesting interpretation of this factor as a price index. The second factor mainly affects interest rates, employment indicators, and industrial production while the third factor affects household balance sheets and stock markets. The picture is somewhat less clear for factors 4-8. 
 
-Finally, plotting the number of small loadings in each of the estimated loading vectors, we find evidence for the existence of local factrs on this dataset.
+Finally, plotting the number of small loadings in each of the estimated loading vectors, we find evidence for the existence of local factors on this dataset.
 
 ```{r}
 fred_lf$small_loadings_plot
