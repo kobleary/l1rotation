@@ -42,7 +42,7 @@ dim(fred)
 head(fred[,1:7])
 ```
 
-Following Bai and Ng, this data has 8 factors. To get an idea of the the information the data conveys, we can categorize each outcome or variable into one of 14 groups below:
+Using the information criterion of [Bai and Ng (2002)](https://onlinelibrary.wiley.com/doi/epdf/10.1111/1468-0262.00273), we determine that this data has 8 factors. To get an idea of the the information the data conveys, we can categorize each outcome or variable into one of 14 groups below:
 
 ![Grouping of variables in panel of US macroeconomic indicators, Freyaldenhoven (2025)](macro_groups.png)
 
@@ -64,7 +64,9 @@ fred_lf$rotated_plot +
 
 ```
 
-From the plot above, the first factor corresponds to group 6 and corresponds to price variables - suggesting interpretation of this factor as a price index. The second factor mainly affects interest rates, employment indicators, and industrial production while the third factor affects household balance sheets and stock markets. The picture is somewhat less clear for factors 4-8. Although the picture is somewhat less clear in terms of interpretation, we can still see that the diagnostic checking whether local factors exist decreases as $k$ increases.
+Based on the plot above, the sparsity pattern in the estimated loading matrix makes the result interpretable. The first factor corresponds to group 6 and corresponds to price variables - suggesting interpretation of this factor as a price index. The second factor mainly affects interest rates, employment indicators, and industrial production while the third factor affects household balance sheets and stock markets. The picture is somewhat less clear for factors 4-8. 
+
+Finally, plotting the number of small loadings in each of the estimated loading vectors, we find evidence for the existence of local factors on this dataset.
 
 ```{r}
 fred_lf$small_loadings_plot
