@@ -53,7 +53,7 @@ Then, the assumption of sparsity in the loading matrix solves the problem of rot
 
 ## Quick start {#start}
 
-We will use the `example_data` data that ships with the package to show its basic functionality. This data is a matrix containing numeric information with $n = 224$, $T = 207$. In general, data.frames, tibbles, or other data types can also be used with `l1rotation` functions, as long as all columns are numeric. Note also that the package cannot handle missing values in the data matrix. 
+We will use the `example_data` data that ships with the package to show its basic functionality. This data is a matrix containing numeric information with $n = 224$, $T = 207$. In general, data.frames, tibbles, or other data types can also be used with `l1rotation` functions, as long as all columns are numeric. Note that the package cannot handle missing values in the data matrix. 
 
 To start, let's look at the first seven columns of the example data:
 
@@ -77,14 +77,14 @@ lf <- local_factors(
 
 ```
 
-In the estimation, the only required arguments for `local_factors()` are the data you're decomposing and the number of factors. We use the principal components estimator as the initial estimate of the loadings, $\Lambda_0$, which can be accessed via the `initial_loadings` item of the output. The function also computes a quick diagnostic to check whether local factors are present in the data which is given in the output item `has_local_factors`.
+In the estimation, the only required arguments for `local_factors()` are the data to be and the number of factors. We use the principal components estimator as the initial estimate of the loadings, $\Lambda^0$, which can be accessed via the `initial_loadings` item of the output. The function also computes a quick diagnostic to check whether local factors are present in the data which is given in the output item `has_local_factors`.
 
-Additionally, there are several rotation diagnostics accessible via `rotation_diagnostics`: The rotation matrix, $R$, that when multiplied by $\Lambda_0$ produces $\hat{\Lambda}^*$ matrix, the value of the l1 norm for each vector, and the frequency with which the minimization problem converges at each of the estimated loading vectors.
+Additionally, there are several rotation diagnostics accessible via `rotation_diagnostics`: (1) The rotation matrix, $R$, that when multiplied by $\Lambda^0$ produces $\hat{\Lambda}^*$, (2) the value of the l1 norm for each vector, and (3) the frequency with which the minimization problem converges at each of the estimated loading vectors.
 
 ```{r}
 lf$rotation_diagnostics
 ```
-For a visual interpretation of this rotation, we provide tile plots contrasting the initial estimate $\Lambda_0$, `pc_plot` and the rotated estimate, $\hat{\Lambda}^*$, `rotated_plot`.
+For a visual interpretation of this rotation, we provide tile plots contrasting the initial estimate $\Lambda^0$, `pc_plot` and the rotated estimate, $\hat{\Lambda}^*$, `rotated_plot`.
 
 ```{r}
 lf$pc_plot
