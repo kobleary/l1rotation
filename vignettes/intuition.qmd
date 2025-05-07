@@ -164,24 +164,25 @@ Since $n = 3$ is small, we can see there is some noise in the PC estimate, resul
 As we try different angles of rotation out we can see their impact on the objective function we're optimizing over. The rotation that best aligns with the true loadings vectors should also occur at the local minima of the objective function. 
 
 ```{r}
+#| execute: false
 
-me <- normalizePath(
-  if (Sys.getenv("QUARTO_DOCUMENT_PATH") != "") {
-    Sys.getenv("QUARTO_DOCUMENT_PATH")
-  } else if (file.exists("helper_functions.R")) {
-    getwd()
-  } else if (file.exists("articles/helper_functions.R")) {
-    "articles"
-  } else {
-    "vignettes/articles"
-  })
-
-#writeLines(me, "me.txt")
-
-
-
-source(file.path(me, "helper_functions.R"))
-source(file.path(me, "obj_function_plot.R"))
+# me <- normalizePath(
+#   if (Sys.getenv("QUARTO_DOCUMENT_PATH") != "") {
+#     Sys.getenv("QUARTO_DOCUMENT_PATH")
+#   } else if (file.exists("helper_functions.R")) {
+#     getwd()
+#   } else if (file.exists("articles/helper_functions.R")) {
+#     "articles"
+#   } else {
+#     "vignettes/articles"
+#   })
+# 
+# #writeLines(me, "me.txt")
+# 
+# 
+# 
+# source(file.path(me, "helper_functions.R"))
+# source(file.path(me, "obj_function_plot.R"))
 ```
 
 
@@ -229,7 +230,6 @@ viewof theta2_value = Inputs.range(
 //| panel: fill
 //| echo: false
 
-
 highlighted_points = obj_data.filter(function(angle) {
   return (theta1_value - 0.005 < angle.theta && theta1_value + 0.005 > angle.theta) ||
          (theta2_value - 0.005 < angle.theta && theta2_value + 0.005 > angle.theta)
@@ -238,7 +238,7 @@ highlighted_points = obj_data.filter(function(angle) {
 obj_data = FileAttachment("obj_function_data.csv").csv({typed: true});
 
 Plot.plot({
-  height: 100,
+  height: 150,
   width: 700,
   grid: true,
   marks: [
