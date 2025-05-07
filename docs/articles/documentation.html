@@ -81,13 +81,13 @@
 </h2>
 <div class="sourceCode" id="cb1"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://kobleary.github.io/l1rotation/">l1rotation</a></span><span class="op">)</span></span></code></pre></div>
-<p>The <code>l1rotation</code> package offers functionality to estimate
-the loadings matrix in factor models based on the l1-rotation criterion
-following <a href="https://simonfreyaldenhoven.github.io/papers/factor_rotation.pdf" class="external-link">Freyaldenhoven
-(2025)</a>. The key idea of this estimator is assuming a sparsity
-pattern in the loadings matrix solves the problem of rotational
-indeterminacy inherent to factor models.</p>
-<p>Factor models take the form</p>
+<p>The <code>l1rotation</code> package offers functionality to simplify
+the loading matrix in factor models. It can find the most sparse
+rotation of the loading matrix using the l1-rotation criterion of <a href="https://simonfreyaldenhoven.github.io/papers/factor_rotation.pdf" class="external-link">Freyaldenhoven
+(2025)</a>.</p>
+<p>Under the assumption of sparsity in the true loading matrix, it also
+solves the problem of rotational indeterminacy inherent to factor
+models. That is, suppose the data follows a factor model:</p>
 <p><span class="math display">\[
 X = F \Lambda^{*'} + e
 \]</span> where</p>
@@ -100,8 +100,9 @@ into</p></li>
 loadings</p></li>
 <li><p><span class="math inline">\(e\)</span> is a <span class="math inline">\(T \times n\)</span> error matrix.</p></li>
 </ul>
-<p>This package is designed to identify and estimate <span class="math inline">\(\Lambda^{*}\)</span> subject to additional
-sparsity assumptions detailed in <a href="https://simonfreyaldenhoven.github.io/papers/factor_rotation.pdf" class="external-link">Freyaldenhoven
+<p>Then, the assumption of sparsity in the loading matrix solves the
+problem of rotational indeterminacy inherent to factor models: <span class="math inline">\(\Lambda^{*}\)</span> will be the most sparse
+rotation and can be identified using the l1-rotation criterion <a href="https://simonfreyaldenhoven.github.io/papers/factor_rotation.pdf" class="external-link">Freyaldenhoven
 (2025)</a>.</p>
 </div>
 <div class="section level2">
@@ -113,7 +114,7 @@ containing numeric information with <span class="math inline">\(n =
 224\)</span>, <span class="math inline">\(T = 207\)</span>. In general,
 data.frames, tibbles, or other data types can also be used with
 <code>l1rotation</code> functions, as long as all columns are numeric.
-Note also that the package cannot handle missing values in the data
+Note that the package cannot handle missing values in the data
 matrix.</p>
 <p>To start, let’s look at the first seven columns of the example
 data:</p>
@@ -127,13 +128,17 @@ data:</p>
 <span><span class="co">#&gt; [5,] 1.783429 0.364707 -2.24466997 -1.9397028 -0.2521484  1.14563662 -0.6416022</span></span>
 <span><span class="co">#&gt; [6,] 5.699166 3.932394  0.46050753 -0.5615002  2.3014500  2.22261949  0.5748873</span></span></code></pre></div>
 <p>We assume that the number of underlying factors can be learned from
-the data (following the procedure in <a href="https://onlinelibrary.wiley.com/doi/epdf/10.1111/1468-0262.00273" class="external-link">Bai
-and Ng (2002)</a>). For the <code>example_data</code> we will use two
-factors. With just the data, <span class="math inline">\(X\)</span>, and
-the number of factors, <span class="math inline">\(r\)</span>, we can
-start estimating the loadings with <code><a href="../reference/local_factors.html">local_factors()</a></code>. This
-function estimates <span class="math inline">\(\Lambda^{*}\)</span> and
-provides helpful diagnostics and figures.</p>
+the data (e.g., following the procedure in <a href="https://onlinelibrary.wiley.com/doi/epdf/10.1111/1468-0262.00273" class="external-link">Bai
+and Ng (2002)</a> or <a href="https://onlinelibrary.wiley.com/doi/abs/10.3982/ECTA8968" class="external-link">Ahn and
+Horenstein (2013)</a>). Note that this package does not include
+functionality to calculate the number of factors - we simply take the
+number of factors as a user input.</p>
+<p>For the <code>example_data</code> we will use two factors. With just
+the data, <span class="math inline">\(X\)</span>, and the number of
+factors, <span class="math inline">\(r\)</span>, we can start estimating
+the loadings with <code><a href="../reference/local_factors.html">local_factors()</a></code>. This function estimates
+<span class="math inline">\(\Lambda^{*}\)</span> and provides helpful
+diagnostics and figures.</p>
 <p>Below is an example using <code>example_data</code> (note that
 estimation can also be run in parallel with a selected number of cores,
 <code>n_cores</code>):</p>
@@ -144,17 +149,18 @@ estimation can also be run in parallel with a selected number of cores,
 <span>  X <span class="op">=</span> <span class="va">example_data</span>, r <span class="op">=</span> <span class="fl">2</span>,</span>
 <span>  parallel <span class="op">=</span> <span class="cn">FALSE</span>, n_cores <span class="op">=</span> <span class="cn">NULL</span> <span class="co"># Runs non-parallel by default</span></span>
 <span><span class="op">)</span></span></code></pre></div>
-<p>In the estimation, <code><a href="../reference/local_factors.html">local_factors()</a></code> has reasonable
-defaults set so the only required arguments are the data you’re
-decomposing and the number of factors. We use the principal components
-estimator as the initial estimate of the loadings, <span class="math inline">\(\Lambda_0\)</span>, which can be accessed via the
-<code>Lambda0</code> item of the output. The function also computes a
-quick diagnostic to check whether local factors are present in the data
-which is given in the output item <code>has_local_factors</code>.</p>
+<p>In the estimation, the only required arguments for
+<code><a href="../reference/local_factors.html">local_factors()</a></code> are the data to be and the number of
+factors. We use the principal components estimator as the initial
+estimate of the loadings, <span class="math inline">\(\Lambda^0\)</span>, which can be accessed via the
+<code>initial_loadings</code> item of the output. The function also
+computes a quick diagnostic to check whether local factors are present
+in the data which is given in the output item
+<code>has_local_factors</code>.</p>
 <p>Additionally, there are several rotation diagnostics accessible via
-<code>rotation_diagnostics</code> which give the rotation matrix, <span class="math inline">\(R\)</span> that when multiplied by <span class="math inline">\(\Lambda_0\)</span> produces <span class="math inline">\(\hat{\Lambda}^*\)</span>, the value of the l1 norm
-for each vector, and the frequency that each solution appears in the
-initial grid of estimates.</p>
+<code>rotation_diagnostics</code>: (1) The rotation matrix, <span class="math inline">\(R\)</span>, that when multiplied by <span class="math inline">\(\Lambda^0\)</span> produces <span class="math inline">\(\hat{\Lambda}^*\)</span>, (2) the value of the l1
+norm for each vector, and (3) the frequency with which the minimization
+problem converges at each of the estimated loading vectors.</p>
 <div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">lf</span><span class="op">$</span><span class="va">rotation_diagnostics</span></span>
 <span><span class="co">#&gt; $R</span></span>
@@ -168,32 +174,28 @@ initial grid of estimates.</p>
 <span><span class="co">#&gt; $sol_frequency</span></span>
 <span><span class="co">#&gt; [1] 259 241</span></span></code></pre></div>
 <p>For a visual interpretation of this rotation, we provide tile plots
-contrasting the initial estimate <span class="math inline">\(\Lambda_0\)</span>, <code>pc_plot</code> and the
+contrasting the initial estimate <span class="math inline">\(\Lambda^0\)</span>, <code>pc_plot</code> and the
 rotated estimate, <span class="math inline">\(\hat{\Lambda}^*\)</span>,
 <code>rotated_plot</code>.</p>
 <div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">lf</span><span class="op">$</span><span class="va">pc_plot</span></span></code></pre></div>
 <p><img src="documentation_files/figure-html/unnamed-chunk-5-1.png" width="480" style="display: block; margin: auto;"></p>
 <p>In the initial principal component estimate, recall that each factor
-is simply a principal component. Of the 207 variables in <span class="math inline">\(X\)</span>, the first factor loads negatively
-along the variables between 90 and 120, and slightly negatively almost
+is simply a principal component. Of the 207 variables in <span class="math inline">\(X\)</span>, the first factor loads most negatively
+along the variables between 88 and 120, and slightly negatively almost
 everywhere else. Along the second factor, there are positive loadings
-between variables 125 and 200 and slightly negative loadings elsewhere.
-However, it may be difficult to interpret the relationship between
-variables and factors when all loadings are nonzero.</p>
+between variables 122 and 207 and slightly negative to near-zero
+loadings elsewhere. However, it may be difficult to interpret the
+relationship between variables and factors when all loadings are
+nonzero.</p>
 <div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">lf</span><span class="op">$</span><span class="va">rotated_plot</span></span></code></pre></div>
 <p><img src="documentation_files/figure-html/unnamed-chunk-6-1.png" width="480" style="display: block; margin: auto;"></p>
-<p>The second estimate is a rotated version of the principal components
-estimator optimized for sparsity. It will rotate each vector of the
-principal components loadings matrix until it finds a set of factors
-that are as sparse as possible. As we can see, the second plot may
-provide a stronger interpretation as variables 90-200 load negatively on
-the first factor while variables 0-120 load negatively on the second
-factor. The loadings along the other variables are close to zero,
-suggesting no relationship. With this rotation, we can more easily
-identify which sets of variables are related to which latent factors due
-to the revealed sparsity pattern.</p>
+<p>The second estimate is a rotated version of loading matrix optimized
+for sparsity using the l1-rotation criterion. This estimate is easier to
+interpret as most variables between 90-207 load negatively on the first
+factor, variables 0-120 load negatively on the second factor, and all
+other loadings are close to zero.</p>
 </div>
 <div class="section level2">
 <h2 id="details">Refining the details<a class="anchor" aria-label="anchor" href="#details"></a>
@@ -206,35 +208,34 @@ which provide additional functionality to support the main
 <h3 id="flf">
 <code>find_local_factors()</code><a class="anchor" aria-label="anchor" href="#flf"></a>
 </h3>
-<p>This function has an additional argument, <code>Lambda0</code>, that
-allows the user to specify any orthonormal basis of the loadings rather
-than defaulting to the principal component estimator. Here are some
-plausible alternative initial estimates:</p>
-<ul>
-<li><p>MLE estimation</p></li>
-<li><p>Sparse Orthogonal Factor Regression (SOFAR) as in <a href="http://faculty.marshall.usc.edu/yingying-fan/publications/IEEEIT-UFCLL19.pdf" class="external-link">Uematsu
-et al. (2019)</a>.</p></li>
-</ul>
+<p>This function takes the same inputs as <code><a href="../reference/local_factors.html">local_factors()</a></code>,
+<code>X</code> and <code>r</code>, and has an additional argument,
+<code>initial_loadings</code>, that allows the user to specify any
+orthonormal basis of the loadings rather than defaulting to the
+principal component estimator. Alternative initial estimates may include
+Maximum Likelihood based estimation or Sparse Orthogonal Factor
+Regression (<a href="http://faculty.marshall.usc.edu/yingying-fan/publications/IEEEIT-UFCLL19.pdf" class="external-link">Uematsu
+et al. (2019)</a>), for example.</p>
 </div>
 <div class="section level3">
 <h3 id="tlf">
 <code>test_local_factors()</code><a class="anchor" aria-label="anchor" href="#tlf"></a>
 </h3>
-<p>This function tests for the presence of local factors given an
-estimate of the loadings matrix, <code>Lambda</code>. Since the results
-in this package rely upon a sparsity pattern in the true loadings
-matrix, <code><a href="../reference/test_local_factors.html">test_local_factors()</a></code> provides a simple diagnostic
-to check this assumption.</p>
-<p>For a given loading matrix estimate, <span class="math inline">\(\hat{\Lambda}\)</span>, we can consider maximizing
-across factors the number of individual loadings in <span class="math inline">\(\hat{\Lambda}\)</span> smaller than some threshold
-<span class="math inline">\(h_n\)</span>. This gives us an idea of how
-many “small” loadings there are in <span class="math inline">\(\hat{\Lambda}\)</span>:</p>
+<p>This function tests for the presence of local factors given a sparse
+basis of the loading space. It takes as input <code>X</code> and
+<code>r</code>, and an additional optional argument,
+<code>loadings</code>, that allows the user to specify the loading
+matrix that is to be tested. This argument is set to <code>NULL</code>
+by default, which estimates <span class="math inline">\(\hat{\Lambda}^*\)</span> (by maximizing the
+l1-rotation criterion) and tests it for local factors.</p>
+<p>To construct this diagnostic for a given loading matrix estimate,
+<span class="math inline">\(\hat{\Lambda}\)</span>, we find the column
+with the largest number of entries smaller than some threshold <span class="math inline">\(h_n\)</span>:</p>
 <p><span class="math display">\[
 \mathcal{L(\hat{\Lambda})} = \max_k\left(\sum_{i=1}^n
 1\{\hat{|\lambda}_{ik}| &lt; h_n \}\right)
-\]</span> With this number, we can then check whether the number of
-“small” loadings is larger than <span class="math inline">\(\gamma
-n\)</span></p>
+\]</span> We can then check whether the number of these “small” loadings
+is larger than <span class="math inline">\(\gamma n\)</span></p>
 <p><span class="math display">\[
 \texttt{has_local_factors} = 1\{\mathcal{L}(\hat{\Lambda})  \geq \gamma
 n \}.
@@ -246,8 +247,9 @@ value of <code>has_local_factors</code>.</p>
 <span><span class="co">#&gt; [1] TRUE</span></span></code></pre></div>
 <p>This value is the result of <code><a href="../reference/test_local_factors.html">test_local_factors()</a></code>. To
 verify, we can call <code><a href="../reference/test_local_factors.html">test_local_factors()</a></code> on two different
-estimates: the principal components estimate, <code>Lambda0</code>, and
-the l1rotation estimate, <code>Lambda</code>.</p>
+estimates: the principal components estimate,
+<code>initial_loadings</code>, and the l1rotation estimate,
+<code>rotated_loadings</code>.</p>
 <div class="sourceCode" id="cb8"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># Check for local factors in PC estimate...</span></span>
 <span><span class="va">test_pc_estimate</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/test_local_factors.html">test_local_factors</a></span><span class="op">(</span>X <span class="op">=</span> <span class="va">example_data</span>, r <span class="op">=</span> <span class="fl">2</span>, loadings <span class="op">=</span> <span class="va">lf</span><span class="op">$</span><span class="va">initial_loadings</span><span class="op">)</span></span>
@@ -259,15 +261,10 @@ the l1rotation estimate, <code>Lambda</code>.</p>
 <span><span class="co">#&gt; [1] FALSE</span></span>
 <span><span class="va">test_rot_estimate</span><span class="op">$</span><span class="va">has_local_factors</span></span>
 <span><span class="co">#&gt; [1] TRUE</span></span></code></pre></div>
-<p>This confirms that no local factors are detected in the principal
-components estimate (no sparsity pattern is observed), and that local
-factors are present in the rotated estimate.</p>
-<ul>
-<li>Note that rotating the initial estimate, optimizing for sparsity, is
-not guaranteed to produce a sparse loadings matrix if the true loadings
-matrix itself is not sparse. However, if a sparsity pattern does exist
-in the true loadings matrix, this procedure will recover it.</li>
-</ul>
+<p>Thus, no local factors are detected using the principal components
+estimate, while the rotated estimate reveals two local factors. We can
+also visualize the number of small loadings using the
+<code>small_loadings_plot</code> element in our `lf’ results:</p>
 <div class="sourceCode" id="cb9"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">round_hn</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/Round.html" class="external-link">round</a></span><span class="op">(</span><span class="va">test_rot_estimate</span><span class="op">$</span><span class="va">h_n</span>, digits <span class="op">=</span> <span class="fl">3</span><span class="op">)</span></span>
 <span></span>
@@ -277,10 +274,6 @@ in the true loadings matrix, this procedure will recover it.</li>
 <span>    caption <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/paste.html" class="external-link">paste</a></span><span class="op">(</span><span class="st">'"Small" is defined as loadings less than'</span>, <span class="va">round_hn</span><span class="op">)</span></span>
 <span>  <span class="op">)</span></span></code></pre></div>
 <p><img src="documentation_files/figure-html/unnamed-chunk-9-1.png" width="480" style="display: block; margin: auto;"></p>
-<p>Finally, given the testing plot above, we can conclude that factors 1
-and 2 are likely local since they have enough “small” loadings (i.e.,
-smaller than a value of <span class="math inline">\(h_n = 1/\log(n)
-=\)</span> 0.188 in the <code>example_data</code>).</p>
 </div>
 </div>
   </main><aside class="col-md-3"><nav id="toc" aria-label="Table of contents"><h2>On this page</h2>

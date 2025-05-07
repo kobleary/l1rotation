@@ -97,11 +97,11 @@
 <li><p><span class="math inline">\(\lambda_{ik}^*\)</span> as the entry in <span class="math inline">\(\Lambda^{*}\)</span> in the <span class="math inline">\(i\)</span>th row and <span class="math inline">\(k\)</span>th column</p></li>
 </ul>
 <p>This <span class="math inline">\(\lambda_{ik}^*\)</span> shows how factor <span class="math inline">\(k\)</span> is related to, or “loads onto,” variable <span class="math inline">\(i\)</span>. Note that the <span class="math inline">\(k\)</span>th column of <span class="math inline">\(\Lambda^*\)</span> will be referred to as <span class="math inline">\(\lambda_k^*\)</span>.</p>
-<p>Since <span class="math inline">\(r\)</span> can be learned from the data (following the procedure in <a href="https://onlinelibrary.wiley.com/doi/epdf/10.1111/1468-0262.00273" class="external-link">Bai and Ng (2002)</a>) we can assume <span class="math inline">\(r\)</span> is known. Next, we’re interested in estimating the true set of factors <span class="math inline">\(F\)</span>, that compress the data into fewer columns, and true loadings <span class="math inline">\(\Lambda^*\)</span>, that show how the factors are related to the original columns.</p>
+<p>We assume that the number of underlying factors can be learned from the data (e.g. following the procedure in <a href="https://onlinelibrary.wiley.com/doi/epdf/10.1111/1468-0262.00273" class="external-link">Bai and Ng (2002)</a> or <a href="https://onlinelibrary.wiley.com/doi/abs/10.3982/ECTA8968" class="external-link">Ahn and Horenstein (2013)</a>).<a class="footnote-ref" role="doc-noteref" tabindex="0" data-bs-toggle="popover" data-bs-content="&lt;p&gt;Note that this package does not include functionality to calculate the number of factors - we simply take the number of factors as a user input.&lt;/p&gt;"><sup>1</sup></a> Next, we’re interested in estimating the loading matrix <span class="math inline">\(\Lambda^*\)</span>, which shows how the factors are related to the data matrix <span class="math inline">\(X\)</span>.</p>
 </section><section class="level2"><h2 id="problem-rotational-indeterminacy">Problem: Rotational Indeterminacy<a class="anchor" aria-label="anchor" href="#problem-rotational-indeterminacy"></a>
 </h2>
-<p>However, there is no unique estimate of <span class="math inline">\(F\)</span> and estimate of <span class="math inline">\(\Lambda^*\)</span> that satisfies the equation above. In fact, infinitely many will. This is referred to as rotational indeterminacy and this issue makes interpretation of the loadings matrix tricky.</p>
-<p>To see the problem, let <span class="math inline">\(H\)</span> be any nonsingular <span class="math inline">\(r \times r\)</span> matrix. We can define an estimate <span class="math inline">\(\Lambda^0 = \Lambda^* (H')^{-1}\)</span> and <span class="math inline">\(F^0 = FH\)</span>. This tells us that</p>
+<p>However, there is no unique estimate of <span class="math inline">\(F\)</span> and estimate of <span class="math inline">\(\Lambda^*\)</span> that satisfies the equation above.</p>
+<p>To illustrate, let <span class="math inline">\(H\)</span> be any nonsingular <span class="math inline">\(r \times r\)</span> matrix. We can define an alternative loading matrix <span class="math inline">\(\Lambda^0 = \Lambda^* (H')^{-1}\)</span> and alternative factors <span class="math inline">\(F^0 = FH\)</span>, and it follows that</p>
 <p><span class="math display">\[
 \begin{align}
 X &amp; = F^0 \Lambda^{0'} \\
@@ -110,21 +110,22 @@ X &amp; = F^0 \Lambda^{0'} \\
 &amp; = F \Lambda^{*'}
 \end{align}
 \]</span></p>
-<p>Hence <span class="math inline">\(X = F^0\Lambda^{0'} = F\Lambda^*\)</span> can be explained identically well by any “rotation” <span class="math inline">\(H\)</span> of the true loadings and factors. Each arbitrary rotation <span class="math inline">\(H\)</span> corresponds to a different but seemingly valid decomposition of <span class="math inline">\(X\)</span> that provides an alternate interpretation of how the factors and variables are related. But we are interested in the true relationship, <span class="math inline">\(\Lambda^*\)</span>. So how can we recover the true interpretation?</p>
+<p>Hence <span class="math inline">\((F^0,\Lambda^{0'})\)</span> and <span class="math inline">\((F,\Lambda^*)\)</span> are observationally equivalent. This is referred to as rotational indeterminacy and makes interpretation of any estimate of the loading matrix delicate. Each arbitrary rotation <span class="math inline">\(H\)</span> will result in an alternate interpretation of how the factors and variables are related. But we are interested in the true relationship, <span class="math inline">\(\Lambda^*\)</span>. So how can we recover the true interpretation?</p>
 </section><section class="level2"><h2 id="solution-use-sparsity">Solution: Use Sparsity<a class="anchor" aria-label="anchor" href="#solution-use-sparsity"></a>
 </h2>
-<p>The key idea in Freyaldenhoven (2025) is that assuming a sparsity pattern in the true loadings matrix <span class="math inline">\(\Lambda^*\)</span> solves the issue of rotational indeterminacy since the sparsity pattern is not invariant to rotations. Intuitively, any rotation (or linear combination) of a sparse loading vector will be less sparse. In general, with PCA we can obtain estimates that are a linear combination of the true loadings vectors. That is, we can obtain principal component vectors in the columns of <span class="math inline">\(\Lambda^0\)</span> such that</p>
+<p>The key idea in Freyaldenhoven (2025) is that assuming a sparsity pattern in the true loadings matrix <span class="math inline">\(\Lambda^*\)</span> solves the issue of rotational indeterminacy since the sparsity pattern is not invariant to rotations. Intuitively, any rotation (or linear combination) of a sparse loading vector will be less sparse.</p>
+<p>To see this, note that PCA gives us estimates that are asymptotically a linear combination of the true loadings vectors. That is, we can obtain principal component vectors in the columns of <span class="math inline">\(\Lambda^0\)</span> such that</p>
 <p><span class="math display">\[
 \begin{align}
 \Lambda^0 = \Lambda^*(H^{-1})' + \epsilon
 \end{align}
-\]</span> where <span class="math inline">\(H\)</span> is as above.</p>
-<p>Therefore, since <span class="math inline">\(\Lambda^0\)</span> is a linear combination of <span class="math inline">\(\Lambda^*\)</span>, <span class="math inline">\(\Lambda^*\)</span> is also equal to some linear combination of <span class="math inline">\(\Lambda^0\)</span>. And because linear combinations of sparse loadings are generally dense, there must be a linear combination of <span class="math inline">\(\Lambda^0\)</span> that is sparse. We can then use this sparse linear combination of <span class="math inline">\(\Lambda^0\)</span> as an estimator for <span class="math inline">\(\Lambda^*\)</span>.</p>
-<p>Assuming the true loadings are sparse is fairly reasonable, particularly when we’re interested in factors that are thought to affect only a subset of the original columns (i.e., local factors). These types of factors are common in economic applications.</p>
+\]</span> where <span class="math inline">\(H\)</span> is a nonsingular <span class="math inline">\(r \times r\)</span> matrix and <span class="math inline">\(\epsilon\)</span> is ``small’’.</p>
+<p>Thus, <span class="math inline">\(\Lambda^0\)</span> is (close to) a linear combination of <span class="math inline">\(\Lambda^*\)</span>. However, even if <span class="math inline">\(\Lambda^*\)</span> is sparse, linear combinations of the sparse loadings in <span class="math inline">\(\Lambda^*\)</span>, such as <span class="math inline">\(\Lambda^0\)</span>, are generally not sparse.</p>
+<p>Conversely, <span class="math inline">\(\Lambda^*\)</span> is also (close to) a linear combination of <span class="math inline">\(\Lambda^0\)</span>. Thus, there must be a linear combination of <span class="math inline">\(\Lambda^0\)</span> that is sparse. This sparse linear combination of <span class="math inline">\(\Lambda^0\)</span> will be our estimator for <span class="math inline">\(\Lambda^*\)</span>.</p>
 </section><section class="level2"><h2 id="recovering-sparsity">Recovering Sparsity<a class="anchor" aria-label="anchor" href="#recovering-sparsity"></a>
 </h2>
 <p>Now, how do we find this sparse linear combination of loading vectors?</p>
-<p>The steps are below:</p>
+<p>A simple approach would be:</p>
 <ol type="1">
 <li>Take the principal components estimator as starting point to obtain <span class="math inline">\(\Lambda^0\)</span>
 </li>
@@ -135,8 +136,8 @@ X &amp; = F^0 \Lambda^{0'} \\
 <figure><p><img src="geom_intuition.png"></p>
 <figcaption>Geometric Intuition of Various Norms</figcaption></figure>
 </div>
-<p>The <span class="math inline">\(l_0\)</span> norm directly computes the number of nonzero elements, shown by the red points at (1, 0), (0, 1), (-1, 0) and (0, -1) that are each a distance of 1 away from the origin. The remaining red points are a distance of 2 away from the origin corresponding to the 2 nonzero elements in all other points along the unit circle. Since the blue and red dots coincide at the above four points, the <span class="math inline">\(l_1\)</span> norm is minimized at the same points as the <span class="math inline">\(l_0\)</span> norm. But the <span class="math inline">\(l_1\)</span> norm has a much smoother descent to these minima compared with the discontinuities that occur with the red points. This smooth function is easier to traverse and optimize over.</p>
-<p>So throughout, we’ll continue to maximize sparsity indirectly but more easily by using the <span class="math inline">\(l_1\)</span> norm instead of the <span class="math inline">\(l_0\)</span> norm for the optimization benefits.</p>
+<p>The <span class="math inline">\(l_0\)</span> norm directly computes the number of nonzero elements, shown by the red points. At (1, 0), (0, 1), (-1, 0) and (0, -1), these are a distance of 1 away from the origin. The remaining red points are a distance of 2 away from the origin corresponding to the 2 nonzero elements in all other points along the unit circle. Since the blue and red dots coincide at the above four points, the <span class="math inline">\(l_1\)</span> norm is minimized at the same points as the <span class="math inline">\(l_0\)</span> norm. But the <span class="math inline">\(l_1\)</span> norm has a smooth descent to these minima compared with the discontinuities of <span class="math inline">\(l_0\)</span> norm around these minima. This makes the <span class="math inline">\(l_1\)</span> easier to minimize.</p>
+<p>Thus, to maximize sparsity we minimize the <span class="math inline">\(l_1\)</span> norm instead of the <span class="math inline">\(l_0\)</span> norm.</p>
 <section class="level3"><h3 id="objective-function">Objective Function<a class="anchor" aria-label="anchor" href="#objective-function"></a>
 </h3>
 <p>Formally, using the <span class="math inline">\(l_1\)</span> norm, our objective function becomes</p>
@@ -144,13 +145,13 @@ X &amp; = F^0 \Lambda^{0'} \\
 \begin{align}
 \min_R ||\Lambda^0R||_1
 \end{align}
-\]</span> such that <span class="math inline">\(R\)</span> is nonsingular and <span class="math inline">\(||r_k||_2 = 1\)</span> where <span class="math inline">\(r_k\)</span> is a row in <span class="math inline">\(R\)</span>. This keeps the length of each loading vector fixed, ensuring we look only at rotations of each initial loading vector. Since the length remains constant, we can transform this constrained optimization problem into an unconstrained one by converting to polar coordinates. In the case of two factors, in the constrained version we want to find weights <span class="math inline">\(w_1, w_2\)</span> that minimize</p>
+\]</span> such that <span class="math inline">\(R\)</span> is nonsingular and <span class="math inline">\(||r_k||_2 = 1\)</span> where <span class="math inline">\(r_k\)</span> is a row in <span class="math inline">\(R\)</span>. This keeps the length of each loading vector fixed, ensuring we look only at rotations of each initial loading vector. Since the length remains constant, we can transform this constrained optimization problem into an unconstrained one by converting to polar coordinates. For example, in the case of two factors, in the constrained version we want to find weights <span class="math inline">\(w_1, w_2\)</span> that minimize</p>
 <p><span class="math display">\[
 || w_1 \lambda_1^0 + w_2 \lambda_2^0 ||_1 \quad s.t. \quad w_1^2 + w_2^2 = 1.
 \]</span> In spherical coordinates, this amounts to finding an angle <span class="math inline">\(\theta\)</span> that minimizes</p>
 <p><span class="math display">\[
 ||\lambda_1^0 \cos \theta + \lambda_2^0 \sin \theta ||_1.
-\]</span> The unconstrained objective function becomes slightly more complicated in the general case of more than two factors because we span higher dimensional space than a plane and therefore need to optimize across multiple angles. But the idea remains the same.</p>
+\]</span></p>
 </section></section><section class="level2"><h2 id="a-simple-example">A simple example<a class="anchor" aria-label="anchor" href="#a-simple-example"></a>
 </h2>
 <p>Let’s consider an example we can visualize fully: we’ll use the following simulated data that has three columns (<span class="math inline">\(n = 3\)</span>) and suppose we know that there are two factors, <span class="math inline">\(r = 2\)</span>. Below only the first 6 of 224 total rows are printed.</p>
@@ -174,7 +175,7 @@ X &amp; = F^0 \Lambda^{0'} \\
 3   0.000000  0.2765392</code></pre>
 </div>
 </div>
-<p>Now, let’s look at the PCA estimator for <span class="math inline">\(X\)</span> for the first two principal components. The zeroes from above are no longer present, but the principal component estimate still provides a great starting point as they are generally linear combinations of the true loading vectors as <span class="math inline">\(n \to \infty\)</span> (cite).</p>
+<p>Now, let’s look at the PCA estimator for <span class="math inline">\(X\)</span> for the first two principal components. The zeroes from above are no longer present, but the principal component estimate still provides a great starting point as they are generally linear combinations of the true loading vectors as <span class="math inline">\(n \to \infty\)</span> (e.g., <a href="https://onlinelibrary.wiley.com/doi/abs/10.1111/1468-0262.00392" class="external-link">Bai (2003)</a>).</p>
 <div class="cell">
 <div class="cell-output cell-output-stdout">
 <pre><code>  loadings_1 loadings_2
@@ -198,14 +199,14 @@ X &amp; = F^0 \Lambda^{0'} \\
 <p>Since <span class="math inline">\(n = 3\)</span> is small, we can see there is some noise in the PC estimate, resulting in the loading vectors being located slightly off of this plane. Still, we can get a better estimate of the true vectors by rotating.</p>
 <p>As we try different angles of rotation out we can see their impact on the objective function we’re optimizing over. The rotation that best aligns with the true loadings vectors should also occur at the local minima of the objective function.</p>
 <div class="cell">
-<div class="sourceCode cell-code hidden" id="cb4" data-startfrom="193" data-source-offset="-30"><pre class="sourceCode js"><code class="sourceCode javascript" style="counter-reset: source-line 192;"><span id="cb4-193"><a href="#cb4-193" aria-hidden="true" tabindex="-1"></a>math <span class="op">=</span> <span class="pp">require</span>(<span class="st">'https://cdnjs.cloudflare.com/ajax/libs/mathjs/1.5.2/math.min.js'</span>)</span>
-<span id="cb4-194"><a href="#cb4-194" aria-hidden="true" tabindex="-1"></a>d3 <span class="op">=</span> <span class="pp">require</span>(<span class="st">"d3@3"</span>)</span>
-<span id="cb4-195"><a href="#cb4-195" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb4-196"><a href="#cb4-196" aria-hidden="true" tabindex="-1"></a>THREE <span class="op">=</span> {</span>
-<span id="cb4-197"><a href="#cb4-197" aria-hidden="true" tabindex="-1"></a>  <span class="kw">const</span> THREE <span class="op">=</span> <span class="bu">window</span><span class="op">.</span><span class="at">THREE</span> <span class="op">=</span> <span class="cf">await</span> <span class="pp">require</span>(<span class="st">"three@0.130.0/build/three.min.js"</span>)<span class="op">;</span></span>
-<span id="cb4-198"><a href="#cb4-198" aria-hidden="true" tabindex="-1"></a>  <span class="cf">await</span> <span class="pp">require</span>(<span class="st">"three@0.130.0/examples/js/controls/OrbitControls.js"</span>)<span class="op">.</span><span class="fu">catch</span>(() <span class="kw">=&gt;</span> {})<span class="op">;</span></span>
-<span id="cb4-199"><a href="#cb4-199" aria-hidden="true" tabindex="-1"></a>  <span class="cf">return</span> THREE<span class="op">;</span></span>
-<span id="cb4-200"><a href="#cb4-200" aria-hidden="true" tabindex="-1"></a>}</span></code></pre></div>
+<div class="sourceCode cell-code hidden" id="cb4" data-startfrom="191" data-source-offset="-30"><pre class="sourceCode js"><code class="sourceCode javascript" style="counter-reset: source-line 190;"><span id="cb4-191"><a href="#cb4-191" aria-hidden="true" tabindex="-1"></a>math <span class="op">=</span> <span class="pp">require</span>(<span class="st">'https://cdnjs.cloudflare.com/ajax/libs/mathjs/1.5.2/math.min.js'</span>)</span>
+<span id="cb4-192"><a href="#cb4-192" aria-hidden="true" tabindex="-1"></a>d3 <span class="op">=</span> <span class="pp">require</span>(<span class="st">"d3@3"</span>)</span>
+<span id="cb4-193"><a href="#cb4-193" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-194"><a href="#cb4-194" aria-hidden="true" tabindex="-1"></a>THREE <span class="op">=</span> {</span>
+<span id="cb4-195"><a href="#cb4-195" aria-hidden="true" tabindex="-1"></a>  <span class="kw">const</span> THREE <span class="op">=</span> <span class="bu">window</span><span class="op">.</span><span class="at">THREE</span> <span class="op">=</span> <span class="cf">await</span> <span class="pp">require</span>(<span class="st">"three@0.130.0/build/three.min.js"</span>)<span class="op">;</span></span>
+<span id="cb4-196"><a href="#cb4-196" aria-hidden="true" tabindex="-1"></a>  <span class="cf">await</span> <span class="pp">require</span>(<span class="st">"three@0.130.0/examples/js/controls/OrbitControls.js"</span>)<span class="op">.</span><span class="fu">catch</span>(() <span class="kw">=&gt;</span> {})<span class="op">;</span></span>
+<span id="cb4-197"><a href="#cb4-197" aria-hidden="true" tabindex="-1"></a>  <span class="cf">return</span> THREE<span class="op">;</span></span>
+<span id="cb4-198"><a href="#cb4-198" aria-hidden="true" tabindex="-1"></a>}</span></code></pre></div>
 <div class="cell-output cell-output-display">
 <div>
 <div id="ojs-cell-1-1" data-nodetype="declaration">
@@ -229,22 +230,22 @@ X &amp; = F^0 \Lambda^{0'} \\
 </div>
 </div>
 <div class="cell">
-<div class="sourceCode cell-code hidden" id="cb5" data-startfrom="206" data-source-offset="0"><pre class="sourceCode js"><code class="sourceCode javascript" style="counter-reset: source-line 205;"><span id="cb5-206"><a href="#cb5-206" aria-hidden="true" tabindex="-1"></a>renderer<span class="op">.</span><span class="at">domElement</span></span></code></pre></div>
+<div class="sourceCode cell-code hidden" id="cb5" data-startfrom="204" data-source-offset="0"><pre class="sourceCode js"><code class="sourceCode javascript" style="counter-reset: source-line 203;"><span id="cb5-204"><a href="#cb5-204" aria-hidden="true" tabindex="-1"></a>renderer<span class="op">.</span><span class="at">domElement</span></span></code></pre></div>
 <div class="cell-output cell-output-display">
 <div id="ojs-cell-2" data-nodetype="expression">
 
 </div>
 </div>
 </div>
-<div class="sourceCode cell-code hidden" id="cb6" data-startfrom="216" data-source-offset="-0"><pre class="sourceCode js"><code class="sourceCode javascript" style="counter-reset: source-line 215;"><span id="cb6-216"><a href="#cb6-216" aria-hidden="true" tabindex="-1"></a>viewof theta1_value <span class="op">=</span> Inputs<span class="op">.</span><span class="fu">range</span>(</span>
-<span id="cb6-217"><a href="#cb6-217" aria-hidden="true" tabindex="-1"></a>  [<span class="op">-</span><span class="fl">3.13</span><span class="op">,</span> <span class="fl">3.13</span>]<span class="op">,</span> </span>
-<span id="cb6-218"><a href="#cb6-218" aria-hidden="true" tabindex="-1"></a>  {<span class="dt">value</span><span class="op">:</span> <span class="dv">0</span><span class="op">,</span> <span class="dt">step</span><span class="op">:</span> <span class="op">.</span><span class="bn">01</span><span class="op">,</span> <span class="dt">label</span><span class="op">:</span> <span class="st">"Vector 1 angle (θ):"</span>}</span>
-<span id="cb6-219"><a href="#cb6-219" aria-hidden="true" tabindex="-1"></a>)</span>
-<span id="cb6-220"><a href="#cb6-220" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb6-221"><a href="#cb6-221" aria-hidden="true" tabindex="-1"></a>viewof theta2_value <span class="op">=</span> Inputs<span class="op">.</span><span class="fu">range</span>(</span>
-<span id="cb6-222"><a href="#cb6-222" aria-hidden="true" tabindex="-1"></a>  [<span class="op">-</span><span class="fl">3.13</span><span class="op">,</span> <span class="fl">3.13</span>]<span class="op">,</span> </span>
-<span id="cb6-223"><a href="#cb6-223" aria-hidden="true" tabindex="-1"></a>  {<span class="dt">value</span><span class="op">:</span> <span class="fl">1.57</span><span class="op">,</span> <span class="dt">step</span><span class="op">:</span> <span class="op">.</span><span class="bn">01</span><span class="op">,</span> <span class="dt">label</span><span class="op">:</span> <span class="st">"Vector 2 angle (θ):"</span>}</span>
-<span id="cb6-224"><a href="#cb6-224" aria-hidden="true" tabindex="-1"></a>)</span></code></pre></div>
+<div class="sourceCode cell-code hidden" id="cb6" data-startfrom="214" data-source-offset="-0"><pre class="sourceCode js"><code class="sourceCode javascript" style="counter-reset: source-line 213;"><span id="cb6-214"><a href="#cb6-214" aria-hidden="true" tabindex="-1"></a>viewof theta1_value <span class="op">=</span> Inputs<span class="op">.</span><span class="fu">range</span>(</span>
+<span id="cb6-215"><a href="#cb6-215" aria-hidden="true" tabindex="-1"></a>  [<span class="op">-</span><span class="fl">3.13</span><span class="op">,</span> <span class="fl">3.13</span>]<span class="op">,</span> </span>
+<span id="cb6-216"><a href="#cb6-216" aria-hidden="true" tabindex="-1"></a>  {<span class="dt">value</span><span class="op">:</span> <span class="dv">0</span><span class="op">,</span> <span class="dt">step</span><span class="op">:</span> <span class="op">.</span><span class="bn">01</span><span class="op">,</span> <span class="dt">label</span><span class="op">:</span> <span class="st">"Vector 1 angle (θ):"</span>}</span>
+<span id="cb6-217"><a href="#cb6-217" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb6-218"><a href="#cb6-218" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb6-219"><a href="#cb6-219" aria-hidden="true" tabindex="-1"></a>viewof theta2_value <span class="op">=</span> Inputs<span class="op">.</span><span class="fu">range</span>(</span>
+<span id="cb6-220"><a href="#cb6-220" aria-hidden="true" tabindex="-1"></a>  [<span class="op">-</span><span class="fl">3.13</span><span class="op">,</span> <span class="fl">3.13</span>]<span class="op">,</span> </span>
+<span id="cb6-221"><a href="#cb6-221" aria-hidden="true" tabindex="-1"></a>  {<span class="dt">value</span><span class="op">:</span> <span class="fl">1.57</span><span class="op">,</span> <span class="dt">step</span><span class="op">:</span> <span class="op">.</span><span class="bn">01</span><span class="op">,</span> <span class="dt">label</span><span class="op">:</span> <span class="st">"Vector 2 angle (θ):"</span>}</span>
+<span id="cb6-222"><a href="#cb6-222" aria-hidden="true" tabindex="-1"></a>)</span></code></pre></div>
 <div class="cell panel-input quarto-layout-panel" data-layout-ncol="2">
 <div class="quarto-layout-row">
 <div class="quarto-layout-cell" style="flex-basis: 50.0%;justify-content: flex-start;">
@@ -260,42 +261,42 @@ X &amp; = F^0 \Lambda^{0'} \\
 </div>
 </div>
 <div class="cell panel-fill">
-<div class="sourceCode cell-code hidden" id="cb7" data-startfrom="233" data-source-offset="-1"><pre class="sourceCode js"><code class="sourceCode javascript" style="counter-reset: source-line 232;"><span id="cb7-233"><a href="#cb7-233" aria-hidden="true" tabindex="-1"></a>highlighted_points <span class="op">=</span> obj_data<span class="op">.</span><span class="fu">filter</span>(<span class="kw">function</span>(angle) {</span>
-<span id="cb7-234"><a href="#cb7-234" aria-hidden="true" tabindex="-1"></a>  <span class="cf">return</span> (theta1_value <span class="op">-</span> <span class="fl">0.005</span> <span class="op">&lt;</span> angle<span class="op">.</span><span class="at">theta</span> <span class="op">&amp;&amp;</span> theta1_value <span class="op">+</span> <span class="fl">0.005</span> <span class="op">&gt;</span> angle<span class="op">.</span><span class="at">theta</span>) <span class="op">||</span></span>
-<span id="cb7-235"><a href="#cb7-235" aria-hidden="true" tabindex="-1"></a>         (theta2_value <span class="op">-</span> <span class="fl">0.005</span> <span class="op">&lt;</span> angle<span class="op">.</span><span class="at">theta</span> <span class="op">&amp;&amp;</span> theta2_value <span class="op">+</span> <span class="fl">0.005</span> <span class="op">&gt;</span> angle<span class="op">.</span><span class="at">theta</span>)</span>
-<span id="cb7-236"><a href="#cb7-236" aria-hidden="true" tabindex="-1"></a>})</span>
+<div class="sourceCode cell-code hidden" id="cb7" data-startfrom="231" data-source-offset="-1"><pre class="sourceCode js"><code class="sourceCode javascript" style="counter-reset: source-line 230;"><span id="cb7-231"><a href="#cb7-231" aria-hidden="true" tabindex="-1"></a>highlighted_points <span class="op">=</span> obj_data<span class="op">.</span><span class="fu">filter</span>(<span class="kw">function</span>(angle) {</span>
+<span id="cb7-232"><a href="#cb7-232" aria-hidden="true" tabindex="-1"></a>  <span class="cf">return</span> (theta1_value <span class="op">-</span> <span class="fl">0.005</span> <span class="op">&lt;</span> angle<span class="op">.</span><span class="at">theta</span> <span class="op">&amp;&amp;</span> theta1_value <span class="op">+</span> <span class="fl">0.005</span> <span class="op">&gt;</span> angle<span class="op">.</span><span class="at">theta</span>) <span class="op">||</span></span>
+<span id="cb7-233"><a href="#cb7-233" aria-hidden="true" tabindex="-1"></a>         (theta2_value <span class="op">-</span> <span class="fl">0.005</span> <span class="op">&lt;</span> angle<span class="op">.</span><span class="at">theta</span> <span class="op">&amp;&amp;</span> theta2_value <span class="op">+</span> <span class="fl">0.005</span> <span class="op">&gt;</span> angle<span class="op">.</span><span class="at">theta</span>)</span>
+<span id="cb7-234"><a href="#cb7-234" aria-hidden="true" tabindex="-1"></a>})</span>
+<span id="cb7-235"><a href="#cb7-235" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-236"><a href="#cb7-236" aria-hidden="true" tabindex="-1"></a>obj_data <span class="op">=</span> <span class="fu">FileAttachment</span>(<span class="st">"obj_function_data.csv"</span>)<span class="op">.</span><span class="fu">csv</span>({<span class="dt">typed</span><span class="op">:</span> <span class="kw">true</span>})<span class="op">;</span></span>
 <span id="cb7-237"><a href="#cb7-237" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb7-238"><a href="#cb7-238" aria-hidden="true" tabindex="-1"></a>obj_data <span class="op">=</span> <span class="fu">FileAttachment</span>(<span class="st">"obj_function_data.csv"</span>)<span class="op">.</span><span class="fu">csv</span>({<span class="dt">typed</span><span class="op">:</span> <span class="kw">true</span>})<span class="op">;</span></span>
-<span id="cb7-239"><a href="#cb7-239" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb7-240"><a href="#cb7-240" aria-hidden="true" tabindex="-1"></a>Plot<span class="op">.</span><span class="fu">plot</span>({</span>
-<span id="cb7-241"><a href="#cb7-241" aria-hidden="true" tabindex="-1"></a>  <span class="dt">height</span><span class="op">:</span> <span class="dv">150</span><span class="op">,</span></span>
-<span id="cb7-242"><a href="#cb7-242" aria-hidden="true" tabindex="-1"></a>  <span class="dt">width</span><span class="op">:</span> <span class="dv">700</span><span class="op">,</span></span>
-<span id="cb7-243"><a href="#cb7-243" aria-hidden="true" tabindex="-1"></a>  <span class="dt">grid</span><span class="op">:</span> <span class="kw">true</span><span class="op">,</span></span>
-<span id="cb7-244"><a href="#cb7-244" aria-hidden="true" tabindex="-1"></a>  <span class="dt">marks</span><span class="op">:</span> [</span>
-<span id="cb7-245"><a href="#cb7-245" aria-hidden="true" tabindex="-1"></a>    Plot<span class="op">.</span><span class="fu">dot</span>(obj_data<span class="op">,</span> {</span>
-<span id="cb7-246"><a href="#cb7-246" aria-hidden="true" tabindex="-1"></a>      <span class="dt">x</span><span class="op">:</span> <span class="st">"theta"</span><span class="op">,</span> </span>
-<span id="cb7-247"><a href="#cb7-247" aria-hidden="true" tabindex="-1"></a>      <span class="dt">y</span><span class="op">:</span> <span class="st">"y"</span><span class="op">,</span></span>
-<span id="cb7-248"><a href="#cb7-248" aria-hidden="true" tabindex="-1"></a>      <span class="dt">r</span><span class="op">:</span> <span class="dv">1</span></span>
-<span id="cb7-249"><a href="#cb7-249" aria-hidden="true" tabindex="-1"></a>    })<span class="op">,</span></span>
-<span id="cb7-250"><a href="#cb7-250" aria-hidden="true" tabindex="-1"></a>    Plot<span class="op">.</span><span class="fu">dot</span>(highlighted_points<span class="op">,</span> {</span>
-<span id="cb7-251"><a href="#cb7-251" aria-hidden="true" tabindex="-1"></a>      <span class="dt">x</span><span class="op">:</span> <span class="st">"theta"</span><span class="op">,</span> </span>
-<span id="cb7-252"><a href="#cb7-252" aria-hidden="true" tabindex="-1"></a>      <span class="dt">y</span><span class="op">:</span> <span class="st">"y"</span><span class="op">,</span> </span>
-<span id="cb7-253"><a href="#cb7-253" aria-hidden="true" tabindex="-1"></a>      <span class="dt">fill</span><span class="op">:</span> <span class="st">"#0000FF"</span><span class="op">,</span> </span>
-<span id="cb7-254"><a href="#cb7-254" aria-hidden="true" tabindex="-1"></a>      <span class="dt">r</span><span class="op">:</span> <span class="dv">5</span></span>
-<span id="cb7-255"><a href="#cb7-255" aria-hidden="true" tabindex="-1"></a>    })</span>
-<span id="cb7-256"><a href="#cb7-256" aria-hidden="true" tabindex="-1"></a>  ]<span class="op">,</span></span>
-<span id="cb7-257"><a href="#cb7-257" aria-hidden="true" tabindex="-1"></a>  <span class="dt">x</span><span class="op">:</span> {</span>
-<span id="cb7-258"><a href="#cb7-258" aria-hidden="true" tabindex="-1"></a>  <span class="dt">label</span><span class="op">:</span> <span class="st">"θ"</span></span>
-<span id="cb7-259"><a href="#cb7-259" aria-hidden="true" tabindex="-1"></a>}<span class="op">,</span></span>
-<span id="cb7-260"><a href="#cb7-260" aria-hidden="true" tabindex="-1"></a>  <span class="dt">y</span><span class="op">:</span> {</span>
-<span id="cb7-261"><a href="#cb7-261" aria-hidden="true" tabindex="-1"></a>    <span class="dt">label</span><span class="op">:</span> <span class="st">""</span></span>
-<span id="cb7-262"><a href="#cb7-262" aria-hidden="true" tabindex="-1"></a>  }<span class="op">,</span></span>
-<span id="cb7-263"><a href="#cb7-263" aria-hidden="true" tabindex="-1"></a>  <span class="dt">title</span><span class="op">:</span> <span class="st">"Objective function: ||λ₁⁰ cos θ + λ₂⁰ sin θ ||₁"</span><span class="op">,</span></span>
-<span id="cb7-264"><a href="#cb7-264" aria-hidden="true" tabindex="-1"></a>  <span class="dt">style</span><span class="op">:</span> {</span>
-<span id="cb7-265"><a href="#cb7-265" aria-hidden="true" tabindex="-1"></a>    <span class="dt">background</span><span class="op">:</span> <span class="st">"transparent"</span><span class="op">,</span></span>
-<span id="cb7-266"><a href="#cb7-266" aria-hidden="true" tabindex="-1"></a>    <span class="dt">fontSize</span><span class="op">:</span> <span class="dv">12</span></span>
-<span id="cb7-267"><a href="#cb7-267" aria-hidden="true" tabindex="-1"></a>  }</span>
-<span id="cb7-268"><a href="#cb7-268" aria-hidden="true" tabindex="-1"></a>})</span></code></pre></div>
+<span id="cb7-238"><a href="#cb7-238" aria-hidden="true" tabindex="-1"></a>Plot<span class="op">.</span><span class="fu">plot</span>({</span>
+<span id="cb7-239"><a href="#cb7-239" aria-hidden="true" tabindex="-1"></a>  <span class="dt">height</span><span class="op">:</span> <span class="dv">150</span><span class="op">,</span></span>
+<span id="cb7-240"><a href="#cb7-240" aria-hidden="true" tabindex="-1"></a>  <span class="dt">width</span><span class="op">:</span> <span class="dv">700</span><span class="op">,</span></span>
+<span id="cb7-241"><a href="#cb7-241" aria-hidden="true" tabindex="-1"></a>  <span class="dt">grid</span><span class="op">:</span> <span class="kw">true</span><span class="op">,</span></span>
+<span id="cb7-242"><a href="#cb7-242" aria-hidden="true" tabindex="-1"></a>  <span class="dt">marks</span><span class="op">:</span> [</span>
+<span id="cb7-243"><a href="#cb7-243" aria-hidden="true" tabindex="-1"></a>    Plot<span class="op">.</span><span class="fu">dot</span>(obj_data<span class="op">,</span> {</span>
+<span id="cb7-244"><a href="#cb7-244" aria-hidden="true" tabindex="-1"></a>      <span class="dt">x</span><span class="op">:</span> <span class="st">"theta"</span><span class="op">,</span> </span>
+<span id="cb7-245"><a href="#cb7-245" aria-hidden="true" tabindex="-1"></a>      <span class="dt">y</span><span class="op">:</span> <span class="st">"y"</span><span class="op">,</span></span>
+<span id="cb7-246"><a href="#cb7-246" aria-hidden="true" tabindex="-1"></a>      <span class="dt">r</span><span class="op">:</span> <span class="dv">1</span></span>
+<span id="cb7-247"><a href="#cb7-247" aria-hidden="true" tabindex="-1"></a>    })<span class="op">,</span></span>
+<span id="cb7-248"><a href="#cb7-248" aria-hidden="true" tabindex="-1"></a>    Plot<span class="op">.</span><span class="fu">dot</span>(highlighted_points<span class="op">,</span> {</span>
+<span id="cb7-249"><a href="#cb7-249" aria-hidden="true" tabindex="-1"></a>      <span class="dt">x</span><span class="op">:</span> <span class="st">"theta"</span><span class="op">,</span> </span>
+<span id="cb7-250"><a href="#cb7-250" aria-hidden="true" tabindex="-1"></a>      <span class="dt">y</span><span class="op">:</span> <span class="st">"y"</span><span class="op">,</span> </span>
+<span id="cb7-251"><a href="#cb7-251" aria-hidden="true" tabindex="-1"></a>      <span class="dt">fill</span><span class="op">:</span> <span class="st">"#0000FF"</span><span class="op">,</span> </span>
+<span id="cb7-252"><a href="#cb7-252" aria-hidden="true" tabindex="-1"></a>      <span class="dt">r</span><span class="op">:</span> <span class="dv">5</span></span>
+<span id="cb7-253"><a href="#cb7-253" aria-hidden="true" tabindex="-1"></a>    })</span>
+<span id="cb7-254"><a href="#cb7-254" aria-hidden="true" tabindex="-1"></a>  ]<span class="op">,</span></span>
+<span id="cb7-255"><a href="#cb7-255" aria-hidden="true" tabindex="-1"></a>  <span class="dt">x</span><span class="op">:</span> {</span>
+<span id="cb7-256"><a href="#cb7-256" aria-hidden="true" tabindex="-1"></a>  <span class="dt">label</span><span class="op">:</span> <span class="st">"θ"</span></span>
+<span id="cb7-257"><a href="#cb7-257" aria-hidden="true" tabindex="-1"></a>}<span class="op">,</span></span>
+<span id="cb7-258"><a href="#cb7-258" aria-hidden="true" tabindex="-1"></a>  <span class="dt">y</span><span class="op">:</span> {</span>
+<span id="cb7-259"><a href="#cb7-259" aria-hidden="true" tabindex="-1"></a>    <span class="dt">label</span><span class="op">:</span> <span class="st">""</span></span>
+<span id="cb7-260"><a href="#cb7-260" aria-hidden="true" tabindex="-1"></a>  }<span class="op">,</span></span>
+<span id="cb7-261"><a href="#cb7-261" aria-hidden="true" tabindex="-1"></a>  <span class="dt">title</span><span class="op">:</span> <span class="st">"Objective function: ||λ₁⁰ cos θ + λ₂⁰ sin θ ||₁"</span><span class="op">,</span></span>
+<span id="cb7-262"><a href="#cb7-262" aria-hidden="true" tabindex="-1"></a>  <span class="dt">style</span><span class="op">:</span> {</span>
+<span id="cb7-263"><a href="#cb7-263" aria-hidden="true" tabindex="-1"></a>    <span class="dt">background</span><span class="op">:</span> <span class="st">"transparent"</span><span class="op">,</span></span>
+<span id="cb7-264"><a href="#cb7-264" aria-hidden="true" tabindex="-1"></a>    <span class="dt">fontSize</span><span class="op">:</span> <span class="dv">12</span></span>
+<span id="cb7-265"><a href="#cb7-265" aria-hidden="true" tabindex="-1"></a>  }</span>
+<span id="cb7-266"><a href="#cb7-266" aria-hidden="true" tabindex="-1"></a>})</span></code></pre></div>
 <div class="cell-output cell-output-display">
 <div>
 <div id="ojs-cell-4-1" data-nodetype="declaration">
@@ -319,34 +320,34 @@ X &amp; = F^0 \Lambda^{0'} \\
 </div>
 </div>
 <div class="cell hidden">
-<div class="sourceCode cell-code hidden" id="cb8" data-startfrom="276" data-source-offset="-1"><pre class="sourceCode js"><code class="sourceCode javascript" style="counter-reset: source-line 275;"><span id="cb8-276"><a href="#cb8-276" aria-hidden="true" tabindex="-1"></a>height <span class="op">=</span> <span class="dv">450</span><span class="op">;</span></span>
-<span id="cb8-277"><a href="#cb8-277" aria-hidden="true" tabindex="-1"></a>camera <span class="op">=</span> {</span>
-<span id="cb8-278"><a href="#cb8-278" aria-hidden="true" tabindex="-1"></a>  <span class="kw">const</span> fov <span class="op">=</span> <span class="dv">45</span><span class="op">;</span></span>
-<span id="cb8-279"><a href="#cb8-279" aria-hidden="true" tabindex="-1"></a>  <span class="kw">const</span> aspect <span class="op">=</span> width <span class="op">/</span> height<span class="op">;</span></span>
-<span id="cb8-280"><a href="#cb8-280" aria-hidden="true" tabindex="-1"></a>  <span class="kw">const</span> near <span class="op">=</span> <span class="dv">1</span><span class="op">;</span></span>
-<span id="cb8-281"><a href="#cb8-281" aria-hidden="true" tabindex="-1"></a>  <span class="kw">const</span> far <span class="op">=</span> <span class="dv">1000</span><span class="op">;</span></span>
-<span id="cb8-282"><a href="#cb8-282" aria-hidden="true" tabindex="-1"></a>  <span class="kw">const</span> camera <span class="op">=</span> <span class="kw">new</span> THREE<span class="op">.</span><span class="fu">PerspectiveCamera</span>(fov<span class="op">,</span> aspect<span class="op">,</span> near<span class="op">,</span> far)<span class="op">;</span></span>
-<span id="cb8-283"><a href="#cb8-283" aria-hidden="true" tabindex="-1"></a>  camera<span class="op">.</span><span class="at">position</span><span class="op">.</span><span class="fu">set</span>(<span class="op">-</span><span class="dv">2</span><span class="op">*</span><span class="dv">2</span><span class="op">,</span> <span class="dv">2</span><span class="op">*</span><span class="dv">2</span><span class="op">,</span> <span class="op">-</span><span class="dv">2</span><span class="op">*</span><span class="dv">2</span>)</span>
-<span id="cb8-284"><a href="#cb8-284" aria-hidden="true" tabindex="-1"></a>  camera<span class="op">.</span><span class="fu">lookAt</span>(<span class="kw">new</span> THREE<span class="op">.</span><span class="fu">Vector3</span>(<span class="dv">0</span><span class="op">,</span> <span class="dv">0</span><span class="op">,</span> <span class="dv">0</span>))<span class="op">;</span></span>
-<span id="cb8-285"><a href="#cb8-285" aria-hidden="true" tabindex="-1"></a>  <span class="cf">return</span> camera<span class="op">;</span></span>
-<span id="cb8-286"><a href="#cb8-286" aria-hidden="true" tabindex="-1"></a>}</span>
-<span id="cb8-287"><a href="#cb8-287" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb8-288"><a href="#cb8-288" aria-hidden="true" tabindex="-1"></a>gridHelper <span class="op">=</span> {<span class="kw">const</span> size <span class="op">=</span> <span class="dv">10</span><span class="op">;</span></span>
-<span id="cb8-289"><a href="#cb8-289" aria-hidden="true" tabindex="-1"></a><span class="kw">const</span> divisions <span class="op">=</span> <span class="dv">10</span><span class="op">;</span></span>
-<span id="cb8-290"><a href="#cb8-290" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb8-291"><a href="#cb8-291" aria-hidden="true" tabindex="-1"></a><span class="kw">const</span> gridHelper <span class="op">=</span> <span class="kw">new</span> THREE<span class="op">.</span><span class="fu">GridHelper</span>( size<span class="op">,</span> divisions )<span class="op">;</span></span>
-<span id="cb8-292"><a href="#cb8-292" aria-hidden="true" tabindex="-1"></a><span class="cf">return</span> gridHelper<span class="op">;</span></span>
-<span id="cb8-293"><a href="#cb8-293" aria-hidden="true" tabindex="-1"></a>}</span>
-<span id="cb8-294"><a href="#cb8-294" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb8-295"><a href="#cb8-295" aria-hidden="true" tabindex="-1"></a>renderer <span class="op">=</span> {</span>
-<span id="cb8-296"><a href="#cb8-296" aria-hidden="true" tabindex="-1"></a>  <span class="kw">const</span> renderer <span class="op">=</span> <span class="kw">new</span> THREE<span class="op">.</span><span class="fu">WebGLRenderer</span>({<span class="dt">antialias</span><span class="op">:</span> <span class="kw">true</span>})<span class="op">;</span></span>
-<span id="cb8-297"><a href="#cb8-297" aria-hidden="true" tabindex="-1"></a>  renderer<span class="op">.</span><span class="fu">setSize</span>(width<span class="op">,</span> height)<span class="op">;</span></span>
-<span id="cb8-298"><a href="#cb8-298" aria-hidden="true" tabindex="-1"></a>  renderer<span class="op">.</span><span class="fu">setPixelRatio</span>(devicePixelRatio)<span class="op">;</span></span>
-<span id="cb8-299"><a href="#cb8-299" aria-hidden="true" tabindex="-1"></a>  <span class="kw">const</span> controls <span class="op">=</span> <span class="kw">new</span> THREE<span class="op">.</span><span class="fu">OrbitControls</span>(camera<span class="op">,</span> renderer<span class="op">.</span><span class="at">domElement</span>)<span class="op">;</span></span>
-<span id="cb8-300"><a href="#cb8-300" aria-hidden="true" tabindex="-1"></a>  controls<span class="op">.</span><span class="fu">addEventListener</span>(<span class="st">"change"</span><span class="op">,</span> () <span class="kw">=&gt;</span> renderer<span class="op">.</span><span class="fu">render</span>(scene<span class="op">,</span> camera))<span class="op">;</span></span>
-<span id="cb8-301"><a href="#cb8-301" aria-hidden="true" tabindex="-1"></a>  invalidation<span class="op">.</span><span class="fu">then</span>(() <span class="kw">=&gt;</span> (controls<span class="op">.</span><span class="fu">dispose</span>()<span class="op">,</span> renderer<span class="op">.</span><span class="fu">dispose</span>()))<span class="op">;</span></span>
-<span id="cb8-302"><a href="#cb8-302" aria-hidden="true" tabindex="-1"></a>  <span class="cf">return</span> renderer<span class="op">;</span></span>
-<span id="cb8-303"><a href="#cb8-303" aria-hidden="true" tabindex="-1"></a>}</span></code></pre></div>
+<div class="sourceCode cell-code hidden" id="cb8" data-startfrom="274" data-source-offset="-1"><pre class="sourceCode js"><code class="sourceCode javascript" style="counter-reset: source-line 273;"><span id="cb8-274"><a href="#cb8-274" aria-hidden="true" tabindex="-1"></a>height <span class="op">=</span> <span class="dv">450</span><span class="op">;</span></span>
+<span id="cb8-275"><a href="#cb8-275" aria-hidden="true" tabindex="-1"></a>camera <span class="op">=</span> {</span>
+<span id="cb8-276"><a href="#cb8-276" aria-hidden="true" tabindex="-1"></a>  <span class="kw">const</span> fov <span class="op">=</span> <span class="dv">45</span><span class="op">;</span></span>
+<span id="cb8-277"><a href="#cb8-277" aria-hidden="true" tabindex="-1"></a>  <span class="kw">const</span> aspect <span class="op">=</span> width <span class="op">/</span> height<span class="op">;</span></span>
+<span id="cb8-278"><a href="#cb8-278" aria-hidden="true" tabindex="-1"></a>  <span class="kw">const</span> near <span class="op">=</span> <span class="dv">1</span><span class="op">;</span></span>
+<span id="cb8-279"><a href="#cb8-279" aria-hidden="true" tabindex="-1"></a>  <span class="kw">const</span> far <span class="op">=</span> <span class="dv">1000</span><span class="op">;</span></span>
+<span id="cb8-280"><a href="#cb8-280" aria-hidden="true" tabindex="-1"></a>  <span class="kw">const</span> camera <span class="op">=</span> <span class="kw">new</span> THREE<span class="op">.</span><span class="fu">PerspectiveCamera</span>(fov<span class="op">,</span> aspect<span class="op">,</span> near<span class="op">,</span> far)<span class="op">;</span></span>
+<span id="cb8-281"><a href="#cb8-281" aria-hidden="true" tabindex="-1"></a>  camera<span class="op">.</span><span class="at">position</span><span class="op">.</span><span class="fu">set</span>(<span class="op">-</span><span class="dv">2</span><span class="op">*</span><span class="dv">2</span><span class="op">,</span> <span class="dv">2</span><span class="op">*</span><span class="dv">2</span><span class="op">,</span> <span class="op">-</span><span class="dv">2</span><span class="op">*</span><span class="dv">2</span>)</span>
+<span id="cb8-282"><a href="#cb8-282" aria-hidden="true" tabindex="-1"></a>  camera<span class="op">.</span><span class="fu">lookAt</span>(<span class="kw">new</span> THREE<span class="op">.</span><span class="fu">Vector3</span>(<span class="dv">0</span><span class="op">,</span> <span class="dv">0</span><span class="op">,</span> <span class="dv">0</span>))<span class="op">;</span></span>
+<span id="cb8-283"><a href="#cb8-283" aria-hidden="true" tabindex="-1"></a>  <span class="cf">return</span> camera<span class="op">;</span></span>
+<span id="cb8-284"><a href="#cb8-284" aria-hidden="true" tabindex="-1"></a>}</span>
+<span id="cb8-285"><a href="#cb8-285" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-286"><a href="#cb8-286" aria-hidden="true" tabindex="-1"></a>gridHelper <span class="op">=</span> {<span class="kw">const</span> size <span class="op">=</span> <span class="dv">10</span><span class="op">;</span></span>
+<span id="cb8-287"><a href="#cb8-287" aria-hidden="true" tabindex="-1"></a><span class="kw">const</span> divisions <span class="op">=</span> <span class="dv">10</span><span class="op">;</span></span>
+<span id="cb8-288"><a href="#cb8-288" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-289"><a href="#cb8-289" aria-hidden="true" tabindex="-1"></a><span class="kw">const</span> gridHelper <span class="op">=</span> <span class="kw">new</span> THREE<span class="op">.</span><span class="fu">GridHelper</span>( size<span class="op">,</span> divisions )<span class="op">;</span></span>
+<span id="cb8-290"><a href="#cb8-290" aria-hidden="true" tabindex="-1"></a><span class="cf">return</span> gridHelper<span class="op">;</span></span>
+<span id="cb8-291"><a href="#cb8-291" aria-hidden="true" tabindex="-1"></a>}</span>
+<span id="cb8-292"><a href="#cb8-292" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-293"><a href="#cb8-293" aria-hidden="true" tabindex="-1"></a>renderer <span class="op">=</span> {</span>
+<span id="cb8-294"><a href="#cb8-294" aria-hidden="true" tabindex="-1"></a>  <span class="kw">const</span> renderer <span class="op">=</span> <span class="kw">new</span> THREE<span class="op">.</span><span class="fu">WebGLRenderer</span>({<span class="dt">antialias</span><span class="op">:</span> <span class="kw">true</span>})<span class="op">;</span></span>
+<span id="cb8-295"><a href="#cb8-295" aria-hidden="true" tabindex="-1"></a>  renderer<span class="op">.</span><span class="fu">setSize</span>(width<span class="op">,</span> height)<span class="op">;</span></span>
+<span id="cb8-296"><a href="#cb8-296" aria-hidden="true" tabindex="-1"></a>  renderer<span class="op">.</span><span class="fu">setPixelRatio</span>(devicePixelRatio)<span class="op">;</span></span>
+<span id="cb8-297"><a href="#cb8-297" aria-hidden="true" tabindex="-1"></a>  <span class="kw">const</span> controls <span class="op">=</span> <span class="kw">new</span> THREE<span class="op">.</span><span class="fu">OrbitControls</span>(camera<span class="op">,</span> renderer<span class="op">.</span><span class="at">domElement</span>)<span class="op">;</span></span>
+<span id="cb8-298"><a href="#cb8-298" aria-hidden="true" tabindex="-1"></a>  controls<span class="op">.</span><span class="fu">addEventListener</span>(<span class="st">"change"</span><span class="op">,</span> () <span class="kw">=&gt;</span> renderer<span class="op">.</span><span class="fu">render</span>(scene<span class="op">,</span> camera))<span class="op">;</span></span>
+<span id="cb8-299"><a href="#cb8-299" aria-hidden="true" tabindex="-1"></a>  invalidation<span class="op">.</span><span class="fu">then</span>(() <span class="kw">=&gt;</span> (controls<span class="op">.</span><span class="fu">dispose</span>()<span class="op">,</span> renderer<span class="op">.</span><span class="fu">dispose</span>()))<span class="op">;</span></span>
+<span id="cb8-300"><a href="#cb8-300" aria-hidden="true" tabindex="-1"></a>  <span class="cf">return</span> renderer<span class="op">;</span></span>
+<span id="cb8-301"><a href="#cb8-301" aria-hidden="true" tabindex="-1"></a>}</span></code></pre></div>
 <div class="cell-output cell-output-display hidden">
 <div>
 <div id="ojs-cell-5-1" data-nodetype="declaration">
@@ -377,118 +378,118 @@ X &amp; = F^0 \Lambda^{0'} \\
 </div>
 </div>
 <div class="cell">
-<div class="sourceCode cell-code hidden" id="cb9" data-startfrom="310" data-source-offset="-1"><pre class="sourceCode js"><code class="sourceCode javascript" style="counter-reset: source-line 309;"><span id="cb9-310"><a href="#cb9-310" aria-hidden="true" tabindex="-1"></a>pca_vectors <span class="op">=</span> <span class="cf">await</span> <span class="fu">FileAttachment</span>(<span class="st">'lambda0.csv'</span>)<span class="op">.</span><span class="fu">csv</span>({<span class="dt">typed</span><span class="op">:</span> <span class="kw">true</span>})</span>
-<span id="cb9-311"><a href="#cb9-311" aria-hidden="true" tabindex="-1"></a>true_vectors <span class="op">=</span> <span class="cf">await</span> <span class="fu">FileAttachment</span>(<span class="st">'truth_normal.csv'</span>)<span class="op">.</span><span class="fu">csv</span>({<span class="dt">typed</span><span class="op">:</span> <span class="kw">true</span>})</span>
-<span id="cb9-312"><a href="#cb9-312" aria-hidden="true" tabindex="-1"></a></span>
+<div class="sourceCode cell-code hidden" id="cb9" data-startfrom="308" data-source-offset="-1"><pre class="sourceCode js"><code class="sourceCode javascript" style="counter-reset: source-line 307;"><span id="cb9-308"><a href="#cb9-308" aria-hidden="true" tabindex="-1"></a>pca_vectors <span class="op">=</span> <span class="cf">await</span> <span class="fu">FileAttachment</span>(<span class="st">'lambda0.csv'</span>)<span class="op">.</span><span class="fu">csv</span>({<span class="dt">typed</span><span class="op">:</span> <span class="kw">true</span>})</span>
+<span id="cb9-309"><a href="#cb9-309" aria-hidden="true" tabindex="-1"></a>true_vectors <span class="op">=</span> <span class="cf">await</span> <span class="fu">FileAttachment</span>(<span class="st">'truth_normal.csv'</span>)<span class="op">.</span><span class="fu">csv</span>({<span class="dt">typed</span><span class="op">:</span> <span class="kw">true</span>})</span>
+<span id="cb9-310"><a href="#cb9-310" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-311"><a href="#cb9-311" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-312"><a href="#cb9-312" aria-hidden="true" tabindex="-1"></a>display_arrow <span class="op">=</span> {<span class="kw">const</span> dir <span class="op">=</span> <span class="kw">new</span> THREE<span class="op">.</span><span class="fu">Vector3</span>( pca_vectors[<span class="dv">0</span>]<span class="op">.</span><span class="at">V1</span><span class="op">,</span> pca_vectors[<span class="dv">1</span>]<span class="op">.</span><span class="at">V1</span><span class="op">,</span> pca_vectors[<span class="dv">2</span>]<span class="op">.</span><span class="at">V1</span>)<span class="op">;</span></span>
 <span id="cb9-313"><a href="#cb9-313" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb9-314"><a href="#cb9-314" aria-hidden="true" tabindex="-1"></a>display_arrow <span class="op">=</span> {<span class="kw">const</span> dir <span class="op">=</span> <span class="kw">new</span> THREE<span class="op">.</span><span class="fu">Vector3</span>( pca_vectors[<span class="dv">0</span>]<span class="op">.</span><span class="at">V1</span><span class="op">,</span> pca_vectors[<span class="dv">1</span>]<span class="op">.</span><span class="at">V1</span><span class="op">,</span> pca_vectors[<span class="dv">2</span>]<span class="op">.</span><span class="at">V1</span>)<span class="op">;</span></span>
-<span id="cb9-315"><a href="#cb9-315" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb9-316"><a href="#cb9-316" aria-hidden="true" tabindex="-1"></a><span class="co">//normalize the direction vector (convert to vector of length 1)</span></span>
-<span id="cb9-317"><a href="#cb9-317" aria-hidden="true" tabindex="-1"></a>dir<span class="op">.</span><span class="fu">normalize</span>()<span class="op">;</span></span>
-<span id="cb9-318"><a href="#cb9-318" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb9-319"><a href="#cb9-319" aria-hidden="true" tabindex="-1"></a><span class="kw">const</span> origin <span class="op">=</span> <span class="kw">new</span> THREE<span class="op">.</span><span class="fu">Vector3</span>( <span class="dv">0</span><span class="op">,</span> <span class="dv">0</span><span class="op">,</span> <span class="dv">0</span> )<span class="op">;</span></span>
-<span id="cb9-320"><a href="#cb9-320" aria-hidden="true" tabindex="-1"></a><span class="kw">const</span> length <span class="op">=</span> <span class="dv">1</span><span class="op">;</span></span>
-<span id="cb9-321"><a href="#cb9-321" aria-hidden="true" tabindex="-1"></a><span class="kw">const</span> hex <span class="op">=</span> <span class="bn">0x0000FF</span><span class="op">;</span></span>
-<span id="cb9-322"><a href="#cb9-322" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb9-323"><a href="#cb9-323" aria-hidden="true" tabindex="-1"></a><span class="kw">const</span> arrowHelper <span class="op">=</span> <span class="kw">new</span> THREE<span class="op">.</span><span class="fu">ArrowHelper</span>( dir<span class="op">,</span> origin<span class="op">,</span> length<span class="op">,</span> hex )<span class="op">;</span></span>
-<span id="cb9-324"><a href="#cb9-324" aria-hidden="true" tabindex="-1"></a><span class="cf">return</span> arrowHelper<span class="op">;</span></span>
-<span id="cb9-325"><a href="#cb9-325" aria-hidden="true" tabindex="-1"></a>        }</span>
-<span id="cb9-326"><a href="#cb9-326" aria-hidden="true" tabindex="-1"></a>        </span>
-<span id="cb9-327"><a href="#cb9-327" aria-hidden="true" tabindex="-1"></a>display_arrow2 <span class="op">=</span> {<span class="kw">const</span> dir <span class="op">=</span> <span class="kw">new</span> THREE<span class="op">.</span><span class="fu">Vector3</span>( pca_vectors[<span class="dv">0</span>]<span class="op">.</span><span class="at">V2</span><span class="op">,</span> pca_vectors[<span class="dv">1</span>]<span class="op">.</span><span class="at">V2</span><span class="op">,</span> pca_vectors[<span class="dv">2</span>]<span class="op">.</span><span class="at">V2</span>)<span class="op">;</span></span>
-<span id="cb9-328"><a href="#cb9-328" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb9-329"><a href="#cb9-329" aria-hidden="true" tabindex="-1"></a><span class="co">//normalize the direction vector (convert to vector of length 1)</span></span>
-<span id="cb9-330"><a href="#cb9-330" aria-hidden="true" tabindex="-1"></a>dir<span class="op">.</span><span class="fu">normalize</span>()<span class="op">;</span></span>
-<span id="cb9-331"><a href="#cb9-331" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb9-332"><a href="#cb9-332" aria-hidden="true" tabindex="-1"></a><span class="kw">const</span> origin <span class="op">=</span> <span class="kw">new</span> THREE<span class="op">.</span><span class="fu">Vector3</span>( <span class="dv">0</span><span class="op">,</span> <span class="dv">0</span><span class="op">,</span> <span class="dv">0</span> )<span class="op">;</span></span>
-<span id="cb9-333"><a href="#cb9-333" aria-hidden="true" tabindex="-1"></a><span class="kw">const</span> length <span class="op">=</span> <span class="dv">1</span><span class="op">;</span></span>
-<span id="cb9-334"><a href="#cb9-334" aria-hidden="true" tabindex="-1"></a><span class="kw">const</span> hex <span class="op">=</span> <span class="bn">0x0000FF</span><span class="op">;</span></span>
-<span id="cb9-335"><a href="#cb9-335" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb9-336"><a href="#cb9-336" aria-hidden="true" tabindex="-1"></a><span class="kw">const</span> arrowHelper <span class="op">=</span> <span class="kw">new</span> THREE<span class="op">.</span><span class="fu">ArrowHelper</span>( dir<span class="op">,</span> origin<span class="op">,</span> length<span class="op">,</span> hex )<span class="op">;</span></span>
-<span id="cb9-337"><a href="#cb9-337" aria-hidden="true" tabindex="-1"></a><span class="cf">return</span> arrowHelper<span class="op">;</span></span>
-<span id="cb9-338"><a href="#cb9-338" aria-hidden="true" tabindex="-1"></a>        }</span>
-<span id="cb9-339"><a href="#cb9-339" aria-hidden="true" tabindex="-1"></a>        </span>
-<span id="cb9-340"><a href="#cb9-340" aria-hidden="true" tabindex="-1"></a>        </span>
-<span id="cb9-341"><a href="#cb9-341" aria-hidden="true" tabindex="-1"></a>true_vector1 <span class="op">=</span> {<span class="kw">const</span> dir <span class="op">=</span> <span class="kw">new</span> THREE<span class="op">.</span><span class="fu">Vector3</span>( true_vectors[<span class="dv">0</span>]<span class="op">.</span><span class="at">V1</span><span class="op">,</span> true_vectors[<span class="dv">1</span>]<span class="op">.</span><span class="at">V1</span><span class="op">,</span> true_vectors[<span class="dv">2</span>]<span class="op">.</span><span class="at">V1</span>)<span class="op">;</span></span>
-<span id="cb9-342"><a href="#cb9-342" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb9-343"><a href="#cb9-343" aria-hidden="true" tabindex="-1"></a><span class="co">//normalize the direction vector (convert to vector of length 1)</span></span>
-<span id="cb9-344"><a href="#cb9-344" aria-hidden="true" tabindex="-1"></a>dir<span class="op">.</span><span class="fu">normalize</span>()<span class="op">;</span></span>
-<span id="cb9-345"><a href="#cb9-345" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb9-346"><a href="#cb9-346" aria-hidden="true" tabindex="-1"></a><span class="kw">const</span> origin <span class="op">=</span> <span class="kw">new</span> THREE<span class="op">.</span><span class="fu">Vector3</span>( <span class="dv">0</span><span class="op">,</span> <span class="dv">0</span><span class="op">,</span> <span class="dv">0</span> )<span class="op">;</span></span>
-<span id="cb9-347"><a href="#cb9-347" aria-hidden="true" tabindex="-1"></a><span class="kw">const</span> length <span class="op">=</span> <span class="dv">1</span><span class="op">;</span></span>
-<span id="cb9-348"><a href="#cb9-348" aria-hidden="true" tabindex="-1"></a><span class="kw">const</span> hex <span class="op">=</span> <span class="bn">0xFF664F</span><span class="op">;</span></span>
-<span id="cb9-349"><a href="#cb9-349" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb9-350"><a href="#cb9-350" aria-hidden="true" tabindex="-1"></a><span class="kw">const</span> arrowHelper <span class="op">=</span> <span class="kw">new</span> THREE<span class="op">.</span><span class="fu">ArrowHelper</span>( dir<span class="op">,</span> origin<span class="op">,</span> length<span class="op">,</span> hex )<span class="op">;</span></span>
-<span id="cb9-351"><a href="#cb9-351" aria-hidden="true" tabindex="-1"></a><span class="cf">return</span> arrowHelper<span class="op">;</span></span>
-<span id="cb9-352"><a href="#cb9-352" aria-hidden="true" tabindex="-1"></a>        }</span>
-<span id="cb9-353"><a href="#cb9-353" aria-hidden="true" tabindex="-1"></a>        </span>
-<span id="cb9-354"><a href="#cb9-354" aria-hidden="true" tabindex="-1"></a>true_vector2 <span class="op">=</span> {<span class="kw">const</span> dir <span class="op">=</span> <span class="kw">new</span> THREE<span class="op">.</span><span class="fu">Vector3</span>( true_vectors[<span class="dv">0</span>]<span class="op">.</span><span class="at">V2</span><span class="op">,</span> true_vectors[<span class="dv">1</span>]<span class="op">.</span><span class="at">V2</span><span class="op">,</span> true_vectors[<span class="dv">2</span>]<span class="op">.</span><span class="at">V2</span>)<span class="op">;</span></span>
-<span id="cb9-355"><a href="#cb9-355" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb9-356"><a href="#cb9-356" aria-hidden="true" tabindex="-1"></a><span class="co">//normalize the direction vector (convert to vector of length 1)</span></span>
-<span id="cb9-357"><a href="#cb9-357" aria-hidden="true" tabindex="-1"></a>dir<span class="op">.</span><span class="fu">normalize</span>()<span class="op">;</span></span>
-<span id="cb9-358"><a href="#cb9-358" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb9-359"><a href="#cb9-359" aria-hidden="true" tabindex="-1"></a><span class="kw">const</span> origin <span class="op">=</span> <span class="kw">new</span> THREE<span class="op">.</span><span class="fu">Vector3</span>( <span class="dv">0</span><span class="op">,</span> <span class="dv">0</span><span class="op">,</span> <span class="dv">0</span> )<span class="op">;</span></span>
-<span id="cb9-360"><a href="#cb9-360" aria-hidden="true" tabindex="-1"></a><span class="kw">const</span> length <span class="op">=</span> <span class="dv">1</span><span class="op">;</span></span>
-<span id="cb9-361"><a href="#cb9-361" aria-hidden="true" tabindex="-1"></a><span class="kw">const</span> hex <span class="op">=</span> <span class="bn">0xFF664F</span><span class="op">;</span></span>
-<span id="cb9-362"><a href="#cb9-362" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb9-363"><a href="#cb9-363" aria-hidden="true" tabindex="-1"></a><span class="kw">const</span> arrowHelper <span class="op">=</span> <span class="kw">new</span> THREE<span class="op">.</span><span class="fu">ArrowHelper</span>( dir<span class="op">,</span> origin<span class="op">,</span> length<span class="op">,</span> hex )<span class="op">;</span></span>
-<span id="cb9-364"><a href="#cb9-364" aria-hidden="true" tabindex="-1"></a><span class="cf">return</span> arrowHelper<span class="op">;</span></span>
-<span id="cb9-365"><a href="#cb9-365" aria-hidden="true" tabindex="-1"></a>        }</span>
-<span id="cb9-366"><a href="#cb9-366" aria-hidden="true" tabindex="-1"></a>        </span>
-<span id="cb9-367"><a href="#cb9-367" aria-hidden="true" tabindex="-1"></a>        </span>
-<span id="cb9-368"><a href="#cb9-368" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb9-369"><a href="#cb9-369" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb9-370"><a href="#cb9-370" aria-hidden="true" tabindex="-1"></a>math_plane <span class="op">=</span> {</span>
-<span id="cb9-371"><a href="#cb9-371" aria-hidden="true" tabindex="-1"></a>  <span class="kw">const</span> v1 <span class="op">=</span> <span class="kw">new</span> THREE<span class="op">.</span><span class="fu">Vector3</span>(pca_vectors[<span class="dv">0</span>]<span class="op">.</span><span class="at">V1</span><span class="op">,</span> pca_vectors[<span class="dv">1</span>]<span class="op">.</span><span class="at">V1</span><span class="op">,</span> pca_vectors[<span class="dv">2</span>]<span class="op">.</span><span class="at">V1</span>)<span class="op">;</span></span>
-<span id="cb9-372"><a href="#cb9-372" aria-hidden="true" tabindex="-1"></a>  <span class="kw">const</span> v2 <span class="op">=</span> <span class="kw">new</span> THREE<span class="op">.</span><span class="fu">Vector3</span>(pca_vectors[<span class="dv">0</span>]<span class="op">.</span><span class="at">V2</span><span class="op">,</span> pca_vectors[<span class="dv">1</span>]<span class="op">.</span><span class="at">V2</span><span class="op">,</span> pca_vectors[<span class="dv">2</span>]<span class="op">.</span><span class="at">V2</span>)<span class="op">;</span></span>
-<span id="cb9-373"><a href="#cb9-373" aria-hidden="true" tabindex="-1"></a>  <span class="kw">const</span> normal <span class="op">=</span> <span class="kw">new</span> THREE<span class="op">.</span><span class="fu">Vector3</span>()<span class="op">.</span><span class="fu">crossVectors</span>(v1<span class="op">,</span> v2)<span class="op">.</span><span class="fu">normalize</span>()<span class="op">;</span></span>
-<span id="cb9-374"><a href="#cb9-374" aria-hidden="true" tabindex="-1"></a>  </span>
-<span id="cb9-375"><a href="#cb9-375" aria-hidden="true" tabindex="-1"></a>  <span class="co">// Create a plane with normal</span></span>
-<span id="cb9-376"><a href="#cb9-376" aria-hidden="true" tabindex="-1"></a>  <span class="kw">const</span> plane <span class="op">=</span> <span class="kw">new</span> THREE<span class="op">.</span><span class="fu">Plane</span>(normal)<span class="op">;</span></span>
-<span id="cb9-377"><a href="#cb9-377" aria-hidden="true" tabindex="-1"></a>  </span>
-<span id="cb9-378"><a href="#cb9-378" aria-hidden="true" tabindex="-1"></a>  <span class="co">// Create a PlaneGeometry (size 4x4 units, with sufficient segments)</span></span>
-<span id="cb9-379"><a href="#cb9-379" aria-hidden="true" tabindex="-1"></a>  <span class="kw">const</span> planeGeometry <span class="op">=</span> <span class="kw">new</span> THREE<span class="op">.</span><span class="fu">PlaneGeometry</span>(<span class="dv">4</span><span class="op">,</span> <span class="dv">4</span><span class="op">,</span> <span class="dv">1</span><span class="op">,</span> <span class="dv">1</span>)<span class="op">;</span></span>
-<span id="cb9-380"><a href="#cb9-380" aria-hidden="true" tabindex="-1"></a>  </span>
-<span id="cb9-381"><a href="#cb9-381" aria-hidden="true" tabindex="-1"></a>  <span class="co">// Create a material with transparency</span></span>
-<span id="cb9-382"><a href="#cb9-382" aria-hidden="true" tabindex="-1"></a>  <span class="kw">const</span> planeMaterial <span class="op">=</span> <span class="kw">new</span> THREE<span class="op">.</span><span class="fu">MeshBasicMaterial</span>({</span>
-<span id="cb9-383"><a href="#cb9-383" aria-hidden="true" tabindex="-1"></a>    <span class="dt">color</span><span class="op">:</span> <span class="bn">0x6495ED</span><span class="op">,</span> </span>
-<span id="cb9-384"><a href="#cb9-384" aria-hidden="true" tabindex="-1"></a>    <span class="dt">transparent</span><span class="op">:</span> <span class="kw">true</span><span class="op">,</span></span>
-<span id="cb9-385"><a href="#cb9-385" aria-hidden="true" tabindex="-1"></a>    <span class="dt">opacity</span><span class="op">:</span> <span class="fl">0.5</span><span class="op">,</span>     <span class="co">// 50% opacity, adjust as needed</span></span>
-<span id="cb9-386"><a href="#cb9-386" aria-hidden="true" tabindex="-1"></a>    <span class="dt">side</span><span class="op">:</span> THREE<span class="op">.</span><span class="at">DoubleSide</span> <span class="co">// Visible from both sides</span></span>
-<span id="cb9-387"><a href="#cb9-387" aria-hidden="true" tabindex="-1"></a>  })<span class="op">;</span></span>
-<span id="cb9-388"><a href="#cb9-388" aria-hidden="true" tabindex="-1"></a>  </span>
-<span id="cb9-389"><a href="#cb9-389" aria-hidden="true" tabindex="-1"></a>  <span class="co">// Create the mesh</span></span>
-<span id="cb9-390"><a href="#cb9-390" aria-hidden="true" tabindex="-1"></a>  <span class="kw">const</span> planeMesh <span class="op">=</span> <span class="kw">new</span> THREE<span class="op">.</span><span class="fu">Mesh</span>(planeGeometry<span class="op">,</span> planeMaterial)<span class="op">;</span></span>
-<span id="cb9-391"><a href="#cb9-391" aria-hidden="true" tabindex="-1"></a>  </span>
-<span id="cb9-392"><a href="#cb9-392" aria-hidden="true" tabindex="-1"></a>  <span class="co">// Position and orient the plane correctly</span></span>
-<span id="cb9-393"><a href="#cb9-393" aria-hidden="true" tabindex="-1"></a>  <span class="co">// First, find a point on the plane (using the plane equation)</span></span>
-<span id="cb9-394"><a href="#cb9-394" aria-hidden="true" tabindex="-1"></a>  <span class="kw">const</span> pointOnPlane <span class="op">=</span> <span class="kw">new</span> THREE<span class="op">.</span><span class="fu">Vector3</span>()<span class="op">;</span></span>
-<span id="cb9-395"><a href="#cb9-395" aria-hidden="true" tabindex="-1"></a>  <span class="co">// You can set this to origin or any other point you prefer</span></span>
-<span id="cb9-396"><a href="#cb9-396" aria-hidden="true" tabindex="-1"></a>  plane<span class="op">.</span><span class="fu">projectPoint</span>(<span class="kw">new</span> THREE<span class="op">.</span><span class="fu">Vector3</span>(<span class="dv">0</span><span class="op">,</span> <span class="dv">0</span><span class="op">,</span> <span class="dv">0</span>)<span class="op">,</span> pointOnPlane)<span class="op">;</span></span>
-<span id="cb9-397"><a href="#cb9-397" aria-hidden="true" tabindex="-1"></a>  </span>
-<span id="cb9-398"><a href="#cb9-398" aria-hidden="true" tabindex="-1"></a>  <span class="co">// Set the position</span></span>
-<span id="cb9-399"><a href="#cb9-399" aria-hidden="true" tabindex="-1"></a>  planeMesh<span class="op">.</span><span class="at">position</span><span class="op">.</span><span class="fu">copy</span>(pointOnPlane)<span class="op">;</span></span>
-<span id="cb9-400"><a href="#cb9-400" aria-hidden="true" tabindex="-1"></a>  </span>
-<span id="cb9-401"><a href="#cb9-401" aria-hidden="true" tabindex="-1"></a>  <span class="co">// Orient the plane to match your normal vector</span></span>
-<span id="cb9-402"><a href="#cb9-402" aria-hidden="true" tabindex="-1"></a>  planeMesh<span class="op">.</span><span class="fu">lookAt</span>(pointOnPlane<span class="op">.</span><span class="fu">clone</span>()<span class="op">.</span><span class="fu">add</span>(normal))<span class="op">;</span></span>
-<span id="cb9-403"><a href="#cb9-403" aria-hidden="true" tabindex="-1"></a>  </span>
-<span id="cb9-404"><a href="#cb9-404" aria-hidden="true" tabindex="-1"></a>  <span class="co">// Store both the plane object (for calculations) and the mesh (for display)</span></span>
-<span id="cb9-405"><a href="#cb9-405" aria-hidden="true" tabindex="-1"></a>  <span class="cf">return</span> {</span>
-<span id="cb9-406"><a href="#cb9-406" aria-hidden="true" tabindex="-1"></a>    <span class="dt">plane</span><span class="op">:</span> plane<span class="op">,</span></span>
-<span id="cb9-407"><a href="#cb9-407" aria-hidden="true" tabindex="-1"></a>    <span class="dt">mesh</span><span class="op">:</span> planeMesh</span>
-<span id="cb9-408"><a href="#cb9-408" aria-hidden="true" tabindex="-1"></a>  }<span class="op">;</span></span>
-<span id="cb9-409"><a href="#cb9-409" aria-hidden="true" tabindex="-1"></a>}</span>
-<span id="cb9-410"><a href="#cb9-410" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb9-411"><a href="#cb9-411" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb9-412"><a href="#cb9-412" aria-hidden="true" tabindex="-1"></a>points <span class="op">=</span> {</span>
-<span id="cb9-413"><a href="#cb9-413" aria-hidden="true" tabindex="-1"></a>  <span class="kw">const</span> data <span class="op">=</span> <span class="cf">await</span> <span class="fu">FileAttachment</span>(<span class="st">'data.csv'</span>)<span class="op">.</span><span class="fu">csv</span>({<span class="dt">typed</span><span class="op">:</span> <span class="kw">true</span>})<span class="op">;</span></span>
-<span id="cb9-414"><a href="#cb9-414" aria-hidden="true" tabindex="-1"></a>  <span class="kw">const</span> geometry <span class="op">=</span> <span class="kw">new</span> THREE<span class="op">.</span><span class="fu">BufferGeometry</span>()<span class="op">;</span></span>
-<span id="cb9-415"><a href="#cb9-415" aria-hidden="true" tabindex="-1"></a>  <span class="kw">const</span> positions <span class="op">=</span> <span class="kw">new</span> <span class="bu">Float32Array</span>(data<span class="op">.</span><span class="fu">flatMap</span>(d <span class="kw">=&gt;</span> [d<span class="op">.</span><span class="at">V1</span><span class="op">,</span> d<span class="op">.</span><span class="at">V2</span><span class="op">,</span> d<span class="op">.</span><span class="at">V3</span>]))<span class="op">;</span></span>
-<span id="cb9-416"><a href="#cb9-416" aria-hidden="true" tabindex="-1"></a>  geometry<span class="op">.</span><span class="fu">setAttribute</span>(<span class="st">"position"</span><span class="op">,</span> <span class="kw">new</span> THREE<span class="op">.</span><span class="fu">BufferAttribute</span>(positions<span class="op">,</span> <span class="dv">3</span>))<span class="op">;</span></span>
-<span id="cb9-417"><a href="#cb9-417" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb9-418"><a href="#cb9-418" aria-hidden="true" tabindex="-1"></a>  <span class="kw">const</span> material <span class="op">=</span> <span class="kw">new</span> THREE<span class="op">.</span><span class="fu">PointsMaterial</span>({<span class="dt">color</span><span class="op">:</span> <span class="bn">0x000000</span><span class="op">,</span> <span class="dt">size</span><span class="op">:</span> <span class="fl">0.1</span>})<span class="op">;</span></span>
-<span id="cb9-419"><a href="#cb9-419" aria-hidden="true" tabindex="-1"></a>  <span class="kw">const</span> points <span class="op">=</span> <span class="kw">new</span> THREE<span class="op">.</span><span class="fu">Points</span>(geometry<span class="op">,</span> material)<span class="op">;</span></span>
-<span id="cb9-420"><a href="#cb9-420" aria-hidden="true" tabindex="-1"></a>  <span class="cf">return</span> points<span class="op">;</span></span>
-<span id="cb9-421"><a href="#cb9-421" aria-hidden="true" tabindex="-1"></a>}</span></code></pre></div>
+<span id="cb9-314"><a href="#cb9-314" aria-hidden="true" tabindex="-1"></a><span class="co">//normalize the direction vector (convert to vector of length 1)</span></span>
+<span id="cb9-315"><a href="#cb9-315" aria-hidden="true" tabindex="-1"></a>dir<span class="op">.</span><span class="fu">normalize</span>()<span class="op">;</span></span>
+<span id="cb9-316"><a href="#cb9-316" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-317"><a href="#cb9-317" aria-hidden="true" tabindex="-1"></a><span class="kw">const</span> origin <span class="op">=</span> <span class="kw">new</span> THREE<span class="op">.</span><span class="fu">Vector3</span>( <span class="dv">0</span><span class="op">,</span> <span class="dv">0</span><span class="op">,</span> <span class="dv">0</span> )<span class="op">;</span></span>
+<span id="cb9-318"><a href="#cb9-318" aria-hidden="true" tabindex="-1"></a><span class="kw">const</span> length <span class="op">=</span> <span class="dv">1</span><span class="op">;</span></span>
+<span id="cb9-319"><a href="#cb9-319" aria-hidden="true" tabindex="-1"></a><span class="kw">const</span> hex <span class="op">=</span> <span class="bn">0x0000FF</span><span class="op">;</span></span>
+<span id="cb9-320"><a href="#cb9-320" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-321"><a href="#cb9-321" aria-hidden="true" tabindex="-1"></a><span class="kw">const</span> arrowHelper <span class="op">=</span> <span class="kw">new</span> THREE<span class="op">.</span><span class="fu">ArrowHelper</span>( dir<span class="op">,</span> origin<span class="op">,</span> length<span class="op">,</span> hex )<span class="op">;</span></span>
+<span id="cb9-322"><a href="#cb9-322" aria-hidden="true" tabindex="-1"></a><span class="cf">return</span> arrowHelper<span class="op">;</span></span>
+<span id="cb9-323"><a href="#cb9-323" aria-hidden="true" tabindex="-1"></a>        }</span>
+<span id="cb9-324"><a href="#cb9-324" aria-hidden="true" tabindex="-1"></a>        </span>
+<span id="cb9-325"><a href="#cb9-325" aria-hidden="true" tabindex="-1"></a>display_arrow2 <span class="op">=</span> {<span class="kw">const</span> dir <span class="op">=</span> <span class="kw">new</span> THREE<span class="op">.</span><span class="fu">Vector3</span>( pca_vectors[<span class="dv">0</span>]<span class="op">.</span><span class="at">V2</span><span class="op">,</span> pca_vectors[<span class="dv">1</span>]<span class="op">.</span><span class="at">V2</span><span class="op">,</span> pca_vectors[<span class="dv">2</span>]<span class="op">.</span><span class="at">V2</span>)<span class="op">;</span></span>
+<span id="cb9-326"><a href="#cb9-326" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-327"><a href="#cb9-327" aria-hidden="true" tabindex="-1"></a><span class="co">//normalize the direction vector (convert to vector of length 1)</span></span>
+<span id="cb9-328"><a href="#cb9-328" aria-hidden="true" tabindex="-1"></a>dir<span class="op">.</span><span class="fu">normalize</span>()<span class="op">;</span></span>
+<span id="cb9-329"><a href="#cb9-329" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-330"><a href="#cb9-330" aria-hidden="true" tabindex="-1"></a><span class="kw">const</span> origin <span class="op">=</span> <span class="kw">new</span> THREE<span class="op">.</span><span class="fu">Vector3</span>( <span class="dv">0</span><span class="op">,</span> <span class="dv">0</span><span class="op">,</span> <span class="dv">0</span> )<span class="op">;</span></span>
+<span id="cb9-331"><a href="#cb9-331" aria-hidden="true" tabindex="-1"></a><span class="kw">const</span> length <span class="op">=</span> <span class="dv">1</span><span class="op">;</span></span>
+<span id="cb9-332"><a href="#cb9-332" aria-hidden="true" tabindex="-1"></a><span class="kw">const</span> hex <span class="op">=</span> <span class="bn">0x0000FF</span><span class="op">;</span></span>
+<span id="cb9-333"><a href="#cb9-333" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-334"><a href="#cb9-334" aria-hidden="true" tabindex="-1"></a><span class="kw">const</span> arrowHelper <span class="op">=</span> <span class="kw">new</span> THREE<span class="op">.</span><span class="fu">ArrowHelper</span>( dir<span class="op">,</span> origin<span class="op">,</span> length<span class="op">,</span> hex )<span class="op">;</span></span>
+<span id="cb9-335"><a href="#cb9-335" aria-hidden="true" tabindex="-1"></a><span class="cf">return</span> arrowHelper<span class="op">;</span></span>
+<span id="cb9-336"><a href="#cb9-336" aria-hidden="true" tabindex="-1"></a>        }</span>
+<span id="cb9-337"><a href="#cb9-337" aria-hidden="true" tabindex="-1"></a>        </span>
+<span id="cb9-338"><a href="#cb9-338" aria-hidden="true" tabindex="-1"></a>        </span>
+<span id="cb9-339"><a href="#cb9-339" aria-hidden="true" tabindex="-1"></a>true_vector1 <span class="op">=</span> {<span class="kw">const</span> dir <span class="op">=</span> <span class="kw">new</span> THREE<span class="op">.</span><span class="fu">Vector3</span>( true_vectors[<span class="dv">0</span>]<span class="op">.</span><span class="at">V1</span><span class="op">,</span> true_vectors[<span class="dv">1</span>]<span class="op">.</span><span class="at">V1</span><span class="op">,</span> true_vectors[<span class="dv">2</span>]<span class="op">.</span><span class="at">V1</span>)<span class="op">;</span></span>
+<span id="cb9-340"><a href="#cb9-340" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-341"><a href="#cb9-341" aria-hidden="true" tabindex="-1"></a><span class="co">//normalize the direction vector (convert to vector of length 1)</span></span>
+<span id="cb9-342"><a href="#cb9-342" aria-hidden="true" tabindex="-1"></a>dir<span class="op">.</span><span class="fu">normalize</span>()<span class="op">;</span></span>
+<span id="cb9-343"><a href="#cb9-343" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-344"><a href="#cb9-344" aria-hidden="true" tabindex="-1"></a><span class="kw">const</span> origin <span class="op">=</span> <span class="kw">new</span> THREE<span class="op">.</span><span class="fu">Vector3</span>( <span class="dv">0</span><span class="op">,</span> <span class="dv">0</span><span class="op">,</span> <span class="dv">0</span> )<span class="op">;</span></span>
+<span id="cb9-345"><a href="#cb9-345" aria-hidden="true" tabindex="-1"></a><span class="kw">const</span> length <span class="op">=</span> <span class="dv">1</span><span class="op">;</span></span>
+<span id="cb9-346"><a href="#cb9-346" aria-hidden="true" tabindex="-1"></a><span class="kw">const</span> hex <span class="op">=</span> <span class="bn">0xFF664F</span><span class="op">;</span></span>
+<span id="cb9-347"><a href="#cb9-347" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-348"><a href="#cb9-348" aria-hidden="true" tabindex="-1"></a><span class="kw">const</span> arrowHelper <span class="op">=</span> <span class="kw">new</span> THREE<span class="op">.</span><span class="fu">ArrowHelper</span>( dir<span class="op">,</span> origin<span class="op">,</span> length<span class="op">,</span> hex )<span class="op">;</span></span>
+<span id="cb9-349"><a href="#cb9-349" aria-hidden="true" tabindex="-1"></a><span class="cf">return</span> arrowHelper<span class="op">;</span></span>
+<span id="cb9-350"><a href="#cb9-350" aria-hidden="true" tabindex="-1"></a>        }</span>
+<span id="cb9-351"><a href="#cb9-351" aria-hidden="true" tabindex="-1"></a>        </span>
+<span id="cb9-352"><a href="#cb9-352" aria-hidden="true" tabindex="-1"></a>true_vector2 <span class="op">=</span> {<span class="kw">const</span> dir <span class="op">=</span> <span class="kw">new</span> THREE<span class="op">.</span><span class="fu">Vector3</span>( true_vectors[<span class="dv">0</span>]<span class="op">.</span><span class="at">V2</span><span class="op">,</span> true_vectors[<span class="dv">1</span>]<span class="op">.</span><span class="at">V2</span><span class="op">,</span> true_vectors[<span class="dv">2</span>]<span class="op">.</span><span class="at">V2</span>)<span class="op">;</span></span>
+<span id="cb9-353"><a href="#cb9-353" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-354"><a href="#cb9-354" aria-hidden="true" tabindex="-1"></a><span class="co">//normalize the direction vector (convert to vector of length 1)</span></span>
+<span id="cb9-355"><a href="#cb9-355" aria-hidden="true" tabindex="-1"></a>dir<span class="op">.</span><span class="fu">normalize</span>()<span class="op">;</span></span>
+<span id="cb9-356"><a href="#cb9-356" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-357"><a href="#cb9-357" aria-hidden="true" tabindex="-1"></a><span class="kw">const</span> origin <span class="op">=</span> <span class="kw">new</span> THREE<span class="op">.</span><span class="fu">Vector3</span>( <span class="dv">0</span><span class="op">,</span> <span class="dv">0</span><span class="op">,</span> <span class="dv">0</span> )<span class="op">;</span></span>
+<span id="cb9-358"><a href="#cb9-358" aria-hidden="true" tabindex="-1"></a><span class="kw">const</span> length <span class="op">=</span> <span class="dv">1</span><span class="op">;</span></span>
+<span id="cb9-359"><a href="#cb9-359" aria-hidden="true" tabindex="-1"></a><span class="kw">const</span> hex <span class="op">=</span> <span class="bn">0xFF664F</span><span class="op">;</span></span>
+<span id="cb9-360"><a href="#cb9-360" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-361"><a href="#cb9-361" aria-hidden="true" tabindex="-1"></a><span class="kw">const</span> arrowHelper <span class="op">=</span> <span class="kw">new</span> THREE<span class="op">.</span><span class="fu">ArrowHelper</span>( dir<span class="op">,</span> origin<span class="op">,</span> length<span class="op">,</span> hex )<span class="op">;</span></span>
+<span id="cb9-362"><a href="#cb9-362" aria-hidden="true" tabindex="-1"></a><span class="cf">return</span> arrowHelper<span class="op">;</span></span>
+<span id="cb9-363"><a href="#cb9-363" aria-hidden="true" tabindex="-1"></a>        }</span>
+<span id="cb9-364"><a href="#cb9-364" aria-hidden="true" tabindex="-1"></a>        </span>
+<span id="cb9-365"><a href="#cb9-365" aria-hidden="true" tabindex="-1"></a>        </span>
+<span id="cb9-366"><a href="#cb9-366" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-367"><a href="#cb9-367" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-368"><a href="#cb9-368" aria-hidden="true" tabindex="-1"></a>math_plane <span class="op">=</span> {</span>
+<span id="cb9-369"><a href="#cb9-369" aria-hidden="true" tabindex="-1"></a>  <span class="kw">const</span> v1 <span class="op">=</span> <span class="kw">new</span> THREE<span class="op">.</span><span class="fu">Vector3</span>(pca_vectors[<span class="dv">0</span>]<span class="op">.</span><span class="at">V1</span><span class="op">,</span> pca_vectors[<span class="dv">1</span>]<span class="op">.</span><span class="at">V1</span><span class="op">,</span> pca_vectors[<span class="dv">2</span>]<span class="op">.</span><span class="at">V1</span>)<span class="op">;</span></span>
+<span id="cb9-370"><a href="#cb9-370" aria-hidden="true" tabindex="-1"></a>  <span class="kw">const</span> v2 <span class="op">=</span> <span class="kw">new</span> THREE<span class="op">.</span><span class="fu">Vector3</span>(pca_vectors[<span class="dv">0</span>]<span class="op">.</span><span class="at">V2</span><span class="op">,</span> pca_vectors[<span class="dv">1</span>]<span class="op">.</span><span class="at">V2</span><span class="op">,</span> pca_vectors[<span class="dv">2</span>]<span class="op">.</span><span class="at">V2</span>)<span class="op">;</span></span>
+<span id="cb9-371"><a href="#cb9-371" aria-hidden="true" tabindex="-1"></a>  <span class="kw">const</span> normal <span class="op">=</span> <span class="kw">new</span> THREE<span class="op">.</span><span class="fu">Vector3</span>()<span class="op">.</span><span class="fu">crossVectors</span>(v1<span class="op">,</span> v2)<span class="op">.</span><span class="fu">normalize</span>()<span class="op">;</span></span>
+<span id="cb9-372"><a href="#cb9-372" aria-hidden="true" tabindex="-1"></a>  </span>
+<span id="cb9-373"><a href="#cb9-373" aria-hidden="true" tabindex="-1"></a>  <span class="co">// Create a plane with normal</span></span>
+<span id="cb9-374"><a href="#cb9-374" aria-hidden="true" tabindex="-1"></a>  <span class="kw">const</span> plane <span class="op">=</span> <span class="kw">new</span> THREE<span class="op">.</span><span class="fu">Plane</span>(normal)<span class="op">;</span></span>
+<span id="cb9-375"><a href="#cb9-375" aria-hidden="true" tabindex="-1"></a>  </span>
+<span id="cb9-376"><a href="#cb9-376" aria-hidden="true" tabindex="-1"></a>  <span class="co">// Create a PlaneGeometry (size 4x4 units, with sufficient segments)</span></span>
+<span id="cb9-377"><a href="#cb9-377" aria-hidden="true" tabindex="-1"></a>  <span class="kw">const</span> planeGeometry <span class="op">=</span> <span class="kw">new</span> THREE<span class="op">.</span><span class="fu">PlaneGeometry</span>(<span class="dv">4</span><span class="op">,</span> <span class="dv">4</span><span class="op">,</span> <span class="dv">1</span><span class="op">,</span> <span class="dv">1</span>)<span class="op">;</span></span>
+<span id="cb9-378"><a href="#cb9-378" aria-hidden="true" tabindex="-1"></a>  </span>
+<span id="cb9-379"><a href="#cb9-379" aria-hidden="true" tabindex="-1"></a>  <span class="co">// Create a material with transparency</span></span>
+<span id="cb9-380"><a href="#cb9-380" aria-hidden="true" tabindex="-1"></a>  <span class="kw">const</span> planeMaterial <span class="op">=</span> <span class="kw">new</span> THREE<span class="op">.</span><span class="fu">MeshBasicMaterial</span>({</span>
+<span id="cb9-381"><a href="#cb9-381" aria-hidden="true" tabindex="-1"></a>    <span class="dt">color</span><span class="op">:</span> <span class="bn">0x6495ED</span><span class="op">,</span> </span>
+<span id="cb9-382"><a href="#cb9-382" aria-hidden="true" tabindex="-1"></a>    <span class="dt">transparent</span><span class="op">:</span> <span class="kw">true</span><span class="op">,</span></span>
+<span id="cb9-383"><a href="#cb9-383" aria-hidden="true" tabindex="-1"></a>    <span class="dt">opacity</span><span class="op">:</span> <span class="fl">0.5</span><span class="op">,</span>     <span class="co">// 50% opacity, adjust as needed</span></span>
+<span id="cb9-384"><a href="#cb9-384" aria-hidden="true" tabindex="-1"></a>    <span class="dt">side</span><span class="op">:</span> THREE<span class="op">.</span><span class="at">DoubleSide</span> <span class="co">// Visible from both sides</span></span>
+<span id="cb9-385"><a href="#cb9-385" aria-hidden="true" tabindex="-1"></a>  })<span class="op">;</span></span>
+<span id="cb9-386"><a href="#cb9-386" aria-hidden="true" tabindex="-1"></a>  </span>
+<span id="cb9-387"><a href="#cb9-387" aria-hidden="true" tabindex="-1"></a>  <span class="co">// Create the mesh</span></span>
+<span id="cb9-388"><a href="#cb9-388" aria-hidden="true" tabindex="-1"></a>  <span class="kw">const</span> planeMesh <span class="op">=</span> <span class="kw">new</span> THREE<span class="op">.</span><span class="fu">Mesh</span>(planeGeometry<span class="op">,</span> planeMaterial)<span class="op">;</span></span>
+<span id="cb9-389"><a href="#cb9-389" aria-hidden="true" tabindex="-1"></a>  </span>
+<span id="cb9-390"><a href="#cb9-390" aria-hidden="true" tabindex="-1"></a>  <span class="co">// Position and orient the plane correctly</span></span>
+<span id="cb9-391"><a href="#cb9-391" aria-hidden="true" tabindex="-1"></a>  <span class="co">// First, find a point on the plane (using the plane equation)</span></span>
+<span id="cb9-392"><a href="#cb9-392" aria-hidden="true" tabindex="-1"></a>  <span class="kw">const</span> pointOnPlane <span class="op">=</span> <span class="kw">new</span> THREE<span class="op">.</span><span class="fu">Vector3</span>()<span class="op">;</span></span>
+<span id="cb9-393"><a href="#cb9-393" aria-hidden="true" tabindex="-1"></a>  <span class="co">// You can set this to origin or any other point you prefer</span></span>
+<span id="cb9-394"><a href="#cb9-394" aria-hidden="true" tabindex="-1"></a>  plane<span class="op">.</span><span class="fu">projectPoint</span>(<span class="kw">new</span> THREE<span class="op">.</span><span class="fu">Vector3</span>(<span class="dv">0</span><span class="op">,</span> <span class="dv">0</span><span class="op">,</span> <span class="dv">0</span>)<span class="op">,</span> pointOnPlane)<span class="op">;</span></span>
+<span id="cb9-395"><a href="#cb9-395" aria-hidden="true" tabindex="-1"></a>  </span>
+<span id="cb9-396"><a href="#cb9-396" aria-hidden="true" tabindex="-1"></a>  <span class="co">// Set the position</span></span>
+<span id="cb9-397"><a href="#cb9-397" aria-hidden="true" tabindex="-1"></a>  planeMesh<span class="op">.</span><span class="at">position</span><span class="op">.</span><span class="fu">copy</span>(pointOnPlane)<span class="op">;</span></span>
+<span id="cb9-398"><a href="#cb9-398" aria-hidden="true" tabindex="-1"></a>  </span>
+<span id="cb9-399"><a href="#cb9-399" aria-hidden="true" tabindex="-1"></a>  <span class="co">// Orient the plane to match your normal vector</span></span>
+<span id="cb9-400"><a href="#cb9-400" aria-hidden="true" tabindex="-1"></a>  planeMesh<span class="op">.</span><span class="fu">lookAt</span>(pointOnPlane<span class="op">.</span><span class="fu">clone</span>()<span class="op">.</span><span class="fu">add</span>(normal))<span class="op">;</span></span>
+<span id="cb9-401"><a href="#cb9-401" aria-hidden="true" tabindex="-1"></a>  </span>
+<span id="cb9-402"><a href="#cb9-402" aria-hidden="true" tabindex="-1"></a>  <span class="co">// Store both the plane object (for calculations) and the mesh (for display)</span></span>
+<span id="cb9-403"><a href="#cb9-403" aria-hidden="true" tabindex="-1"></a>  <span class="cf">return</span> {</span>
+<span id="cb9-404"><a href="#cb9-404" aria-hidden="true" tabindex="-1"></a>    <span class="dt">plane</span><span class="op">:</span> plane<span class="op">,</span></span>
+<span id="cb9-405"><a href="#cb9-405" aria-hidden="true" tabindex="-1"></a>    <span class="dt">mesh</span><span class="op">:</span> planeMesh</span>
+<span id="cb9-406"><a href="#cb9-406" aria-hidden="true" tabindex="-1"></a>  }<span class="op">;</span></span>
+<span id="cb9-407"><a href="#cb9-407" aria-hidden="true" tabindex="-1"></a>}</span>
+<span id="cb9-408"><a href="#cb9-408" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-409"><a href="#cb9-409" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-410"><a href="#cb9-410" aria-hidden="true" tabindex="-1"></a>points <span class="op">=</span> {</span>
+<span id="cb9-411"><a href="#cb9-411" aria-hidden="true" tabindex="-1"></a>  <span class="kw">const</span> data <span class="op">=</span> <span class="cf">await</span> <span class="fu">FileAttachment</span>(<span class="st">'data.csv'</span>)<span class="op">.</span><span class="fu">csv</span>({<span class="dt">typed</span><span class="op">:</span> <span class="kw">true</span>})<span class="op">;</span></span>
+<span id="cb9-412"><a href="#cb9-412" aria-hidden="true" tabindex="-1"></a>  <span class="kw">const</span> geometry <span class="op">=</span> <span class="kw">new</span> THREE<span class="op">.</span><span class="fu">BufferGeometry</span>()<span class="op">;</span></span>
+<span id="cb9-413"><a href="#cb9-413" aria-hidden="true" tabindex="-1"></a>  <span class="kw">const</span> positions <span class="op">=</span> <span class="kw">new</span> <span class="bu">Float32Array</span>(data<span class="op">.</span><span class="fu">flatMap</span>(d <span class="kw">=&gt;</span> [d<span class="op">.</span><span class="at">V1</span><span class="op">,</span> d<span class="op">.</span><span class="at">V2</span><span class="op">,</span> d<span class="op">.</span><span class="at">V3</span>]))<span class="op">;</span></span>
+<span id="cb9-414"><a href="#cb9-414" aria-hidden="true" tabindex="-1"></a>  geometry<span class="op">.</span><span class="fu">setAttribute</span>(<span class="st">"position"</span><span class="op">,</span> <span class="kw">new</span> THREE<span class="op">.</span><span class="fu">BufferAttribute</span>(positions<span class="op">,</span> <span class="dv">3</span>))<span class="op">;</span></span>
+<span id="cb9-415"><a href="#cb9-415" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-416"><a href="#cb9-416" aria-hidden="true" tabindex="-1"></a>  <span class="kw">const</span> material <span class="op">=</span> <span class="kw">new</span> THREE<span class="op">.</span><span class="fu">PointsMaterial</span>({<span class="dt">color</span><span class="op">:</span> <span class="bn">0x000000</span><span class="op">,</span> <span class="dt">size</span><span class="op">:</span> <span class="fl">0.1</span>})<span class="op">;</span></span>
+<span id="cb9-417"><a href="#cb9-417" aria-hidden="true" tabindex="-1"></a>  <span class="kw">const</span> points <span class="op">=</span> <span class="kw">new</span> THREE<span class="op">.</span><span class="fu">Points</span>(geometry<span class="op">,</span> material)<span class="op">;</span></span>
+<span id="cb9-418"><a href="#cb9-418" aria-hidden="true" tabindex="-1"></a>  <span class="cf">return</span> points<span class="op">;</span></span>
+<span id="cb9-419"><a href="#cb9-419" aria-hidden="true" tabindex="-1"></a>}</span></code></pre></div>
 <div class="cell-output cell-output-display">
 <div>
 <div id="ojs-cell-6-1" data-nodetype="declaration">
@@ -547,52 +548,52 @@ X &amp; = F^0 \Lambda^{0'} \\
 </div>
 </div>
 <div class="cell">
-<div class="sourceCode cell-code hidden" id="cb10" data-startfrom="430" data-source-offset="-1"><pre class="sourceCode js"><code class="sourceCode javascript" style="counter-reset: source-line 429;"><span id="cb10-430"><a href="#cb10-430" aria-hidden="true" tabindex="-1"></a>scene <span class="op">=</span> {</span>
-<span id="cb10-431"><a href="#cb10-431" aria-hidden="true" tabindex="-1"></a>  <span class="kw">const</span> scene <span class="op">=</span> <span class="kw">new</span> THREE<span class="op">.</span><span class="fu">Scene</span>()<span class="op">;</span></span>
-<span id="cb10-432"><a href="#cb10-432" aria-hidden="true" tabindex="-1"></a>  scene<span class="op">.</span><span class="at">background</span> <span class="op">=</span> <span class="kw">new</span> THREE<span class="op">.</span><span class="fu">Color</span>(<span class="bn">0xffffff</span>)<span class="op">;</span></span>
-<span id="cb10-433"><a href="#cb10-433" aria-hidden="true" tabindex="-1"></a>  scene<span class="op">.</span><span class="fu">add</span>(gridHelper)<span class="op">;</span></span>
-<span id="cb10-434"><a href="#cb10-434" aria-hidden="true" tabindex="-1"></a>  scene<span class="op">.</span><span class="fu">add</span>(display_arrow)<span class="op">;</span></span>
-<span id="cb10-435"><a href="#cb10-435" aria-hidden="true" tabindex="-1"></a>  scene<span class="op">.</span><span class="fu">add</span>(display_arrow2)<span class="op">;</span></span>
-<span id="cb10-436"><a href="#cb10-436" aria-hidden="true" tabindex="-1"></a>  scene<span class="op">.</span><span class="fu">add</span>(true_vector1)<span class="op">;</span></span>
-<span id="cb10-437"><a href="#cb10-437" aria-hidden="true" tabindex="-1"></a>  scene<span class="op">.</span><span class="fu">add</span>(true_vector2)<span class="op">;</span></span>
-<span id="cb10-438"><a href="#cb10-438" aria-hidden="true" tabindex="-1"></a>  scene<span class="op">.</span><span class="fu">add</span>(math_plane<span class="op">.</span><span class="at">mesh</span>)<span class="op">;</span></span>
-<span id="cb10-439"><a href="#cb10-439" aria-hidden="true" tabindex="-1"></a>  scene<span class="op">.</span><span class="fu">add</span>(points)<span class="op">;</span></span>
-<span id="cb10-440"><a href="#cb10-440" aria-hidden="true" tabindex="-1"></a>  <span class="cf">return</span> scene<span class="op">;</span></span>
-<span id="cb10-441"><a href="#cb10-441" aria-hidden="true" tabindex="-1"></a>}</span>
-<span id="cb10-442"><a href="#cb10-442" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb10-443"><a href="#cb10-443" aria-hidden="true" tabindex="-1"></a>update1 <span class="op">=</span> {</span>
-<span id="cb10-444"><a href="#cb10-444" aria-hidden="true" tabindex="-1"></a>  <span class="co">// For the first vector v1</span></span>
-<span id="cb10-445"><a href="#cb10-445" aria-hidden="true" tabindex="-1"></a>  <span class="kw">const</span> x1 <span class="op">=</span> <span class="bu">Math</span><span class="op">.</span><span class="fu">cos</span>(theta1_value)<span class="op">;</span></span>
-<span id="cb10-446"><a href="#cb10-446" aria-hidden="true" tabindex="-1"></a>  <span class="kw">const</span> y1 <span class="op">=</span> <span class="bu">Math</span><span class="op">.</span><span class="fu">sin</span>(theta1_value)<span class="op">;</span></span>
-<span id="cb10-447"><a href="#cb10-447" aria-hidden="true" tabindex="-1"></a>  </span>
-<span id="cb10-448"><a href="#cb10-448" aria-hidden="true" tabindex="-1"></a>  <span class="co">// Linear combination: v1 = x1*V1 + y1*V2</span></span>
-<span id="cb10-449"><a href="#cb10-449" aria-hidden="true" tabindex="-1"></a>  <span class="kw">const</span> new_direction <span class="op">=</span> <span class="kw">new</span> THREE<span class="op">.</span><span class="fu">Vector3</span>(</span>
-<span id="cb10-450"><a href="#cb10-450" aria-hidden="true" tabindex="-1"></a>    x1 <span class="op">*</span> pca_vectors[<span class="dv">0</span>]<span class="op">.</span><span class="at">V1</span> <span class="op">+</span> y1 <span class="op">*</span> pca_vectors[<span class="dv">0</span>]<span class="op">.</span><span class="at">V2</span><span class="op">,</span></span>
-<span id="cb10-451"><a href="#cb10-451" aria-hidden="true" tabindex="-1"></a>    x1 <span class="op">*</span> pca_vectors[<span class="dv">1</span>]<span class="op">.</span><span class="at">V1</span> <span class="op">+</span> y1 <span class="op">*</span> pca_vectors[<span class="dv">1</span>]<span class="op">.</span><span class="at">V2</span><span class="op">,</span></span>
-<span id="cb10-452"><a href="#cb10-452" aria-hidden="true" tabindex="-1"></a>    x1 <span class="op">*</span> pca_vectors[<span class="dv">2</span>]<span class="op">.</span><span class="at">V1</span> <span class="op">+</span> y1 <span class="op">*</span> pca_vectors[<span class="dv">2</span>]<span class="op">.</span><span class="at">V2</span></span>
-<span id="cb10-453"><a href="#cb10-453" aria-hidden="true" tabindex="-1"></a>  )<span class="op">.</span><span class="fu">normalize</span>()<span class="op">;</span></span>
-<span id="cb10-454"><a href="#cb10-454" aria-hidden="true" tabindex="-1"></a>  </span>
-<span id="cb10-455"><a href="#cb10-455" aria-hidden="true" tabindex="-1"></a>  display_arrow<span class="op">.</span><span class="fu">setDirection</span>(new_direction)<span class="op">;</span></span>
-<span id="cb10-456"><a href="#cb10-456" aria-hidden="true" tabindex="-1"></a>  renderer<span class="op">.</span><span class="fu">render</span>(scene<span class="op">,</span> camera)<span class="op">;</span></span>
-<span id="cb10-457"><a href="#cb10-457" aria-hidden="true" tabindex="-1"></a>  <span class="cf">return</span><span class="op">;</span></span>
-<span id="cb10-458"><a href="#cb10-458" aria-hidden="true" tabindex="-1"></a>}</span>
-<span id="cb10-459"><a href="#cb10-459" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb10-460"><a href="#cb10-460" aria-hidden="true" tabindex="-1"></a>update2 <span class="op">=</span> {</span>
-<span id="cb10-461"><a href="#cb10-461" aria-hidden="true" tabindex="-1"></a>  <span class="co">// For the first vector v1</span></span>
-<span id="cb10-462"><a href="#cb10-462" aria-hidden="true" tabindex="-1"></a>  <span class="kw">const</span> x2 <span class="op">=</span> <span class="bu">Math</span><span class="op">.</span><span class="fu">cos</span>(theta2_value)<span class="op">;</span></span>
-<span id="cb10-463"><a href="#cb10-463" aria-hidden="true" tabindex="-1"></a>  <span class="kw">const</span> y2 <span class="op">=</span> <span class="bu">Math</span><span class="op">.</span><span class="fu">sin</span>(theta2_value)<span class="op">;</span></span>
-<span id="cb10-464"><a href="#cb10-464" aria-hidden="true" tabindex="-1"></a>  </span>
-<span id="cb10-465"><a href="#cb10-465" aria-hidden="true" tabindex="-1"></a>  <span class="co">// Linear combination: v1 = x1*V1 + y1*V2</span></span>
-<span id="cb10-466"><a href="#cb10-466" aria-hidden="true" tabindex="-1"></a>  <span class="kw">const</span> new_direction <span class="op">=</span> <span class="kw">new</span> THREE<span class="op">.</span><span class="fu">Vector3</span>(</span>
-<span id="cb10-467"><a href="#cb10-467" aria-hidden="true" tabindex="-1"></a>    x2 <span class="op">*</span> pca_vectors[<span class="dv">0</span>]<span class="op">.</span><span class="at">V1</span> <span class="op">+</span> y2 <span class="op">*</span> pca_vectors[<span class="dv">0</span>]<span class="op">.</span><span class="at">V2</span><span class="op">,</span></span>
-<span id="cb10-468"><a href="#cb10-468" aria-hidden="true" tabindex="-1"></a>    x2 <span class="op">*</span> pca_vectors[<span class="dv">1</span>]<span class="op">.</span><span class="at">V1</span> <span class="op">+</span> y2 <span class="op">*</span> pca_vectors[<span class="dv">1</span>]<span class="op">.</span><span class="at">V2</span><span class="op">,</span></span>
-<span id="cb10-469"><a href="#cb10-469" aria-hidden="true" tabindex="-1"></a>    x2 <span class="op">*</span> pca_vectors[<span class="dv">2</span>]<span class="op">.</span><span class="at">V1</span> <span class="op">+</span> y2 <span class="op">*</span> pca_vectors[<span class="dv">2</span>]<span class="op">.</span><span class="at">V2</span></span>
-<span id="cb10-470"><a href="#cb10-470" aria-hidden="true" tabindex="-1"></a>  )<span class="op">.</span><span class="fu">normalize</span>()<span class="op">;</span></span>
-<span id="cb10-471"><a href="#cb10-471" aria-hidden="true" tabindex="-1"></a>  </span>
-<span id="cb10-472"><a href="#cb10-472" aria-hidden="true" tabindex="-1"></a>  display_arrow2<span class="op">.</span><span class="fu">setDirection</span>(new_direction)<span class="op">;</span></span>
-<span id="cb10-473"><a href="#cb10-473" aria-hidden="true" tabindex="-1"></a>  renderer<span class="op">.</span><span class="fu">render</span>(scene<span class="op">,</span> camera)<span class="op">;</span></span>
-<span id="cb10-474"><a href="#cb10-474" aria-hidden="true" tabindex="-1"></a>  <span class="cf">return</span><span class="op">;</span></span>
-<span id="cb10-475"><a href="#cb10-475" aria-hidden="true" tabindex="-1"></a>}</span></code></pre></div>
+<div class="sourceCode cell-code hidden" id="cb10" data-startfrom="428" data-source-offset="-1"><pre class="sourceCode js"><code class="sourceCode javascript" style="counter-reset: source-line 427;"><span id="cb10-428"><a href="#cb10-428" aria-hidden="true" tabindex="-1"></a>scene <span class="op">=</span> {</span>
+<span id="cb10-429"><a href="#cb10-429" aria-hidden="true" tabindex="-1"></a>  <span class="kw">const</span> scene <span class="op">=</span> <span class="kw">new</span> THREE<span class="op">.</span><span class="fu">Scene</span>()<span class="op">;</span></span>
+<span id="cb10-430"><a href="#cb10-430" aria-hidden="true" tabindex="-1"></a>  scene<span class="op">.</span><span class="at">background</span> <span class="op">=</span> <span class="kw">new</span> THREE<span class="op">.</span><span class="fu">Color</span>(<span class="bn">0xffffff</span>)<span class="op">;</span></span>
+<span id="cb10-431"><a href="#cb10-431" aria-hidden="true" tabindex="-1"></a>  scene<span class="op">.</span><span class="fu">add</span>(gridHelper)<span class="op">;</span></span>
+<span id="cb10-432"><a href="#cb10-432" aria-hidden="true" tabindex="-1"></a>  scene<span class="op">.</span><span class="fu">add</span>(display_arrow)<span class="op">;</span></span>
+<span id="cb10-433"><a href="#cb10-433" aria-hidden="true" tabindex="-1"></a>  scene<span class="op">.</span><span class="fu">add</span>(display_arrow2)<span class="op">;</span></span>
+<span id="cb10-434"><a href="#cb10-434" aria-hidden="true" tabindex="-1"></a>  scene<span class="op">.</span><span class="fu">add</span>(true_vector1)<span class="op">;</span></span>
+<span id="cb10-435"><a href="#cb10-435" aria-hidden="true" tabindex="-1"></a>  scene<span class="op">.</span><span class="fu">add</span>(true_vector2)<span class="op">;</span></span>
+<span id="cb10-436"><a href="#cb10-436" aria-hidden="true" tabindex="-1"></a>  scene<span class="op">.</span><span class="fu">add</span>(math_plane<span class="op">.</span><span class="at">mesh</span>)<span class="op">;</span></span>
+<span id="cb10-437"><a href="#cb10-437" aria-hidden="true" tabindex="-1"></a>  scene<span class="op">.</span><span class="fu">add</span>(points)<span class="op">;</span></span>
+<span id="cb10-438"><a href="#cb10-438" aria-hidden="true" tabindex="-1"></a>  <span class="cf">return</span> scene<span class="op">;</span></span>
+<span id="cb10-439"><a href="#cb10-439" aria-hidden="true" tabindex="-1"></a>}</span>
+<span id="cb10-440"><a href="#cb10-440" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb10-441"><a href="#cb10-441" aria-hidden="true" tabindex="-1"></a>update1 <span class="op">=</span> {</span>
+<span id="cb10-442"><a href="#cb10-442" aria-hidden="true" tabindex="-1"></a>  <span class="co">// For the first vector v1</span></span>
+<span id="cb10-443"><a href="#cb10-443" aria-hidden="true" tabindex="-1"></a>  <span class="kw">const</span> x1 <span class="op">=</span> <span class="bu">Math</span><span class="op">.</span><span class="fu">cos</span>(theta1_value)<span class="op">;</span></span>
+<span id="cb10-444"><a href="#cb10-444" aria-hidden="true" tabindex="-1"></a>  <span class="kw">const</span> y1 <span class="op">=</span> <span class="bu">Math</span><span class="op">.</span><span class="fu">sin</span>(theta1_value)<span class="op">;</span></span>
+<span id="cb10-445"><a href="#cb10-445" aria-hidden="true" tabindex="-1"></a>  </span>
+<span id="cb10-446"><a href="#cb10-446" aria-hidden="true" tabindex="-1"></a>  <span class="co">// Linear combination: v1 = x1*V1 + y1*V2</span></span>
+<span id="cb10-447"><a href="#cb10-447" aria-hidden="true" tabindex="-1"></a>  <span class="kw">const</span> new_direction <span class="op">=</span> <span class="kw">new</span> THREE<span class="op">.</span><span class="fu">Vector3</span>(</span>
+<span id="cb10-448"><a href="#cb10-448" aria-hidden="true" tabindex="-1"></a>    x1 <span class="op">*</span> pca_vectors[<span class="dv">0</span>]<span class="op">.</span><span class="at">V1</span> <span class="op">+</span> y1 <span class="op">*</span> pca_vectors[<span class="dv">0</span>]<span class="op">.</span><span class="at">V2</span><span class="op">,</span></span>
+<span id="cb10-449"><a href="#cb10-449" aria-hidden="true" tabindex="-1"></a>    x1 <span class="op">*</span> pca_vectors[<span class="dv">1</span>]<span class="op">.</span><span class="at">V1</span> <span class="op">+</span> y1 <span class="op">*</span> pca_vectors[<span class="dv">1</span>]<span class="op">.</span><span class="at">V2</span><span class="op">,</span></span>
+<span id="cb10-450"><a href="#cb10-450" aria-hidden="true" tabindex="-1"></a>    x1 <span class="op">*</span> pca_vectors[<span class="dv">2</span>]<span class="op">.</span><span class="at">V1</span> <span class="op">+</span> y1 <span class="op">*</span> pca_vectors[<span class="dv">2</span>]<span class="op">.</span><span class="at">V2</span></span>
+<span id="cb10-451"><a href="#cb10-451" aria-hidden="true" tabindex="-1"></a>  )<span class="op">.</span><span class="fu">normalize</span>()<span class="op">;</span></span>
+<span id="cb10-452"><a href="#cb10-452" aria-hidden="true" tabindex="-1"></a>  </span>
+<span id="cb10-453"><a href="#cb10-453" aria-hidden="true" tabindex="-1"></a>  display_arrow<span class="op">.</span><span class="fu">setDirection</span>(new_direction)<span class="op">;</span></span>
+<span id="cb10-454"><a href="#cb10-454" aria-hidden="true" tabindex="-1"></a>  renderer<span class="op">.</span><span class="fu">render</span>(scene<span class="op">,</span> camera)<span class="op">;</span></span>
+<span id="cb10-455"><a href="#cb10-455" aria-hidden="true" tabindex="-1"></a>  <span class="cf">return</span><span class="op">;</span></span>
+<span id="cb10-456"><a href="#cb10-456" aria-hidden="true" tabindex="-1"></a>}</span>
+<span id="cb10-457"><a href="#cb10-457" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb10-458"><a href="#cb10-458" aria-hidden="true" tabindex="-1"></a>update2 <span class="op">=</span> {</span>
+<span id="cb10-459"><a href="#cb10-459" aria-hidden="true" tabindex="-1"></a>  <span class="co">// For the first vector v1</span></span>
+<span id="cb10-460"><a href="#cb10-460" aria-hidden="true" tabindex="-1"></a>  <span class="kw">const</span> x2 <span class="op">=</span> <span class="bu">Math</span><span class="op">.</span><span class="fu">cos</span>(theta2_value)<span class="op">;</span></span>
+<span id="cb10-461"><a href="#cb10-461" aria-hidden="true" tabindex="-1"></a>  <span class="kw">const</span> y2 <span class="op">=</span> <span class="bu">Math</span><span class="op">.</span><span class="fu">sin</span>(theta2_value)<span class="op">;</span></span>
+<span id="cb10-462"><a href="#cb10-462" aria-hidden="true" tabindex="-1"></a>  </span>
+<span id="cb10-463"><a href="#cb10-463" aria-hidden="true" tabindex="-1"></a>  <span class="co">// Linear combination: v1 = x1*V1 + y1*V2</span></span>
+<span id="cb10-464"><a href="#cb10-464" aria-hidden="true" tabindex="-1"></a>  <span class="kw">const</span> new_direction <span class="op">=</span> <span class="kw">new</span> THREE<span class="op">.</span><span class="fu">Vector3</span>(</span>
+<span id="cb10-465"><a href="#cb10-465" aria-hidden="true" tabindex="-1"></a>    x2 <span class="op">*</span> pca_vectors[<span class="dv">0</span>]<span class="op">.</span><span class="at">V1</span> <span class="op">+</span> y2 <span class="op">*</span> pca_vectors[<span class="dv">0</span>]<span class="op">.</span><span class="at">V2</span><span class="op">,</span></span>
+<span id="cb10-466"><a href="#cb10-466" aria-hidden="true" tabindex="-1"></a>    x2 <span class="op">*</span> pca_vectors[<span class="dv">1</span>]<span class="op">.</span><span class="at">V1</span> <span class="op">+</span> y2 <span class="op">*</span> pca_vectors[<span class="dv">1</span>]<span class="op">.</span><span class="at">V2</span><span class="op">,</span></span>
+<span id="cb10-467"><a href="#cb10-467" aria-hidden="true" tabindex="-1"></a>    x2 <span class="op">*</span> pca_vectors[<span class="dv">2</span>]<span class="op">.</span><span class="at">V1</span> <span class="op">+</span> y2 <span class="op">*</span> pca_vectors[<span class="dv">2</span>]<span class="op">.</span><span class="at">V2</span></span>
+<span id="cb10-468"><a href="#cb10-468" aria-hidden="true" tabindex="-1"></a>  )<span class="op">.</span><span class="fu">normalize</span>()<span class="op">;</span></span>
+<span id="cb10-469"><a href="#cb10-469" aria-hidden="true" tabindex="-1"></a>  </span>
+<span id="cb10-470"><a href="#cb10-470" aria-hidden="true" tabindex="-1"></a>  display_arrow2<span class="op">.</span><span class="fu">setDirection</span>(new_direction)<span class="op">;</span></span>
+<span id="cb10-471"><a href="#cb10-471" aria-hidden="true" tabindex="-1"></a>  renderer<span class="op">.</span><span class="fu">render</span>(scene<span class="op">,</span> camera)<span class="op">;</span></span>
+<span id="cb10-472"><a href="#cb10-472" aria-hidden="true" tabindex="-1"></a>  <span class="cf">return</span><span class="op">;</span></span>
+<span id="cb10-473"><a href="#cb10-473" aria-hidden="true" tabindex="-1"></a>}</span></code></pre></div>
 <div class="cell-output cell-output-display">
 <div>
 <div id="ojs-cell-7-1" data-nodetype="declaration">
