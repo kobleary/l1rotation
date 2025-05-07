@@ -68,6 +68,8 @@ simulated_data <- simulate_data_2d(T, m1, m2, n, rho_t, rho_i, lambda_option, er
 
 lf <- l1rotation::local_factors(simulated_data$X, r = 2)
 
+simulated_data$truth_normal[,2] = simulated_data$truth_normal[,2] * -1
+
 write.csv(simulated_data$X, "data.csv", row.names = FALSE)
 write.csv(simulated_data$truth_normal, "truth_normal.csv", row.names = FALSE)
 write.csv(lf$initial_loadings, "lambda0.csv", row.names = FALSE)

@@ -1,6 +1,7 @@
+library(dplyr)
 r <- 2
 no_draws <- 2000
-Lambda0 <- read.csv('https://raw.githubusercontent.com/kobleary/quarto-example/refs/heads/main/data/lambda0.csv') %>%
+Lambda0 <- read.csv('https://raw.githubusercontent.com/kobleary/l1rotation/refs/heads/main/vignettes/lambda0.csv') %>%
   as.matrix()
 
 # Create starting points for algorithm
@@ -30,17 +31,4 @@ obj_function_data <- tibble::tibble(theta = slider_input, y = y) %>%
 
 
 write.csv(obj_function_data, "obj_function_data.csv")
-
-
-# # slider_input <- seq(-3, 3, by = .1)
-# #
-# # obj_y <- map_dbl(slider_input, \(value) objectivefcn_spherical(value, lf$Lambda0))
-#
-# obj_plot <- obj_function_data %>%
-#   ggplot() +
-#   geom_point(aes(theta_orig, y_orig), color = "orange", size = 3) +
-#   geom_line(aes(theta, y)) +
-#   theme_minimal() +
-#   labs(y = "", title = "Objective function")
-
 
