@@ -12,8 +12,8 @@
 <link href="deps/font-awesome-6.5.2/css/v4-shims.min.css" rel="stylesheet">
 <script src="deps/headroom-0.11.0/headroom.min.js"></script><script src="deps/headroom-0.11.0/jQuery.headroom.min.js"></script><script src="deps/bootstrap-toc-1.0.1/bootstrap-toc.min.js"></script><script src="deps/clipboard.js-2.0.11/clipboard.min.js"></script><script src="deps/search-1.0.0/autocomplete.jquery.min.js"></script><script src="deps/search-1.0.0/fuse.min.js"></script><script src="deps/search-1.0.0/mark.min.js"></script><script src="deps/MathJax-3.2.2/tex-chtml.min.js"></script><!-- pkgdown --><script src="pkgdown.js"></script><link href="extra.css" rel="stylesheet">
 <meta property="og:title" content="Identify Loading Vectors under Sparsity in Factor Models">
-<meta name="description" content="Estimate loading vectors using the l1 criterion as proposed in Freyaldenhoven (2025) &lt;https://simonfreyaldenhoven.github.io/papers/factor_rotation.pdf&gt;. Given a data matrix, find the rotation of the loading matrix with the smallest l1-norm and/or test for the presence of local factors.">
-<meta property="og:description" content="Estimate loading vectors using the l1 criterion as proposed in Freyaldenhoven (2025) &lt;https://simonfreyaldenhoven.github.io/papers/factor_rotation.pdf&gt;. Given a data matrix, find the rotation of the loading matrix with the smallest l1-norm and/or test for the presence of local factors.">
+<meta name="description" content="Simplify the loading matrix in factor models using the l1 criterion as proposed in Freyaldenhoven (2025) &lt;https://doi.org/10.21799/frbp.wp.2020.25&gt;. Given a data matrix, find the rotation of the loading matrix with the smallest l1-norm and/or test for the presence of local factors with with main function local_factors().">
+<meta property="og:description" content="Simplify the loading matrix in factor models using the l1 criterion as proposed in Freyaldenhoven (2025) &lt;https://doi.org/10.21799/frbp.wp.2020.25&gt;. Given a data matrix, find the rotation of the loading matrix with the smallest l1-norm and/or test for the presence of local factors with with main function local_factors().">
 </head>
 <body>
     <a href="#main" class="visually-hidden-focusable">Skip to contents</a>
@@ -23,7 +23,7 @@
 
     <a class="navbar-brand me-2" href="index.html">l1rotation</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.0.1</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.0.0</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -67,7 +67,7 @@
 <div class="section level2">
 <h2 id="overview">Overview<a class="anchor" aria-label="anchor" href="#overview"></a>
 </h2>
-<p>The <code>l1rotation</code> package implements the l1-rotation criterion of <a href="https://simonfreyaldenhoven.github.io/papers/factor_rotation.pdf" class="external-link">Freyaldenhoven (2025)</a> to simplify the loading matrix in factor models.</p>
+<p>The <code>l1rotation</code> package implements the l1-rotation criterion of <a href="https://doi.org/10.21799/frbp.wp.2020.25" class="external-link">Freyaldenhoven (2025)</a> to simplify the loading matrix in factor models.</p>
 </div>
 <div class="section level2">
 <h2 id="installation">Installation<a class="anchor" aria-label="anchor" href="#installation"></a>
@@ -83,17 +83,16 @@
 <div class="section level2">
 <h2 id="usage">Usage<a class="anchor" aria-label="anchor" href="#usage"></a>
 </h2>
-<p>Find a minimal example below. For more examples see the package <a href="https://cran.r-project.org/package=l1rotation/l1rotation.pdf" class="external-link">documentation</a> and <a href="https://cran.r-project.org/package=l1rotation/vignettes/documentation.html" class="external-link">vignette</a>.</p>
+<p>Find a minimal example below. For more information see the package <a href="https://kobleary.github.io/l1rotation/">website</a>, <a href="https://cran.r-project.org/package=l1rotation/l1rotation.pdf" class="external-link">documentation</a> and <a href="https://cran.r-project.org/package=l1rotation/vignettes/documentation.html" class="external-link">vignette</a>.</p>
 <div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span></span>
-<span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://kobleary.github.io/l1rotation/">l1rotation</a></span><span class="op">)</span></span>
+<code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://kobleary.github.io/l1rotation/">l1rotation</a></span><span class="op">)</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/Random.html" class="external-link">set.seed</a></span><span class="op">(</span><span class="fl">916</span><span class="op">)</span> </span>
 <span></span>
-<span><span class="co"># Minimal example with 4 factors, where X is a 224 by 207 matrix</span></span>
+<span><span class="co"># Minimal example with 2 factors, where X is a 224 by 207 matrix</span></span>
 <span><span class="va">lf</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/local_factors.html">local_factors</a></span><span class="op">(</span>X <span class="op">=</span> <span class="va">example_data</span>, r <span class="op">=</span> <span class="fl">2</span><span class="op">)</span></span>
 <span></span>
 <span><span class="co"># Rerun with parallel processing</span></span>
-<span><span class="va">lf_lambdas</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/find_local_factors.html">find_local_factors</a></span><span class="op">(</span>X <span class="op">=</span> <span class="va">example_data</span>, r <span class="op">=</span> <span class="fl">2</span>, parallel <span class="op">=</span> <span class="cn">TRUE</span>, n_cores <span class="op">=</span> <span class="fl">10</span><span class="op">)</span></span>
+<span><span class="va">lf_lambdas</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/local_factors.html">local_factors</a></span><span class="op">(</span>X <span class="op">=</span> <span class="va">example_data</span>, r <span class="op">=</span> <span class="fl">2</span>, parallel <span class="op">=</span> <span class="cn">TRUE</span>, n_cores <span class="op">=</span> <span class="fl">10</span><span class="op">)</span></span>
 <span></span>
 <span><span class="co"># Visualize Principal Component estimate of the loadings</span></span>
 <span><span class="va">lf</span><span class="op">$</span><span class="va">pc_plot</span></span></code></pre></div>
@@ -107,7 +106,7 @@
 <div class="section level2">
 <h2 id="citation">Citation<a class="anchor" aria-label="anchor" href="#citation"></a>
 </h2>
-<p>Simon Freyaldenhoven.”Identification Through Sparsity in Factor Models: the l1-rotation criterion” <a href="https://simonfreyaldenhoven.github.io/papers/factor_rotation.pdf" class="external-link">Working Paper</a>, February 2025.</p>
+<p>Simon Freyaldenhoven. “Identification Through Sparsity in Factor Models: the l1-rotation criterion.” <a href="https://doi.org/10.21799/frbp.wp.2020.25" class="external-link">Philadelphia Fed Working Paper 20-25</a>, February 2025.</p>
 <p>Simon Freyaldenhoven, Ryan Kobler. “<code>l1rotation</code> package.” Code and data repository at <a href="https://github.com/SimonFreyaldenhoven/l1rotation" class="external-link uri">https://github.com/SimonFreyaldenhoven/l1rotation</a>, March 2025.</p>
 </div>
 
