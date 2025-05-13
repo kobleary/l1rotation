@@ -77,7 +77,7 @@ lf <- local_factors(
 
 ```
 
-In the estimation, the only required arguments for `local_factors()` are the data to be and the number of factors. We use the principal components estimator as the initial estimate of the loadings, $\Lambda^0$, which can be accessed via the `initial_loadings` item of the output. The function also computes a quick diagnostic to check whether local factors are present in the data which is given in the output item `has_local_factors`.
+In the estimation, the only required arguments for `local_factors()` are the data to be decomposed and the number of factors. We use the principal components estimator as the initial estimate of the loadings, $\Lambda^0$, which can be accessed via the `initial_loadings` item of the output. The function also computes a quick diagnostic to check whether local factors are present in the data which is given in the output item `has_local_factors`.
 
 Additionally, there are several rotation diagnostics accessible via `rotation_diagnostics`: (1) The rotation matrix, $R$, that when multiplied by $\Lambda^0$ produces $\hat{\Lambda}^*$, (2) the value of the l1 norm for each vector, and (3) the frequency with which the minimization problem converges at each of the estimated loading vectors.
 
@@ -90,7 +90,7 @@ For a visual interpretation of this rotation, we provide tile plots contrasting 
 lf$pc_plot
 ```
 
-In the initial principal component estimate, recall that each factor is simply a principal component. Of the 207 variables in $X$, the first factor loads most negatively along the variables between 88 and 120, and slightly negatively almost everywhere else. Along the second factor, there are positive loadings between variables 122 and 207 and slightly negative to near-zero loadings elsewhere. However, it may be difficult to interpret the relationship between variables and factors when all loadings are nonzero. 
+In the initial principal component estimate, recall that each factor is simply a principal component. Of the 207 variables in $X$, the first factor loads most negatively along the variables between 90 and 120, and slightly negatively almost everywhere else. Along the second factor, there are positive loadings between variables 122 and 207 and slightly negative to near-zero loadings elsewhere. However, it may be difficult to interpret the relationship between variables and factors when all loadings are nonzero. 
 
 ```{r}
 lf$rotated_plot

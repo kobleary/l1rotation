@@ -475,6 +475,7 @@ update2 = {
 
 ```
 
+Note that several minima exist due to sign indeterminacy, i.e., multiplying a sparse loading vector by -1 does not change its sparsity or interpretation.
 
 The above visualizations show the relationship between the angles of rotation, the objective function optimizing for sparsity, and the position of the vectors in space relative to the true loadings. This is the crux of the intuition behind this research and accompanying package.
 
