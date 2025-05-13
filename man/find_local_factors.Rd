@@ -4,14 +4,14 @@
 \alias{find_local_factors}
 \title{Find the rotation of the loading matrix with the smallest l1-norm, as in \code{\link[=local_factors]{local_factors()}}, with additional flexibility.}
 \usage{
-find_local_factors(X, r, Lambda0, parallel = FALSE, n_cores = NULL)
+find_local_factors(X, r, initial_loadings, parallel = FALSE, n_cores = NULL)
 }
 \arguments{
 \item{X}{A (usually standardized) t by n matrix of observations.}
 
 \item{r}{An integer denoting the number of factors in X.}
 
-\item{Lambda0}{Matrix that represents an orthonormal basis of the loading space. If not supplied, PCA is used by default in this function and also in \code{local_factors}.}
+\item{initial_loadings}{Matrix that represents an orthonormal basis of the loading space. If not supplied, PCA is used by default in this function and also in \code{local_factors}.}
 
 \item{parallel}{A logical denoting whether the algorithm should be run in parallel.}
 
@@ -20,30 +20,30 @@ find_local_factors(X, r, Lambda0, parallel = FALSE, n_cores = NULL)
 \value{
 Returns a list with the following components:
 \itemize{
-\item \code{Lambda0} Principal Component estimate of the loading matrix (if not supplied).
-\item \code{Lambda_rotated} Matrix that is the rotation of the loading matrix that produces the smallest l1-norm.
+\item \code{initial_loadings} Principal Component estimate of the loading matrix (if not supplied).
+\item \code{rotated_loadings} Matrix that is the rotation of the loading matrix that produces the smallest l1-norm.
 \item \code{rotation_diagnostics} A list containing 3 components:
 \itemize{
-\item \code{R} Rotation matrix that when used to rotate \code{Lambda0} produces the smallest l1-norm.
+\item \code{R} Rotation matrix that when used to rotate \code{initial_loadings} produces the smallest l1-norm.
 \item \code{l1_norm} Vector of length \code{r} containing the value of the l1 norm each solution generates.
 \item \code{sol_frequency} Vector of length \code{r} containing the frequency in the initial grid of each solution.
 }
 }
 }
 \description{
-Find the most sparse rotation of an orthonormal basis of the loading space of a t by n matrix X. Additional flexibility with the \code{Lambda0} argument allows the user to specify any orthonormal basis rather than defaulting to PCA.
+Find the most sparse rotation of an orthonormal basis of the loading space of a t by n matrix X. Additional flexibility with the \code{initial_loadings} argument allows the user to specify any orthonormal basis rather than defaulting to PCA.
 }
 \examples{
-# Minimal example with 4 factors, where X is a 500 by 300 matrix
-r <- 4
+# Minimal example with 2 factors, where X is a 224 by 207 matrix
+r <- 2
 M <- nrow(example_data)
 n <- ncol(example_data)
 
 # Compute PCA estimates
 basis <- svd(example_data / sqrt(M), nu = M, nv = n)
-Lambda0 <- sqrt(n) * basis$v[, 1:r]
+initial_loadings <- sqrt(n) * basis$v[, 1:r]
 
-# Find minimum rotation using orthonormal basis Lambda0
-rotation_result <- find_local_factors(X = example_data, r = r, Lambda0 = Lambda0)
+# Find minimum rotation using orthonormal basis initial_loadings
+rotation_result <- find_local_factors(X = example_data, r = r, initial_loadings = initial_loadings)
 
 }

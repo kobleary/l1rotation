@@ -33,8 +33,12 @@ test_that("find_local_factors() returns same result with same seed with and with
   expect_equal(result$diagnostics$R, with_lambda_result$diagnostics$R)
   expect_equal(result$diagnostics$fval, with_lambda_result$diagnostics$fval)
   expect_equal(result$diagnostics$sol_frequency, with_lambda_result$diagnostics$sol_frequency)
-  expect_equal(result$Lambda0, with_lambda_result$Lambda0)
-  expect_equal(result$Lambda, with_lambda_result$Lambda)
+  expect_equal(result$initial_loadings, with_lambda_result$initial_loadings)
+  expect_equal(result$rotated_loadings, with_lambda_result$rotated_loadings)
+  expect_true(!is.null(result$rotated_loadings))
+  expect_true(!is.null(with_lambda_result$rotated_loadings))
+  expect_true(!is.null(result$initial_loadings))
+  expect_true(!is.null(with_lambda_result$initial_loadings))
 })
 
 
@@ -59,8 +63,12 @@ test_that("find_local_factors() returns same result with same seed with and with
   expect_equal(result$diagnostics$R, with_lambda_result$diagnostics$R)
   expect_equal(result$diagnostics$fval, with_lambda_result$diagnostics$fval)
   expect_equal(result$diagnostics$sol_frequency, with_lambda_result$diagnostics$sol_frequency)
-  expect_equal(result$Lambda0, with_lambda_result$Lambda0)
-  expect_equal(result$Lambda, with_lambda_result$Lambda)
+  expect_equal(result$initial_loadings, with_lambda_result$initial_loadings)
+  expect_equal(result$rotated_loadings, with_lambda_result$rotated_loadings)
+  expect_true(!is.null(result$rotated_loadings))
+  expect_true(!is.null(with_lambda_result$rotated_loadings))
+  expect_true(!is.null(result$initial_loadings))
+  expect_true(!is.null(with_lambda_result$initial_loadings))
 
 })
 
@@ -86,8 +94,13 @@ test_that("find_local_factors() returns same result with same seed with and with
   expect_equal(result$diagnostics$R, with_lambda_result$diagnostics$R)
   expect_equal(result$diagnostics$fval, with_lambda_result$diagnostics$fval)
   expect_equal(result$diagnostics$sol_frequency, with_lambda_result$diagnostics$sol_frequency)
-  expect_equal(result$Lambda0, with_lambda_result$Lambda0)
-  expect_equal(result$Lambda, with_lambda_result$Lambda)
+  expect_equal(result$initial_loadings, with_lambda_result$initial_loadings)
+  expect_equal(result$rotated_loadings, with_lambda_result$rotated_loadings)
+  expect_true(!is.null(result$rotated_loadings))
+  expect_true(!is.null(with_lambda_result$rotated_loadings))
+  expect_true(!is.null(result$initial_loadings))
+  expect_true(!is.null(with_lambda_result$initial_loadings))
+
 
 
 })
@@ -95,20 +108,18 @@ test_that("find_local_factors() returns same result with same seed with and with
 
 test_that("find_local_factors() returns matrix similar to truth using a orthonormal rotation of the true Lambda", {
 
-  i <- 10
-
-  X <- load_matrix(testthat::test_path("fixtures", stringr::str_glue("X_{i}.csv")))
+  X <- load_matrix(testthat::test_path("fixtures", "X_10.csv"))
   M <- nrow(X)
   n <- ncol(X)
   r <- 4
 
-  true_lambda <- load_matrix(testthat::test_path("fixtures", stringr::str_glue("true_lambda_{i}.csv")))
+  true_lambda <- load_matrix(testthat::test_path("fixtures", "true_lambda_10.csv"))
   e <- matrix(rnorm(n * r, sd = 0.1), nrow = n, ncol = r)
 
   true_lambda_rotated_plus_noise <- orthonormalize(true_lambda + e)
 
 
-  lambda_rotated_true_plus_noise <- find_local_factors(X, r, true_lambda_rotated_plus_noise)$Lambda_rotated
+  lambda_rotated_true_plus_noise <- find_local_factors(X, r, true_lambda_rotated_plus_noise)$rotated_loadings
   cos_sim_true_plus_noise <- max_cosine_similarity(lambda_rotated_true_plus_noise, true_lambda)[-1]
   expect_true(all(cos_sim_true_plus_noise > 0.98))
 

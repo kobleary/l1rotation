@@ -4,3 +4,5 @@
 .Ruserdata
 *datastore*
 inst/doc
+docs
+**/.quarto/

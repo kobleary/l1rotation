@@ -19,25 +19,25 @@ local_factors(X, r, parallel = FALSE, n_cores = NULL)
 Returns a list with the following components:
 \itemize{
 \item \code{has_local_factors} A logical equal to \code{TRUE} if local factors are present.
-\item \code{Lambda0} Principal component estimate of the loading matrix.
-\item \code{Lambda_rotated} Matrix that is the rotation of the loading matrix that produces the smallest l1-norm.
+\item \code{initial_loadings} Principal component estimate of the loading matrix.
+\item \code{rotated_loadings} Matrix that is the rotation of the loading matrix that produces the smallest l1-norm.
 \item \code{rotation_diagnostics} A list containing 3 components:
 \itemize{
-\item \code{R} Rotation matrix that when used to rotate \code{Lambda0} produces the smallest l1-norm.
+\item \code{R} Rotation matrix that when used to rotate \code{initial_loadings} produces the smallest l1-norm.
 \item \code{l1_norm} Vector of length \code{r} containing the value of the l1 norm each solution generates.
 \item \code{sol_frequency} Vector of length \code{r} containing the frequency in the initial grid of each solution.
 }
 \item \code{pc_plot} Tile plot of the Principal Component estimate of the loading matrix.
-\item \code{pc_rotated_plot} Tile plot of the l1-rotation of the loading matrix estimate.
+\item \code{rotated_plot} Tile plot of the l1-rotation of the loading matrix estimate.
 \item \code{small_loadings_plot} Plot of the number of small loadings for each column of the l1-rotation of the loading matrix estimate.
 }
 }
 \description{
-\code{local_factors} tests whether local factors are present and returns both the Principal Component estimate of Lambda and the rotation of Lambda with the smallest l1-norm. It also produces graphical illustrations of the results.
+\code{local_factors} tests whether local factors are present and returns both the Principal Component estimate of the loadings and the rotation of the loadings with the smallest l1-norm. It also produces graphical illustrations of the results.
 }
 \examples{
-# Minimal example with 4 factors, where X is a 500 by 300 matrix
-lf <- local_factors(X = example_data, r = 4)
+# Minimal example with 2 factors, where X is a 224 by 207 matrix
+lf <- local_factors(X = example_data, r = 2)
 
 # Visualize Principal Component estimate of the loadings
 lf$pc_plot
