@@ -32,7 +32,7 @@ knitr::opts_chunk$set(
 library(l1rotation)
 ```
 
-The `l1rotation` package offers functionality to simplify the loading matrix in factor models. It can find the most sparse rotation of the loading matrix using the l1-rotation criterion of [Freyaldenhoven (2025)](https://simonfreyaldenhoven.github.io/papers/factor_rotation.pdf). 
+The `l1rotation` package offers functionality to simplify the loading matrix in factor models. It can find the most sparse rotation of the loading matrix using the l1-rotation criterion of [Freyaldenhoven (2025)](https://doi.org/10.21799/frbp.wp.2020.25).  
 
 Under the assumption of sparsity in the true loading matrix, it also solves the problem of rotational indeterminacy inherent to factor models. That is, suppose the data follows a factor model:
 
@@ -49,7 +49,7 @@ where
 
 - $e$ is a $T \times n$ error matrix.
 
-Then, the assumption of sparsity in the loading matrix solves the problem of rotational indeterminacy inherent to factor models: $\Lambda^{*}$ will be the most sparse rotation and can be identified using the l1-rotation criterion [Freyaldenhoven (2025)](https://simonfreyaldenhoven.github.io/papers/factor_rotation.pdf).
+Then, the assumption of sparsity in the loading matrix solves the problem of rotational indeterminacy inherent to factor models: $\Lambda^{*}$ will be the most sparse rotation and can be identified using the l1-rotation criterion [Freyaldenhoven (2025)](https://doi.org/10.21799/frbp.wp.2020.25).
 
 ## Quick start {#start}
 
@@ -61,9 +61,9 @@ To start, let's look at the first seven columns of the example data:
 head(example_data[,1:7])
 ```
 
-We assume that the number of underlying factors can be learned from the data (e.g., following the procedure in [Bai and Ng (2002)](https://onlinelibrary.wiley.com/doi/epdf/10.1111/1468-0262.00273) or [Ahn and Horenstein (2013)](https://onlinelibrary.wiley.com/doi/abs/10.3982/ECTA8968)). Note that this package does not include functionality to calculate the number of factors - we simply take the number of factors as a user input. 
+We assume that the number of underlying factors can be learned from the data (e.g., following the procedure in [Bai and Ng (2002)](https://onlinelibrary.wiley.com/doi/epdf/10.1111/1468-0262.00273) or [Ahn and Horenstein (2013)](https://onlinelibrary.wiley.com/doi/abs/10.3982/ECTA8968)). Note that this package does not include functionality to calculate the number of factors - we simply take the number of factors as a user input.
 
-For the `example_data` we will use two factors. With just the data, $X$, and the number of factors, $r$, we can start estimating the loadings with `local_factors()`. This function estimates $\Lambda^{*}$ and provides helpful diagnostics and figures. 
+For the `example_data` we will use two factors. With just the data, $X$, and the number of factors, $r$, we can start estimating the loadings with `local_factors()`. This function estimates $\Lambda^{*}$ and provides helpful diagnostics and figures.
 
 Below is an example using `example_data` (note that estimation can also be run in parallel with a selected number of cores, `n_cores`):
 
@@ -90,15 +90,13 @@ For a visual interpretation of this rotation, we provide tile plots contrasting 
 lf$pc_plot
 ```
 
-In the initial principal component estimate, recall that each factor is simply a principal component. Of the 207 variables in $X$, the first factor loads most negatively along the variables between 90 and 120, and slightly negatively almost everywhere else. Along the second factor, there are positive loadings between variables 122 and 207 and slightly negative to near-zero loadings elsewhere. However, it may be difficult to interpret the relationship between variables and factors when all loadings are nonzero. 
+In the initial principal component estimate, recall that each factor is simply a principal component. Of the 207 variables in $X$, the first factor loads most negatively along the variables between 90 and 120, and slightly negatively almost everywhere else. Along the second factor, there are positive loadings between variables 122 and 207 and slightly negative loadings elsewhere. However, it may be difficult to interpret the relationship between variables and factors when all loadings are nonzero.
 
 ```{r}
 lf$rotated_plot
 ```
 
-
-The second estimate is a rotated version of loading matrix optimized for sparsity using the l1-rotation criterion. This estimate is easier to interpret as most variables between 90-207 load negatively on the first factor, variables 0-120 load negatively on the second factor, and all other loadings are close to zero.
-
+The second estimate is a rotated version of the loading matrix optimized for sparsity using the l1-rotation criterion. This estimate is easier to interpret as most variables between 90-207 load negatively on the first factor, variables 0-120 load negatively on the second factor, and all other loadings are close to zero.
 
 ## Refining the details {#details}
 
@@ -130,7 +128,7 @@ Returning to our `lf` results, we can take a look at the value of `has_local_fac
 lf$has_local_factors
 ```
 
-This value is the result of `test_local_factors()`. To verify, we can call `test_local_factors()` on two different estimates: the principal components estimate, `initial_loadings`, and the l1rotation estimate, `rotated_loadings`. 
+This value is the result of `test_local_factors()`. To verify, we can call `test_local_factors()` on two different estimates: the principal components estimate, `initial_loadings`, and the l1rotation estimate, `rotated_loadings`.
 
 ```{r}
 # Check for local factors in PC estimate...
@@ -143,7 +141,7 @@ test_pc_estimate$has_local_factors
 test_rot_estimate$has_local_factors
 ```
 
-Thus, no local factors are detected using the principal components estimate, while the rotated estimate reveals two local factors. We can also visualize the number of small loadings using the `small_loadings_plot` element in our `lf' results: 
+Thus, no local factors are detected using the principal components estimate, while the rotated estimate reveals two local factors. We can also visualize the number of small loadings using the `small_loadings_plot` element in our `lf' results:
 
 ```{r}
 round_hn <- round(test_rot_estimate$h_n, digits = 3)
